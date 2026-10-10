@@ -1,0 +1,129 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "ground-demo",
+  "name": "常州某厂空地（示意）",
+  "collection": null,
+  "site": {
+    "lat": 31.81,
+    "lon": 119.97,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2,
+    "design_temp_min_c": null,
+    "design_temp_max_c": null
+  },
+  "roof": {
+    "ground": {
+      "lower_edge_m": 0.5,
+      "road_every": 4,
+      "road_width_m": 4.0,
+      "fence_setback_m": 2.0
+    },
+    "type": "ground",
+    "outline": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        120.0,
+        0.0
+      ],
+      [
+        120.0,
+        80.0
+      ],
+      [
+        0.0,
+        80.0
+      ]
+    ],
+    "height_m": 0.0,
+    "parapet_height_m": 0.0,
+    "load_capacity_kn_m2": 0.5,
+    "obstacles": [
+      {
+        "id": "tree-1",
+        "label": "场内示意树",
+        "kind": "cylinder",
+        "height_m": 6.0,
+        "footprint": null,
+        "center": [
+          15.0,
+          15.0
+        ],
+        "radius_m": 2.0
+      },
+      {
+        "id": "tree-2",
+        "label": "场内示意树",
+        "kind": "cylinder",
+        "height_m": 6.0,
+        "footprint": null,
+        "center": [
+          100.0,
+          25.0
+        ],
+        "radius_m": 2.0
+      },
+      {
+        "id": "tree-3",
+        "label": "场内示意树",
+        "kind": "cylinder",
+        "height_m": 6.0,
+        "footprint": null,
+        "center": [
+          80.0,
+          65.0
+        ],
+        "radius_m": 2.0
+      },
+      {
+        "id": "pole-1",
+        "label": "场内示意电杆",
+        "kind": "cylinder",
+        "height_m": 8.0,
+        "footprint": null,
+        "center": [
+          40.0,
+          50.0
+        ],
+        "radius_m": 0.2
+      }
+    ],
+    "keepouts": [],
+    "underlay": null
+  },
+  "requirements": {
+    "text": "",
+    "structured": {
+      "budget_cny_max": null,
+      "payback_years_max": null,
+      "capacity_kw_min": null,
+      "capacity_kw_max": null,
+      "walkway_m_min": null,
+      "obstacle_clearance_m_min": null,
+      "edge_setback_m_min": null,
+      "keep_clear_ids": [],
+      "tilt_deg_range": null,
+      "notes": null
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "ground_pile"
+  },
+  "economics": {
+    "capex_cny_per_w": null,
+    "self_use_ratio": 0.8,
+    "price_self_cny_kwh": 0.65,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "示意：平坦场地；新建基础和钢结构须厂家设计。造价、地租、结构深度及柱桩布点非施工依据。"
+  },
+  "designs": []
+}

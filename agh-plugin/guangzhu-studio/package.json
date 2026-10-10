@@ -1,0 +1,38 @@
+{
+  "name": "guangzhu-studio",
+  "version": "0.3.9",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": "./index.mjs",
+  "agnes": {
+    "plugins": [
+      {
+        "id": "ext:guangzhu-studio/main",
+        "export": "main",
+        "runtime": "in-process"
+      },
+      {
+        "id": "ext:guangzhu-studio/skin",
+        "export": "skin",
+        "runtime": "in-process"
+      }
+    ],
+    "clientDescriptors": [
+      {
+        "rowId": "ext:guangzhu-studio/main",
+        "path": "./extensions/main/agnes.client.json"
+      },
+      {
+        "rowId": "ext:guangzhu-studio/skin",
+        "path": "./extensions/main/skins/agnes.client.json"
+      }
+    ]
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}

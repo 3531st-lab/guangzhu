@@ -1,0 +1,14 @@
+[
+  {
+    "city": "南京",
+    "code": "101190101",
+    "lat": 32.0438284,
+    "lon": 118.7788631,
+    "osm_id": 244081381,
+    "url": "https://www.weather.com.cn/weather1d/101190101.shtml",
+    "date": "2026-10-04",
+    "collected_at": "2026-10-03T16:00:23.656402+00:00",
+    "method": "http",
+    "page_date": "2026-10-04"
+  }
+]

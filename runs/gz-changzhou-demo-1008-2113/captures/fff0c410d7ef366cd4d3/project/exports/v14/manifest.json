@@ -1,0 +1,12 @@
+{
+  "version": 14,
+  "files": {
+    "layout-v14.dxf": "43cd8cd57711babcc1bee037a8233f202f3db5ef5c941e435745e7b838cc26e9",
+    "bom-v14.xlsx": "073c2d783d2acf03087bf0e8583a91203a6d10b19750bb5089f295314248e376",
+    "design.json": "f6e43bde0bddf7bbdd377cb4ca5492385e7db42e3fc5a67a987d24643b72513d",
+    "summary.json": "c2adec64339355f526e06df3b02a8152a5da53f49dcdaa1d8d6484434e921e66",
+    "rules.json": "29ac11adc6d65c63445af6041f12c14b17414e603725ff597e5a889f96ddb0b6",
+    "economics.json": "8ae5c336f3f896804b6672bc9407ce30aded3e82f63a35f7b4a74eb3ce2b13d9"
+  },
+  "snapshot_note": "files.sha256属于原导出件；脱敏快照的实际SHA256以run.json的artifacts为准。"
+}

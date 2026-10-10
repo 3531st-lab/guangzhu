@@ -1,0 +1,99 @@
+{
+  "skins": [
+    {
+      "id": "guangzhu",
+      "name": "光筑",
+      "css": "./guangzhu/skin.css",
+      "tokens": {
+        "--agnes-bg-page": {
+          "light": "#faf6f1",
+          "dark": "#171411"
+        },
+        "--agnes-bg-app-content": {
+          "light": "#faf6f1",
+          "dark": "#171411"
+        },
+        "--agnes-bg-surface": {
+          "light": "#fffefa",
+          "dark": "#221d19"
+        },
+        "--agnes-bg-card": {
+          "light": "#fffefa",
+          "dark": "#221d19"
+        },
+        "--agnes-text-primary": {
+          "light": "#221d18",
+          "dark": "#f2ebe3"
+        },
+        "--agnes-text-emphasis": {
+          "light": "#c87743",
+          "dark": "#e08c55"
+        },
+        "--agnes-text-secondary": {
+          "light": "#998e83",
+          "dark": "#a2968a"
+        },
+        "--agnes-line-primary": {
+          "light": "#ece4da",
+          "dark": "#352d26"
+        },
+        "--agnes-brand-primary": {
+          "light": "#c87743",
+          "dark": "#e08c55"
+        },
+        "--agnes-brand-focus-ring": {
+          "light": "#c87743",
+          "dark": "#e08c55"
+        },
+        "--agnes-button-primary-bg": {
+          "light": "#c87743",
+          "dark": "#e08c55"
+        },
+        "--agnes-trace-lane-tool": {
+          "light": "#1f3a66",
+          "dark": "#3b5f9c"
+        },
+        "--agnes-status-success-text": {
+          "light": "#2a9d63",
+          "dark": "#4fc58a"
+        },
+        "--agnes-status-warning-text": {
+          "light": "#c98b0f",
+          "dark": "#e5b34a"
+        },
+        "--agnes-status-danger-text": {
+          "light": "#d1493f",
+          "dark": "#ef7a6e"
+        },
+        "--agnes-status-success-bg": {
+          "light": "#e4f5eb",
+          "dark": "#1d3326"
+        },
+        "--agnes-status-warning-bg": {
+          "light": "#fdf4d9",
+          "dark": "#3a2f17"
+        },
+        "--agnes-status-danger-bg": {
+          "light": "#fde8e5",
+          "dark": "#3d221e"
+        },
+        "--agnes-status-info-text": {
+          "light": "#3f6fd8",
+          "dark": "#7aa0f0"
+        },
+        "--agnes-bg-app-sidebar": {
+          "light": "#fffbf7",
+          "dark": "#1d1915"
+        },
+        "--agnes-bg-selected": {
+          "light": "#f7ede3",
+          "dark": "#3a2a1f"
+        },
+        "--agnes-button-primary-bg-hover": {
+          "light": "#d98a58",
+          "dark": "#eca16d"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+racking_id,module_gap_m,lower_edge_height_m,rack_weight_kg_per_module,ballast_weight_kg_per_module,assumptions_note,rack_cost_cny_per_module,corrosion_class,cost_status,corrosion_status
+ballast_tilt,0.02,0.3,6,30,示意可改：支架6kg/块=2根2.5m导轨×0.9kg/m+连接件及支腿1.5kg；30kg压块字段仅留作旧档兼容；当前按structure.wind实际逐板算压块；支架质量待厂家复核,,,待厂家报价,待厂家防腐规格
+clamp_flush,0.02,0.1,3,0,示意：彩钢瓦夹具顺坡平铺；导轨和夹具3kg/块；无压块；需厂家和结构复核夹具间距及抗风揭,,,待厂家报价,待厂家防腐规格
+ballast_ew,0.02,0.3,6,30,示意：东西向支架6kg/块、30kg压块字段仅留作旧档兼容；当前按structure.wind实际逐板算压块；支架质量待厂家复核；横放补位两上缘不相接,100,待厂家防腐规格,示意；待厂家报价,待厂家防腐规格
+plane_flush,0.02,0.1,0,0,多坡面选择器：质量与造价必须按各面实际材料选用；不计为独立支架,,,逐面选型,逐面选型
+fixed_flush,0.02,0.1,6,0,示意：混凝土坡面顺坡固定导轨及每板4个锚固件合计6kg；不压载；锚固抗拔及防水需结构人员和厂家核定,,,待厂家报价,待厂家防腐规格
+ground_pile,0.02,0.5,6,0,示意：地面桩基支架；每物理架两桩；基础与抗拔须厂家设计,,,待厂家报价,待厂家防腐规格
+carport_steel,0.02,0.1,6,0,示意：新建车棚支架；棚钢量单列；基础与钢结构须厂家设计,,,待厂家报价,待厂家防腐规格
+clamp_barn,0.02,0.1,3,0,示意：镀铝锌镁夹具及导轨；3kg/块；材料试验不等于整套夹具耐氨认证；见docs/sources.md T34,,待具体腐蚀等级核实,示意加价20%,待厂家匹配耐氨证书

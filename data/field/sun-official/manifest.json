@@ -1,0 +1,359 @@
+[
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T00:00:00+00:00",
+    "label": "2025-12-21 08:00 CST",
+    "file": "usno-position-01.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=00%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "849e884df5ebe76a7f06946ff8db90cb0f04fe179d7befbe4d2f8e19d5c5a25a",
+    "collected_at": "2026-10-03T08:58:12.522814+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T01:00:00+00:00",
+    "label": "2025-12-21 09:00 CST",
+    "file": "usno-position-02.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=01%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "e4ec57d720827011bbfcb330f9838c75cc8bcaa828f32c6445d50362dbb507d4",
+    "collected_at": "2026-10-03T08:58:14.413821+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T02:00:00+00:00",
+    "label": "2025-12-21 10:00 CST",
+    "file": "usno-position-03.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=02%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "1e4497a440081c343e8a7c3c7d90368e7879f8a7acdea620850c2efa491e0319",
+    "collected_at": "2026-10-03T08:58:15.826133+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T03:00:00+00:00",
+    "label": "2025-12-21 11:00 CST",
+    "file": "usno-position-04.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=03%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "2dda6eccd09b81353017d794693f991db9a30055d1e94f5787b0f7f83dc57ca1",
+    "collected_at": "2026-10-03T08:58:17.543380+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T04:00:00+00:00",
+    "label": "2025-12-21 12:00 CST",
+    "file": "usno-position-05.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=04%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "332169207914c15dea526e7463412eb29057777696dc844de722e3d69304dda5",
+    "collected_at": "2026-10-03T08:58:19.141498+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T05:00:00+00:00",
+    "label": "2025-12-21 13:00 CST",
+    "file": "usno-position-06.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=05%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "93d39f61de77bacddc87bc8fcb2d292b8fdba692fec087d2b28f89e711295ef4",
+    "collected_at": "2026-10-03T08:58:21.190030+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T06:00:00+00:00",
+    "label": "2025-12-21 14:00 CST",
+    "file": "usno-position-07.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=06%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "cf1040c063c9d7051e376dc9bdabe0f91a053f8077f7a1f05ea41646d3691f19",
+    "collected_at": "2026-10-03T08:58:22.928933+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T07:00:00+00:00",
+    "label": "2025-12-21 15:00 CST",
+    "file": "usno-position-08.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=07%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "79b7e8c11fc36a5b73372d3b9ada0dfe249678c53b43b0508c455d2dd0b0e1c0",
+    "collected_at": "2026-10-03T08:58:24.736708+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T08:00:00+00:00",
+    "label": "2025-12-21 16:00 CST",
+    "file": "usno-position-09.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=08%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "3243fed373c714c2206410221a7b7667a63d35110fde6b9925bfa9e3ba460745",
+    "collected_at": "2026-10-03T08:58:26.482626+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-03-20T00:00:00+00:00",
+    "label": "2026-03-20 08:00 CST",
+    "file": "usno-position-10.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-03-20&time=00%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "18653b611625d8fee9304a7553e807d73c31d8f922a6c7580394fc734af19f05",
+    "collected_at": "2026-10-03T08:58:28.477021+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-03-20T01:00:00+00:00",
+    "label": "2026-03-20 09:00 CST",
+    "file": "usno-position-11.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-03-20&time=01%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "f03f736eac4146471dd10e4256e384556d2224b21dde78b5401d6a07abb0ccb3",
+    "collected_at": "2026-10-03T08:58:30.809059+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-03-20T02:00:00+00:00",
+    "label": "2026-03-20 10:00 CST",
+    "file": "usno-position-12.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-03-20&time=02%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "be0374495fbb5b73968554ad0930d2447a68d110a1e13aab12d97036f99f950c",
+    "collected_at": "2026-10-03T08:58:32.815024+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-03-20T03:00:00+00:00",
+    "label": "2026-03-20 11:00 CST",
+    "file": "usno-position-13.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-03-20&time=03%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "c1c0046e770d8d85d3f2a70fb8be47b7e31d33b1751617c538e9b5519c3f0b29",
+    "collected_at": "2026-10-03T08:58:34.684903+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-03-20T04:00:00+00:00",
+    "label": "2026-03-20 12:00 CST",
+    "file": "usno-position-14.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-03-20&time=04%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "17b5fd132de5c0875fefe6e92700e461587f420a617d6ee21dd73370208f2a3d",
+    "collected_at": "2026-10-03T08:58:36.162101+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-03-20T05:00:00+00:00",
+    "label": "2026-03-20 13:00 CST",
+    "file": "usno-position-15.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-03-20&time=05%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "bec142c1d659c4d21f65b8fbef7f77da1d1eb19ece7582ec38dc3229c67fd419",
+    "collected_at": "2026-10-03T08:58:37.876826+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-03-20T06:00:00+00:00",
+    "label": "2026-03-20 14:00 CST",
+    "file": "usno-position-16.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-03-20&time=06%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "48a7d0345a6bad0ff1913be49ee3ea64e06bcbff201b48515a768d7304adf879",
+    "collected_at": "2026-10-03T08:58:39.840028+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-03-20T07:00:00+00:00",
+    "label": "2026-03-20 15:00 CST",
+    "file": "usno-position-17.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-03-20&time=07%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "bc2243d40adc7e3f203278c671d1d47bd0c443455a6ebc6c88232d03d254a168",
+    "collected_at": "2026-10-03T08:58:41.660777+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-03-20T08:00:00+00:00",
+    "label": "2026-03-20 16:00 CST",
+    "file": "usno-position-18.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-03-20&time=08%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "034ffe342e6644277e203c34e9839977adfcd4f73201659638c05f45544ca5e4",
+    "collected_at": "2026-10-03T08:58:43.137116+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-06-21T00:00:00+00:00",
+    "label": "2026-06-21 08:00 CST",
+    "file": "usno-position-19.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-06-21&time=00%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "7199583ee36e1b2c67461e59f13bf7d83b0c37f987f3c01a6e63b054ccca2919",
+    "collected_at": "2026-10-03T08:58:45.168375+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-06-21T01:00:00+00:00",
+    "label": "2026-06-21 09:00 CST",
+    "file": "usno-position-20.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-06-21&time=01%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "16602fd90f790dcdc36724e94f968e1fef7038e2a2065655af501f4601e4b5e2",
+    "collected_at": "2026-10-03T08:58:47.198687+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-06-21T02:00:00+00:00",
+    "label": "2026-06-21 10:00 CST",
+    "file": "usno-position-21.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-06-21&time=02%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "19990e455a12e5c8b571b48cc203d5cf7a2ab49464623b1a8ed3025d69882d7f",
+    "collected_at": "2026-10-03T08:58:49.216842+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-06-21T03:00:00+00:00",
+    "label": "2026-06-21 11:00 CST",
+    "file": "usno-position-22.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-06-21&time=03%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "0cf448823e31649e1e88004fb26372db9f0f281b5fb48fcfb6daa162b8a26e59",
+    "collected_at": "2026-10-03T08:58:50.778898+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-06-21T04:00:00+00:00",
+    "label": "2026-06-21 12:00 CST",
+    "file": "usno-position-23.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-06-21&time=04%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "6079f5a296e0a2981e925c5c909853021be65d5abfc47560714c1e8dc56e5151",
+    "collected_at": "2026-10-03T08:58:52.584669+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-06-21T05:00:00+00:00",
+    "label": "2026-06-21 13:00 CST",
+    "file": "usno-position-24.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-06-21&time=05%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "24861047fad8720d93ec9f0305239ae5c2629700a4394ace689c97a105454403",
+    "collected_at": "2026-10-03T08:58:54.530574+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-06-21T06:00:00+00:00",
+    "label": "2026-06-21 14:00 CST",
+    "file": "usno-position-25.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-06-21&time=06%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "4473c6f58c2b77642f3ef2d787fd22d3b7e7cf15a42a372663cb6292448acc4e",
+    "collected_at": "2026-10-03T08:58:56.310027+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-06-21T07:00:00+00:00",
+    "label": "2026-06-21 15:00 CST",
+    "file": "usno-position-26.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-06-21&time=07%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "404d5f558c9c3c6337a5aeed263fe44dee8d2721c438375320d957f8ef3da245",
+    "collected_at": "2026-10-03T08:58:58.346011+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2026-06-21T08:00:00+00:00",
+    "label": "2026-06-21 16:00 CST",
+    "file": "usno-position-27.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2026-06-21&time=08%3A00%3A00.000000&coords=31.81%2C119.97",
+    "sha256": "c590cd3284812a58ade2c51755d857f512b6ad500e7a6bfb8c4b3066a2960c99",
+    "collected_at": "2026-10-03T08:59:00.150913+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T00:58:04.309979+00:00",
+    "label": "2025-12-21 true solar 09:00",
+    "file": "usno-position-28.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=00%3A58%3A04.309979&coords=31.81%2C119.97",
+    "sha256": "4561f718d9dc7d46d76d1337c01943e1a862558977c6f3a5a853de4097dbac84",
+    "collected_at": "2026-10-03T08:59:02.154237+00:00"
+  },
+  {
+    "kind": "celnav",
+    "instant": "2025-12-21T06:58:11.784937+00:00",
+    "label": "2025-12-21 true solar 15:00",
+    "file": "usno-position-29.json",
+    "url": "https://aa.usno.navy.mil/api/celnav?date=2025-12-21&time=06%3A58%3A11.784937&coords=31.81%2C119.97",
+    "sha256": "a84b76b962851037dbec8800b3d639330cbca68bced3dc929c1c70f1d7c6dde5",
+    "collected_at": "2026-10-03T08:59:04.459571+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-01-21",
+    "file": "usno-rstt-2026-01-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-01-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "6d64e4d896d762563f7325012c995c43deb7bee266fadfbf1794767ce2f8126a",
+    "collected_at": "2026-10-03T08:59:05.921903+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-02-21",
+    "file": "usno-rstt-2026-02-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-02-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "1576b69eed86378d148a448023dc08a351eeded107b05e5ee426f583ed762470",
+    "collected_at": "2026-10-03T08:59:07.364264+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-03-21",
+    "file": "usno-rstt-2026-03-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-03-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "ec3e89e0c37f1f5431a00c799d2c1635391c98ad032ef43c18b0deae0ddb122d",
+    "collected_at": "2026-10-03T08:59:08.826521+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-04-21",
+    "file": "usno-rstt-2026-04-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-04-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "82ed8042fcb25e393e6b25f57515c7b73ddd289c3b4b66b64ab80e624d8c7a4f",
+    "collected_at": "2026-10-03T08:59:10.476272+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-05-21",
+    "file": "usno-rstt-2026-05-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-05-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "6c619cf62ebc8655736e106c021186f431e3351663a39abbfe790f62aa1b7464",
+    "collected_at": "2026-10-03T08:59:12.153323+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-06-21",
+    "file": "usno-rstt-2026-06-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-06-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "3dee23fbcc0b4c014b324a0a0ea9311145edded979e5936e02295d897e0e31d2",
+    "collected_at": "2026-10-03T08:59:13.809215+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-07-21",
+    "file": "usno-rstt-2026-07-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-07-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "e69a7586a47bc61d472b224a2d5f1cff7dd81b22e8ab1f06409727daf5d1b3e9",
+    "collected_at": "2026-10-03T08:59:15.502780+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-08-21",
+    "file": "usno-rstt-2026-08-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-08-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "fbf2f4ca0361bfe3be863e49672d07e25bfd671e8bb6fd012740d0cff9ec747d",
+    "collected_at": "2026-10-03T08:59:17.200213+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-09-21",
+    "file": "usno-rstt-2026-09-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-09-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "bbaa4dfd8442dfae082af76341c2e1f5e199bbe74115bf89d1d4ad4f2ddfb258",
+    "collected_at": "2026-10-03T08:59:18.697433+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-10-21",
+    "file": "usno-rstt-2026-10-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-10-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "9b66ccbd75cc58cbb0ccf66ce62c726480d5963b7ca493646c9bd311ab223078",
+    "collected_at": "2026-10-03T08:59:20.208311+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-11-21",
+    "file": "usno-rstt-2026-11-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-11-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "a786ceef226c810f0589aa6ef2fcfb758a9a82803dd13443b5d4869635017f54",
+    "collected_at": "2026-10-03T08:59:22.115022+00:00"
+  },
+  {
+    "kind": "rstt",
+    "date": "2026-12-21",
+    "file": "usno-rstt-2026-12-21.json",
+    "url": "https://aa.usno.navy.mil/api/rstt/oneday?date=2026-12-21&coords=31.81%2C119.97&tz=8",
+    "sha256": "6c80344d4cbf230ca8f3b6dba91d1e867c9071b6fab921e5597c29ab5b5fd20e",
+    "collected_at": "2026-10-03T08:59:23.839291+00:00"
+  }
+]

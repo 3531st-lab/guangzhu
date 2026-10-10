@@ -1,0 +1,122 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "rotated",
+  "name": "整栋旋转20度测试屋顶",
+  "site": {
+    "lat": 31.81,
+    "lon": 119.97,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2
+  },
+  "roof": {
+    "type": "flat",
+    "outline": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        56.381557,
+        20.521209
+      ],
+      [
+        44.068832,
+        54.350143
+      ],
+      [
+        -12.312725,
+        33.828934
+      ]
+    ],
+    "height_m": 9.0,
+    "parapet_height_m": 1.0,
+    "load_capacity_kn_m2": 0.5,
+    "obstacles": [
+      {
+        "id": "stair-1",
+        "label": "楼梯间",
+        "kind": "prism",
+        "footprint": [
+          [
+            0.034556,
+            27.6812
+          ],
+          [
+            4.733019,
+            29.3913
+          ],
+          [
+            3.364939,
+            33.150071
+          ],
+          [
+            -1.333524,
+            31.43997
+          ]
+        ],
+        "height_m": 3.2
+      },
+      {
+        "id": "tank-1",
+        "label": "水箱",
+        "kind": "cylinder",
+        "center": [
+          46.127855,
+          25.302588
+        ],
+        "radius_m": 1.4,
+        "height_m": 2.6
+      }
+    ],
+    "keepouts": [
+      {
+        "id": "sky-1",
+        "label": "天窗",
+        "polygon": [
+          [
+            18.741342,
+            11.078002
+          ],
+          [
+            19.868973,
+            11.488426
+          ],
+          [
+            15.764731,
+            22.764737
+          ],
+          [
+            14.6371,
+            22.354313
+          ]
+        ]
+      }
+    ]
+  },
+  "requirements": {
+    "text": "6 年内回本，留 1 米检修通道，别挡天窗",
+    "structured": {
+      "payback_years_max": 6,
+      "walkway_m_min": 1,
+      "keep_clear_ids": [
+        "sky-1"
+      ]
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "ballast_tilt"
+  },
+  "economics": {
+    "capex_cny_per_w": 2.6,
+    "self_use_ratio": 0.8,
+    "price_self_cny_kwh": 0.65,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": 0.04,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "assumptions_note": "示意值，可修改"
+  },
+  "designs": []
+}

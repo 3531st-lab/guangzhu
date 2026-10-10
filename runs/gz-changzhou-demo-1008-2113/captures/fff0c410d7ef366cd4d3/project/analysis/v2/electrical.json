@@ -1,0 +1,7175 @@
+{
+  "version": 2,
+  "module_id": "trina-tsm-605neg19rc20",
+  "inverter_id": "sungrow-sg100cx-p2",
+  "inverter_model": "SG100CX-P2",
+  "inverters": [
+    {
+      "inverter_id": "sungrow-sg100cx-p2",
+      "model": "SG100CX-P2",
+      "count": 2
+    }
+  ],
+  "inverter_count": 2,
+  "modules_per_string": 20,
+  "modules_per_string_short": 11,
+  "min_modules_per_string": 6,
+  "max_modules_per_string": 20,
+  "feasible_range": [
+    6,
+    20
+  ],
+  "string_count": 19,
+  "strings": [
+    {
+      "id": "S001",
+      "module_ids": [
+        "R01-1-C001",
+        "R01-1-C002",
+        "R01-1-C003",
+        "R01-1-C004",
+        "R01-1-C005",
+        "R01-1-C006",
+        "R01-1-C007",
+        "R01-1-C008",
+        "R01-1-C009",
+        "R01-1-C010",
+        "R01-1-C011",
+        "R01-1-C012",
+        "R01-1-C013",
+        "R01-1-C014",
+        "R01-1-C015",
+        "R01-1-C016",
+        "R01-1-C017",
+        "R01-1-C018",
+        "R01-1-C019",
+        "R01-1-C020"
+      ],
+      "module_count": 20,
+      "inverter": 1,
+      "mppt": 1
+    },
+    {
+      "id": "S002",
+      "module_ids": [
+        "R01-1-C021",
+        "R01-1-C022",
+        "R01-1-C023",
+        "R01-1-C024",
+        "R01-1-C025",
+        "R01-1-C026",
+        "R01-1-C027",
+        "R01-1-C028",
+        "R01-1-C029",
+        "R01-1-C030",
+        "R01-1-C031",
+        "R01-1-C032",
+        "R01-1-C033",
+        "R02-1-C033",
+        "R02-1-C032",
+        "R02-1-C031",
+        "R02-1-C030",
+        "R02-1-C029",
+        "R02-1-C028",
+        "R02-1-C027"
+      ],
+      "module_count": 20,
+      "inverter": 1,
+      "mppt": 2
+    },
+    {
+      "id": "S003",
+      "module_ids": [
+        "R02-1-C026",
+        "R02-1-C025",
+        "R02-1-C024",
+        "R02-1-C023",
+        "R02-1-C022",
+        "R02-1-C021",
+        "R02-1-C020",
+        "R02-1-C019",
+        "R02-1-C018",
+        "R02-1-C017",
+        "R02-1-C016",
+        "R02-1-C015",
+        "R02-1-C014",
+        "R02-1-C013",
+        "R02-1-C012",
+        "R02-1-C011",
+        "R02-1-C010",
+        "R02-1-C009",
+        "R02-1-C008",
+        "R02-1-C007"
+      ],
+      "module_count": 20,
+      "inverter": 1,
+      "mppt": 3
+    },
+    {
+      "id": "S004",
+      "module_ids": [
+        "R02-1-C006",
+        "R02-1-C005",
+        "R02-1-C004",
+        "R02-1-C003",
+        "R02-1-C002",
+        "R02-1-C001",
+        "R03-1-C001",
+        "R03-1-C002",
+        "R03-1-C003",
+        "R03-1-C004",
+        "R03-1-C005",
+        "R03-1-C006",
+        "R03-1-C007",
+        "R03-1-C008",
+        "R03-1-C009",
+        "R03-1-C010",
+        "R03-1-C011",
+        "R03-1-C012",
+        "R03-1-C013",
+        "R03-1-C014"
+      ],
+      "module_count": 20,
+      "inverter": 1,
+      "mppt": 4
+    },
+    {
+      "id": "S005",
+      "module_ids": [
+        "R03-1-C015",
+        "R03-1-C016",
+        "R03-1-C017",
+        "R03-1-C018",
+        "R03-1-C019",
+        "R03-1-C020",
+        "R03-1-C021",
+        "R03-1-C022",
+        "R03-1-C023",
+        "R03-1-C024",
+        "R03-1-C025",
+        "R03-1-C026",
+        "R03-1-C027",
+        "R03-1-C028",
+        "R03-1-C029",
+        "R03-1-C030",
+        "R03-1-C031",
+        "R03-1-C032",
+        "R03-1-C033",
+        "R04-1-C033"
+      ],
+      "module_count": 20,
+      "inverter": 1,
+      "mppt": 5
+    },
+    {
+      "id": "S006",
+      "module_ids": [
+        "R04-1-C032",
+        "R04-1-C031",
+        "R04-1-C030",
+        "R04-1-C029",
+        "R04-1-C028",
+        "R04-1-C027",
+        "R04-1-C026",
+        "R04-1-C025",
+        "R04-1-C024",
+        "R04-1-C023",
+        "R04-1-C022",
+        "R04-1-C021",
+        "R04-1-C020",
+        "R04-1-C019",
+        "R04-1-C018",
+        "R04-1-C017",
+        "R04-1-C016",
+        "R04-1-C015",
+        "R04-1-C014",
+        "R04-1-C013"
+      ],
+      "module_count": 20,
+      "inverter": 1,
+      "mppt": 6
+    },
+    {
+      "id": "S007",
+      "module_ids": [
+        "R04-1-C012",
+        "R04-1-C011",
+        "R04-1-C010",
+        "R04-1-C009",
+        "R04-1-C008",
+        "R04-1-C007",
+        "R04-1-C006",
+        "R04-1-C005",
+        "R04-1-C004",
+        "R04-1-C003",
+        "R04-1-C002",
+        "R04-1-C001",
+        "R05-1-C001",
+        "R05-1-C002",
+        "R05-1-C003",
+        "R05-1-C004",
+        "R05-1-C005",
+        "R05-1-C006",
+        "R05-1-C007",
+        "R05-1-C008"
+      ],
+      "module_count": 20,
+      "inverter": 1,
+      "mppt": 7
+    },
+    {
+      "id": "S008",
+      "module_ids": [
+        "R05-1-C009",
+        "R05-1-C010",
+        "R05-1-C011",
+        "R05-1-C012",
+        "R05-1-C013",
+        "R05-1-C014",
+        "R05-1-C015",
+        "R05-1-C016",
+        "R05-1-C017",
+        "R05-1-C018",
+        "R05-1-C019",
+        "R05-1-C020",
+        "R05-1-C021",
+        "R05-1-C022",
+        "R05-1-C023",
+        "R05-1-C024",
+        "R05-1-C025",
+        "R05-1-C026",
+        "R05-1-C027",
+        "R05-1-C028"
+      ],
+      "module_count": 20,
+      "inverter": 1,
+      "mppt": 8
+    },
+    {
+      "id": "S009",
+      "module_ids": [
+        "R05-1-C029",
+        "R05-1-C030",
+        "R05-1-C031",
+        "R05-1-C032",
+        "R05-1-C033",
+        "R05-1-C034",
+        "R05-1-C035",
+        "R06-1-C035",
+        "R06-1-C034",
+        "R06-1-C033",
+        "R06-1-C032",
+        "R06-1-C031",
+        "R06-1-C030",
+        "R06-1-C029",
+        "R06-1-C028",
+        "R06-1-C027",
+        "R06-1-C026",
+        "R06-1-C025",
+        "R06-1-C024",
+        "R06-1-C023"
+      ],
+      "module_count": 20,
+      "inverter": 1,
+      "mppt": 9
+    },
+    {
+      "id": "S010",
+      "module_ids": [
+        "R06-1-C022",
+        "R06-1-C021",
+        "R06-1-C020",
+        "R06-1-C019",
+        "R06-1-C018",
+        "R06-1-C017",
+        "R06-1-C016",
+        "R06-1-C015",
+        "R06-1-C014",
+        "R06-1-C013",
+        "R06-1-C012",
+        "R06-1-C011",
+        "R06-1-C010",
+        "R06-1-C009",
+        "R06-1-C008",
+        "R06-1-C007",
+        "R06-1-C006",
+        "R06-1-C005",
+        "R06-1-C004",
+        "R06-1-C003"
+      ],
+      "module_count": 20,
+      "inverter": 2,
+      "mppt": 1
+    },
+    {
+      "id": "S011",
+      "module_ids": [
+        "R06-1-C002",
+        "R06-1-C001",
+        "R07-1-C001",
+        "R07-1-C002",
+        "R07-1-C003",
+        "R07-1-C004",
+        "R07-1-C010",
+        "R07-1-C011",
+        "R07-1-C012",
+        "R07-1-C013",
+        "R07-1-C014",
+        "R07-1-C015",
+        "R07-1-C016",
+        "R07-1-C017",
+        "R07-1-C018",
+        "R07-1-C019",
+        "R07-1-C020",
+        "R07-1-C021",
+        "R07-1-C022",
+        "R07-1-C023"
+      ],
+      "module_count": 20,
+      "inverter": 2,
+      "mppt": 2
+    },
+    {
+      "id": "S012",
+      "module_ids": [
+        "R08-1-C033",
+        "R08-1-C034",
+        "R08-1-C035",
+        "R07-1-C029",
+        "R07-1-C028",
+        "R07-1-C027",
+        "R07-1-C026",
+        "R07-1-C025",
+        "R07-1-C024",
+        "R08-1-C022",
+        "R08-1-C023",
+        "R08-1-C024",
+        "R08-1-C025",
+        "R08-1-C026",
+        "R08-1-C027",
+        "R08-1-C028",
+        "R08-1-C029",
+        "R08-1-C030",
+        "R08-1-C031",
+        "R08-1-C032"
+      ],
+      "module_count": 20,
+      "inverter": 2,
+      "mppt": 3
+    },
+    {
+      "id": "S013",
+      "module_ids": [
+        "R08-1-C021",
+        "R08-1-C020",
+        "R08-1-C019",
+        "R08-1-C018",
+        "R08-1-C017",
+        "R08-1-C016",
+        "R08-1-C004",
+        "R08-1-C003",
+        "R08-1-C002",
+        "R08-1-C001",
+        "R08-1-C036",
+        "R08-1-C037",
+        "R08-1-C038",
+        "R08-1-C039",
+        "R08-1-C040",
+        "R08-1-C041",
+        "R08-1-C042",
+        "R08-1-C043",
+        "R08-1-C044",
+        "R08-1-C045"
+      ],
+      "module_count": 20,
+      "inverter": 2,
+      "mppt": 4
+    },
+    {
+      "id": "S014",
+      "module_ids": [
+        "R08-1-C046",
+        "R08-1-C047",
+        "R08-1-C048",
+        "R08-1-C049",
+        "R08-1-C050",
+        "R07-1-C044",
+        "R07-1-C043",
+        "R07-1-C042",
+        "R07-1-C041",
+        "R07-1-C040",
+        "R07-1-C039",
+        "R07-1-C038",
+        "R07-1-C037",
+        "R07-1-C036",
+        "R07-1-C035",
+        "R07-1-C034",
+        "R07-1-C033",
+        "R07-1-C032",
+        "R07-1-C031",
+        "R07-1-C030"
+      ],
+      "module_count": 20,
+      "inverter": 2,
+      "mppt": 6
+    },
+    {
+      "id": "S015",
+      "module_ids": [
+        "R06-1-C036",
+        "R06-1-C037",
+        "R06-1-C038",
+        "R06-1-C039",
+        "R06-1-C040",
+        "R06-1-C041",
+        "R06-1-C042",
+        "R06-1-C043",
+        "R06-1-C044",
+        "R06-1-C045",
+        "R06-1-C046",
+        "R06-1-C047",
+        "R06-1-C048",
+        "R06-1-C049",
+        "R06-1-C050",
+        "R05-1-C050",
+        "R05-1-C049",
+        "R05-1-C048",
+        "R05-1-C047",
+        "R05-1-C046"
+      ],
+      "module_count": 20,
+      "inverter": 2,
+      "mppt": 7
+    },
+    {
+      "id": "S016",
+      "module_ids": [
+        "R05-1-C036",
+        "R05-1-C037",
+        "R05-1-C038",
+        "R05-1-C039",
+        "R05-1-C040",
+        "R05-1-C041",
+        "R05-1-C042",
+        "R05-1-C043",
+        "R05-1-C044",
+        "R05-1-C045",
+        "R04-1-C043",
+        "R04-1-C042",
+        "R04-1-C041",
+        "R04-1-C040",
+        "R04-1-C039",
+        "R04-1-C038",
+        "R04-1-C037",
+        "R04-1-C036",
+        "R04-1-C035",
+        "R04-1-C034"
+      ],
+      "module_count": 20,
+      "inverter": 2,
+      "mppt": 8
+    },
+    {
+      "id": "S017",
+      "module_ids": [
+        "R03-1-C034",
+        "R03-1-C035",
+        "R03-1-C036",
+        "R03-1-C037",
+        "R03-1-C038",
+        "R02-1-C038",
+        "R02-1-C037",
+        "R02-1-C036",
+        "R02-1-C035",
+        "R02-1-C034",
+        "R02-1-C039",
+        "R02-1-C040",
+        "R03-1-C047",
+        "R03-1-C048",
+        "R04-1-C048",
+        "R04-1-C047",
+        "R04-1-C046",
+        "R04-1-C045",
+        "R04-1-C044"
+      ],
+      "module_count": 19,
+      "inverter": 2,
+      "mppt": 9
+    },
+    {
+      "id": "S018",
+      "module_ids": [
+        "R02-1-C041",
+        "R02-1-C042",
+        "R02-1-C043",
+        "R02-1-C044",
+        "R01-1-C048",
+        "R01-1-C047",
+        "R01-1-C046",
+        "R01-1-C045",
+        "R01-1-C044",
+        "R01-1-C043",
+        "R01-1-C042",
+        "R01-1-C041",
+        "R01-1-C040",
+        "R01-1-C039",
+        "R01-1-C038",
+        "R01-1-C037",
+        "R01-1-C036",
+        "R01-1-C035",
+        "R01-1-C034"
+      ],
+      "module_count": 19,
+      "inverter": 2,
+      "mppt": 10
+    },
+    {
+      "id": "S019",
+      "module_ids": [
+        "R08-1-C015",
+        "R08-1-C014",
+        "R08-1-C006",
+        "R08-1-C005",
+        "R07-1-C005",
+        "R07-1-C008",
+        "R07-1-C009",
+        "R03-1-C039",
+        "R03-1-C040",
+        "R03-1-C045",
+        "R03-1-C046"
+      ],
+      "module_count": 11,
+      "inverter": 2,
+      "mppt": 5
+    }
+  ],
+  "unused_modules": [],
+  "module_count": 369,
+  "dc_kw": 223.245,
+  "connected_dc_kw": 223.245,
+  "voc_cold_v": 1063.8807199999999,
+  "vmp_hot_v": 386.31577050000004,
+  "vmp_cold_v": 900.31905,
+  "dc_ac_ratio": 1.1163366336633664,
+  "strings_per_mppt_allowed": 2,
+  "mppt_currents": [
+    {
+      "inverter": 1,
+      "mppt": 1,
+      "string_ids": [
+        "S001"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 2,
+      "string_ids": [
+        "S002"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 3,
+      "string_ids": [
+        "S003"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 4,
+      "string_ids": [
+        "S004"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 5,
+      "string_ids": [
+        "S005"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 6,
+      "string_ids": [
+        "S006"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 7,
+      "string_ids": [
+        "S007"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 8,
+      "string_ids": [
+        "S008"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 9,
+      "string_ids": [
+        "S009"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 10,
+      "string_ids": [],
+      "strings": 0,
+      "working_a": 0.0,
+      "short_a": 0.0,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 11,
+      "string_ids": [],
+      "strings": 0,
+      "working_a": 0.0,
+      "short_a": 0.0,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+    },
+    {
+      "inverter": 1,
+      "mppt": 12,
+      "string_ids": [],
+      "strings": 0,
+      "working_a": 0.0,
+      "short_a": 0.0,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 1,
+      "string_ids": [
+        "S010"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 2,
+      "string_ids": [
+        "S011"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 3,
+      "string_ids": [
+        "S012"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 4,
+      "string_ids": [
+        "S013"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 5,
+      "string_ids": [
+        "S019"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 6,
+      "string_ids": [
+        "S014"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 7,
+      "string_ids": [
+        "S015"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 8,
+      "string_ids": [
+        "S016"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 9,
+      "string_ids": [
+        "S017"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 10,
+      "string_ids": [
+        "S018"
+      ],
+      "strings": 1,
+      "working_a": 14.94,
+      "short_a": 16.12006892,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 11,
+      "string_ids": [],
+      "strings": 0,
+      "working_a": 0.0,
+      "short_a": 0.0,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+    },
+    {
+      "inverter": 2,
+      "mppt": 12,
+      "string_ids": [],
+      "strings": 0,
+      "working_a": 0.0,
+      "short_a": 0.0,
+      "input_limit_a": 30.0,
+      "short_limit_a": 50.0,
+      "ports": 2,
+      "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+    }
+  ],
+  "per_inverter": [
+    {
+      "inverter": 1,
+      "inverter_id": "sungrow-sg100cx-p2",
+      "model": "SG100CX-P2",
+      "string_ids": [
+        "S001",
+        "S002",
+        "S003",
+        "S004",
+        "S005",
+        "S006",
+        "S007",
+        "S008",
+        "S009"
+      ],
+      "strings_count": 9,
+      "module_count": 180,
+      "dc_kw": 108.9,
+      "dc_ac_ratio": 1.0891089108910892,
+      "mppt_assignments": [
+        {
+          "mppt": 1,
+          "string_ids": [
+            "S001"
+          ]
+        },
+        {
+          "mppt": 2,
+          "string_ids": [
+            "S002"
+          ]
+        },
+        {
+          "mppt": 3,
+          "string_ids": [
+            "S003"
+          ]
+        },
+        {
+          "mppt": 4,
+          "string_ids": [
+            "S004"
+          ]
+        },
+        {
+          "mppt": 5,
+          "string_ids": [
+            "S005"
+          ]
+        },
+        {
+          "mppt": 6,
+          "string_ids": [
+            "S006"
+          ]
+        },
+        {
+          "mppt": 7,
+          "string_ids": [
+            "S007"
+          ]
+        },
+        {
+          "mppt": 8,
+          "string_ids": [
+            "S008"
+          ]
+        },
+        {
+          "mppt": 9,
+          "string_ids": [
+            "S009"
+          ]
+        },
+        {
+          "mppt": 10,
+          "string_ids": []
+        },
+        {
+          "mppt": 11,
+          "string_ids": []
+        },
+        {
+          "mppt": 12,
+          "string_ids": []
+        }
+      ],
+      "evidence": "第1台：180块×605/1000/99.99=1.089109；上限1.3；MPPT1=S001；MPPT2=S002；MPPT3=S003；MPPT4=S004；MPPT5=S005；MPPT6=S006；MPPT7=S007；MPPT8=S008；MPPT9=S009；MPPT10=空；MPPT11=空；MPPT12=空"
+    },
+    {
+      "inverter": 2,
+      "inverter_id": "sungrow-sg100cx-p2",
+      "model": "SG100CX-P2",
+      "string_ids": [
+        "S010",
+        "S011",
+        "S012",
+        "S013",
+        "S014",
+        "S015",
+        "S016",
+        "S017",
+        "S018",
+        "S019"
+      ],
+      "strings_count": 10,
+      "module_count": 189,
+      "dc_kw": 114.345,
+      "dc_ac_ratio": 1.1435643564356437,
+      "mppt_assignments": [
+        {
+          "mppt": 1,
+          "string_ids": [
+            "S010"
+          ]
+        },
+        {
+          "mppt": 2,
+          "string_ids": [
+            "S011"
+          ]
+        },
+        {
+          "mppt": 3,
+          "string_ids": [
+            "S012"
+          ]
+        },
+        {
+          "mppt": 4,
+          "string_ids": [
+            "S013"
+          ]
+        },
+        {
+          "mppt": 5,
+          "string_ids": [
+            "S019"
+          ]
+        },
+        {
+          "mppt": 6,
+          "string_ids": [
+            "S014"
+          ]
+        },
+        {
+          "mppt": 7,
+          "string_ids": [
+            "S015"
+          ]
+        },
+        {
+          "mppt": 8,
+          "string_ids": [
+            "S016"
+          ]
+        },
+        {
+          "mppt": 9,
+          "string_ids": [
+            "S017"
+          ]
+        },
+        {
+          "mppt": 10,
+          "string_ids": [
+            "S018"
+          ]
+        },
+        {
+          "mppt": 11,
+          "string_ids": []
+        },
+        {
+          "mppt": 12,
+          "string_ids": []
+        }
+      ],
+      "evidence": "第2台：189块×605/1000/99.99=1.143564；上限1.3；MPPT1=S010；MPPT2=S011；MPPT3=S012；MPPT4=S013；MPPT5=S019；MPPT6=S014；MPPT7=S015；MPPT8=S016；MPPT9=S017；MPPT10=S018；MPPT11=空；MPPT12=空"
+    }
+  ],
+  "temperature": {
+    "temp_min_c": -13.45,
+    "temp_max_c": 42.06,
+    "cell_hot_c": 70.81,
+    "noct_c": 43.0,
+    "min_source": "NASA POWER 1996–2025",
+    "max_source": "NASA POWER 1996–2025",
+    "nasa": {
+      "temp_min_c": -13.45,
+      "temp_max_c": 42.06,
+      "min_date": "2010-02-13",
+      "max_date": "2022-08-22",
+      "start_year": 1996,
+      "end_year": 2025,
+      "metadata": {
+        "schema": "guangzhu.weather.daily/1",
+        "source": "nasa_daily",
+        "source_description": "NASA POWER LST daily 2 m air temperature",
+        "latitude": 31.81,
+        "longitude": 119.97,
+        "start_year": 1996,
+        "end_year": 2025,
+        "request_url": "https://power.larc.nasa.gov/api/temporal/daily/point?latitude=31.81&longitude=119.97&start=19960101&end=20251231&parameters=T2M_MIN%2CT2M_MAX&community=RE&time-standard=LST&format=JSON",
+        "download_time": "2026-10-04T15:02:45.814847+00:00",
+        "used": "cache",
+        "time_standard": "LST",
+        "row_count": 10958,
+        "missing_counts": {
+          "T2M_MIN": 0,
+          "T2M_MAX": 0
+        },
+        "units": {
+          "T2M_MIN": "degC",
+          "T2M_MAX": "degC"
+        },
+        "nasa_header": {
+          "title": "NASA/POWER Source Native Resolution Daily Data",
+          "api": {
+            "version": "v2.10.0",
+            "name": "POWER Daily API"
+          },
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "fill_value": -999.0,
+          "time_standard": "LST",
+          "start": "19960101",
+          "end": "20251231"
+        },
+        "nasa_parameters": {
+          "T2M_MIN": {
+            "units": "C",
+            "longname": "Temperature at 2 Meters Minimum"
+          },
+          "T2M_MAX": {
+            "units": "C",
+            "longname": "Temperature at 2 Meters Maximum"
+          }
+        },
+        "license": "CC-BY-4.0",
+        "data_file": "nasa_daily_31.8100_119.9700_1996_2025.csv.gz",
+        "data_file_sha256": "1c095117c00460dd91896160a7de20824f94aa981f3de85bcb00b44bdda6f1d9"
+      }
+    },
+    "evidence": "t′=42.06+(43−20)/800×1000=70.810000 °C；偏保守简式"
+  },
+  "checks": {
+    "E01": {
+      "value": 1063.8807199999999,
+      "limit": 1100.0,
+      "unit": "V",
+      "status": "pass",
+      "evidence": "20×48.7×[1+(-13.45−25)×(-0.0024)]=1063.880720 V",
+      "source_ref": "GB 50797-2012（2024年局部修订）6.4.2；https://info-support.sungrowpower.com/datasheet-materials/fe40521c-fd35-4a37-9b79-fdf4d29d51b2.pdf；AU Version 4；第2.0页"
+    },
+    "E02": {
+      "value": 1063.8807199999999,
+      "limit": 1500.0,
+      "unit": "V",
+      "status": "pass",
+      "evidence": "20×48.7×[1+(-13.45−25)×(-0.0024)]=1063.880720 V",
+      "source_ref": "https://static.trinasolar.com/sites/default/files/DT-M-0045%20E%20Datasheet_Vertex_NEG19RC.20_EN_2024_A_E1_print.pdf；TSM_EN_2024_A_E1；第2.0页"
+    },
+    "E03": {
+      "value": 386.31577050000004,
+      "limit": 180.0,
+      "unit": "V",
+      "status": "pass",
+      "evidence": "11×40.5×[1+(70.81−25)×(-0.0029)]=386.315771 V；K′v以厂家功率温度系数近似",
+      "source_ref": "GB 50797-2012（2024年局部修订）6.4.2；https://info-support.sungrowpower.com/datasheet-materials/fe40521c-fd35-4a37-9b79-fdf4d29d51b2.pdf；AU Version 4；第2.0页"
+    },
+    "E04": {
+      "value": 900.31905,
+      "limit": 1000.0,
+      "unit": "V",
+      "status": "pass",
+      "evidence": "20×40.5×[1+(-13.45−25)×(-0.0029)]=900.319050 V；K′v以厂家功率温度系数近似；2024条文删除旧MPPT上界，本项另按厂家规格书检查",
+      "source_ref": "https://info-support.sungrowpower.com/datasheet-materials/fe40521c-fd35-4a37-9b79-fdf4d29d51b2.pdf；AU Version 4；第2.0页"
+    },
+    "E05": {
+      "value": 16.12006892,
+      "limit": 50.0,
+      "unit": "A",
+      "status": "pass",
+      "evidence": "各MPPT按对应型号限值校核，最不利Isc=16.120069/50 A；Imp=14.940000/30 A",
+      "source_ref": "https://info-support.sungrowpower.com/datasheet-materials/fe40521c-fd35-4a37-9b79-fdf4d29d51b2.pdf；AU Version 4；第2.0页",
+      "per_mppt": [
+        {
+          "inverter": 1,
+          "mppt": 1,
+          "string_ids": [
+            "S001"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 2,
+          "string_ids": [
+            "S002"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 3,
+          "string_ids": [
+            "S003"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 4,
+          "string_ids": [
+            "S004"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 5,
+          "string_ids": [
+            "S005"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 6,
+          "string_ids": [
+            "S006"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 7,
+          "string_ids": [
+            "S007"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 8,
+          "string_ids": [
+            "S008"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 9,
+          "string_ids": [
+            "S009"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 10,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 11,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 12,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 1,
+          "string_ids": [
+            "S010"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 2,
+          "string_ids": [
+            "S011"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 3,
+          "string_ids": [
+            "S012"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 4,
+          "string_ids": [
+            "S013"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 5,
+          "string_ids": [
+            "S019"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 6,
+          "string_ids": [
+            "S014"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 7,
+          "string_ids": [
+            "S015"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 8,
+          "string_ids": [
+            "S016"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 9,
+          "string_ids": [
+            "S017"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 10,
+          "string_ids": [
+            "S018"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 11,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 12,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        }
+      ]
+    },
+    "E06": {
+      "value": 14.94,
+      "limit": 30.0,
+      "unit": "A",
+      "status": "pass",
+      "evidence": "各MPPT按对应型号限值校核，最不利Isc=16.120069/50 A；Imp=14.940000/30 A",
+      "source_ref": "https://info-support.sungrowpower.com/datasheet-materials/fe40521c-fd35-4a37-9b79-fdf4d29d51b2.pdf；AU Version 4；第2.0页",
+      "per_mppt": [
+        {
+          "inverter": 1,
+          "mppt": 1,
+          "string_ids": [
+            "S001"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 2,
+          "string_ids": [
+            "S002"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 3,
+          "string_ids": [
+            "S003"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 4,
+          "string_ids": [
+            "S004"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 5,
+          "string_ids": [
+            "S005"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 6,
+          "string_ids": [
+            "S006"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 7,
+          "string_ids": [
+            "S007"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 8,
+          "string_ids": [
+            "S008"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 9,
+          "string_ids": [
+            "S009"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 10,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 11,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        },
+        {
+          "inverter": 1,
+          "mppt": 12,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 1,
+          "string_ids": [
+            "S010"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 2,
+          "string_ids": [
+            "S011"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 3,
+          "string_ids": [
+            "S012"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 4,
+          "string_ids": [
+            "S013"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 5,
+          "string_ids": [
+            "S019"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 6,
+          "string_ids": [
+            "S014"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 7,
+          "string_ids": [
+            "S015"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 8,
+          "string_ids": [
+            "S016"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 9,
+          "string_ids": [
+            "S017"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 10,
+          "string_ids": [
+            "S018"
+          ],
+          "strings": 1,
+          "working_a": 14.94,
+          "short_a": 16.12006892,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=1；Isc=1×15.83×[1+0.0004×(70.81−25)]=16.120069 A；Imp=1×14.94=14.940000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 11,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        },
+        {
+          "inverter": 2,
+          "mppt": 12,
+          "string_ids": [],
+          "strings": 0,
+          "working_a": 0.0,
+          "short_a": 0.0,
+          "input_limit_a": 30.0,
+          "short_limit_a": 50.0,
+          "ports": 2,
+          "evidence": "k=0；Isc=0×15.83×[1+0.0004×(70.81−25)]=0.000000 A；Imp=0×14.94=0.000000 A"
+        }
+      ]
+    },
+    "E07": {
+      "value": 1.1163366336633664,
+      "limit": [
+        1.0,
+        1.3
+      ],
+      "unit": "",
+      "status": "pass",
+      "evidence": "全部369块；整体容配比=1.116337；接线、整体与每台容配比上限要求的最小台数=2；第1台：180块×605/1000/99.99=1.089109；上限1.3；MPPT1=S001；MPPT2=S002；MPPT3=S003；MPPT4=S004；MPPT5=S005；MPPT6=S006；MPPT7=S007；MPPT8=S008；MPPT9=S009；MPPT10=空；MPPT11=空；MPPT12=空；第2台：189块×605/1000/99.99=1.143564；上限1.3；MPPT1=S010；MPPT2=S011；MPPT3=S012；MPPT4=S013；MPPT5=S019；MPPT6=S014；MPPT7=S015；MPPT8=S016；MPPT9=S017；MPPT10=S018；MPPT11=空；MPPT12=空",
+      "source_ref": "行业做法；示意，可改",
+      "per_inverter": [
+        {
+          "inverter": 1,
+          "inverter_id": "sungrow-sg100cx-p2",
+          "model": "SG100CX-P2",
+          "string_ids": [
+            "S001",
+            "S002",
+            "S003",
+            "S004",
+            "S005",
+            "S006",
+            "S007",
+            "S008",
+            "S009"
+          ],
+          "strings_count": 9,
+          "module_count": 180,
+          "dc_kw": 108.9,
+          "dc_ac_ratio": 1.0891089108910892,
+          "mppt_assignments": [
+            {
+              "mppt": 1,
+              "string_ids": [
+                "S001"
+              ]
+            },
+            {
+              "mppt": 2,
+              "string_ids": [
+                "S002"
+              ]
+            },
+            {
+              "mppt": 3,
+              "string_ids": [
+                "S003"
+              ]
+            },
+            {
+              "mppt": 4,
+              "string_ids": [
+                "S004"
+              ]
+            },
+            {
+              "mppt": 5,
+              "string_ids": [
+                "S005"
+              ]
+            },
+            {
+              "mppt": 6,
+              "string_ids": [
+                "S006"
+              ]
+            },
+            {
+              "mppt": 7,
+              "string_ids": [
+                "S007"
+              ]
+            },
+            {
+              "mppt": 8,
+              "string_ids": [
+                "S008"
+              ]
+            },
+            {
+              "mppt": 9,
+              "string_ids": [
+                "S009"
+              ]
+            },
+            {
+              "mppt": 10,
+              "string_ids": []
+            },
+            {
+              "mppt": 11,
+              "string_ids": []
+            },
+            {
+              "mppt": 12,
+              "string_ids": []
+            }
+          ],
+          "evidence": "第1台：180块×605/1000/99.99=1.089109；上限1.3；MPPT1=S001；MPPT2=S002；MPPT3=S003；MPPT4=S004；MPPT5=S005；MPPT6=S006；MPPT7=S007；MPPT8=S008；MPPT9=S009；MPPT10=空；MPPT11=空；MPPT12=空"
+        },
+        {
+          "inverter": 2,
+          "inverter_id": "sungrow-sg100cx-p2",
+          "model": "SG100CX-P2",
+          "string_ids": [
+            "S010",
+            "S011",
+            "S012",
+            "S013",
+            "S014",
+            "S015",
+            "S016",
+            "S017",
+            "S018",
+            "S019"
+          ],
+          "strings_count": 10,
+          "module_count": 189,
+          "dc_kw": 114.345,
+          "dc_ac_ratio": 1.1435643564356437,
+          "mppt_assignments": [
+            {
+              "mppt": 1,
+              "string_ids": [
+                "S010"
+              ]
+            },
+            {
+              "mppt": 2,
+              "string_ids": [
+                "S011"
+              ]
+            },
+            {
+              "mppt": 3,
+              "string_ids": [
+                "S012"
+              ]
+            },
+            {
+              "mppt": 4,
+              "string_ids": [
+                "S013"
+              ]
+            },
+            {
+              "mppt": 5,
+              "string_ids": [
+                "S019"
+              ]
+            },
+            {
+              "mppt": 6,
+              "string_ids": [
+                "S014"
+              ]
+            },
+            {
+              "mppt": 7,
+              "string_ids": [
+                "S015"
+              ]
+            },
+            {
+              "mppt": 8,
+              "string_ids": [
+                "S016"
+              ]
+            },
+            {
+              "mppt": 9,
+              "string_ids": [
+                "S017"
+              ]
+            },
+            {
+              "mppt": 10,
+              "string_ids": [
+                "S018"
+              ]
+            },
+            {
+              "mppt": 11,
+              "string_ids": []
+            },
+            {
+              "mppt": 12,
+              "string_ids": []
+            }
+          ],
+          "evidence": "第2台：189块×605/1000/99.99=1.143564；上限1.3；MPPT1=S010；MPPT2=S011；MPPT3=S012；MPPT4=S013；MPPT5=S019；MPPT6=S014；MPPT7=S015；MPPT8=S016；MPPT9=S017；MPPT10=S018；MPPT11=空；MPPT12=空"
+        }
+      ],
+      "level": "hard",
+      "hint_zh": "容配比超过上限，请更换型号或减少每台连接的组件"
+    },
+    "E08": {
+      "value": 0,
+      "limit": 0,
+      "unit": "块",
+      "status": "pass",
+      "evidence": "369块，19串，0块剩余",
+      "source_ref": "行业做法"
+    },
+    "E09": {
+      "value": 20,
+      "limit": 20,
+      "unit": "块/串",
+      "status": "pass",
+      "evidence": "同一路MPPT只接同一种串长",
+      "source_ref": "行业做法"
+    },
+    "E10": {
+      "value": 1.4006629191081872,
+      "limit": 2,
+      "unit": "%",
+      "level": "hard",
+      "status": "pass",
+      "source_ref": "docs/sources.md#t26；ABB2006附录E；ABB2014§3.4.2；Nexans产品页2；Prysmian C3.4",
+      "evidence": "最大压降1.400663%；同时校核载流量及路径可达；温度/敷设示意，见电缆页",
+      "hint_zh": "线路不可达时调整设备位置；把逆变器放近一点，或分成两组"
+    },
+    "E11": {
+      "value": 1.619618989325133,
+      "limit": 2,
+      "unit": "%",
+      "level": "hard",
+      "status": "pass",
+      "source_ref": "docs/sources.md#t26；ABB2006附录E；ABB2014§3.4.2；Nexans产品页2；Prysmian C3.4",
+      "evidence": "最大压降1.619619%；同时校核载流量及路径可达；温度/敷设示意，见电缆页",
+      "hint_zh": "调整不可达位置，缩短交流线路或复核截面"
+    }
+  },
+  "range_evidence": "Nmin=ceil(180/35.119616)=6；Nmax=min(floor(1100/53.194036),floor(1000/45.015952))=20",
+  "wiring_note": "排、层分组逐行蛇形；同一行的障碍物间断仍连续组串（简化）；按容量比例分台，同路MPPT同串长，为异长串预留MPPT",
+  "dc_drop_pct_max": 1.4006629191081872,
+  "ac_drop_pct_max": 1.619618989325133,
+  "cables": {
+    "positions": [
+      {
+        "label": "I1",
+        "point": [
+          22.23014444444445,
+          0.0
+        ],
+        "default": true,
+        "note": "示意，按现场改"
+      },
+      {
+        "label": "I2",
+        "point": [
+          38.24601587301588,
+          36.0
+        ],
+        "default": true,
+        "note": "示意，按现场改"
+      },
+      {
+        "label": "GRID",
+        "point": [
+          30.238080158730163,
+          0.0
+        ],
+        "default": true,
+        "note": "示意，按现场改"
+      }
+    ],
+    "dc": [
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.66811354225,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S001",
+        "inverter": 1,
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            1.721,
+            0.0
+          ],
+          [
+            1.721,
+            2.744
+          ],
+          [
+            2.875,
+            2.744
+          ],
+          [
+            4.029,
+            2.744
+          ],
+          [
+            5.183,
+            2.744
+          ],
+          [
+            6.337,
+            2.744
+          ],
+          [
+            7.491,
+            2.744
+          ],
+          [
+            8.645,
+            2.744
+          ],
+          [
+            9.799,
+            2.744
+          ],
+          [
+            10.953,
+            2.744
+          ],
+          [
+            12.107,
+            2.744
+          ],
+          [
+            13.261,
+            2.744
+          ],
+          [
+            14.415,
+            2.744
+          ],
+          [
+            15.569,
+            2.744
+          ],
+          [
+            16.723,
+            2.744
+          ],
+          [
+            17.877,
+            2.744
+          ],
+          [
+            19.031,
+            2.744
+          ],
+          [
+            20.185,
+            2.744
+          ],
+          [
+            23.647,
+            2.744
+          ],
+          [
+            24.801,
+            2.744
+          ],
+          [
+            25.955,
+            2.744
+          ],
+          [
+            22.23014444444445,
+            2.744
+          ],
+          [
+            22.23014444444445,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            1.721,
+            0.0,
+            0.0
+          ],
+          [
+            1.721,
+            2.744,
+            0.0
+          ],
+          [
+            2.875,
+            2.744,
+            0.0
+          ],
+          [
+            4.029,
+            2.744,
+            0.0
+          ],
+          [
+            5.183,
+            2.744,
+            0.0
+          ],
+          [
+            6.337,
+            2.744,
+            0.0
+          ],
+          [
+            7.491,
+            2.744,
+            0.0
+          ],
+          [
+            8.645,
+            2.744,
+            0.0
+          ],
+          [
+            9.799,
+            2.744,
+            0.0
+          ],
+          [
+            10.953,
+            2.744,
+            0.0
+          ],
+          [
+            12.107,
+            2.744,
+            0.0
+          ],
+          [
+            13.261,
+            2.744,
+            0.0
+          ],
+          [
+            14.415,
+            2.744,
+            0.0
+          ],
+          [
+            15.569,
+            2.744,
+            0.0
+          ],
+          [
+            16.723,
+            2.744,
+            0.0
+          ],
+          [
+            17.877,
+            2.744,
+            0.0
+          ],
+          [
+            19.031,
+            2.744,
+            0.0
+          ],
+          [
+            20.185,
+            2.744,
+            0.0
+          ],
+          [
+            23.647,
+            2.744,
+            0.0
+          ],
+          [
+            24.801,
+            2.744,
+            0.0
+          ],
+          [
+            25.955,
+            2.744,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            2.744,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ]
+        ],
+        "route_m": 53.955999999999996,
+        "crossing_m": 0.0,
+        "length_m": 59.3516,
+        "conductor_m": 59.3516,
+        "one_way_m": 29.6758,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 59.3516
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.6348256370652778,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S002",
+        "inverter": 1,
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            27.109,
+            0.0
+          ],
+          [
+            27.109,
+            2.744
+          ],
+          [
+            28.263,
+            2.744
+          ],
+          [
+            29.417,
+            2.744
+          ],
+          [
+            30.571,
+            2.744
+          ],
+          [
+            31.725,
+            2.744
+          ],
+          [
+            32.879,
+            2.744
+          ],
+          [
+            34.033,
+            2.744
+          ],
+          [
+            35.187,
+            2.744
+          ],
+          [
+            36.341,
+            2.744
+          ],
+          [
+            37.495,
+            2.744
+          ],
+          [
+            38.649,
+            2.744
+          ],
+          [
+            39.803,
+            2.744
+          ],
+          [
+            40.957,
+            2.744
+          ],
+          [
+            40.957,
+            6.907
+          ],
+          [
+            39.803,
+            6.907
+          ],
+          [
+            38.649,
+            6.907
+          ],
+          [
+            37.495,
+            6.907
+          ],
+          [
+            36.341,
+            6.907
+          ],
+          [
+            35.187,
+            6.907
+          ],
+          [
+            34.033,
+            6.907
+          ],
+          [
+            34.033,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            27.109,
+            0.0,
+            0.0
+          ],
+          [
+            27.109,
+            2.744,
+            0.0
+          ],
+          [
+            28.263,
+            2.744,
+            0.0
+          ],
+          [
+            29.417,
+            2.744,
+            0.0
+          ],
+          [
+            30.571,
+            2.744,
+            0.0
+          ],
+          [
+            31.725,
+            2.744,
+            0.0
+          ],
+          [
+            32.879,
+            2.744,
+            0.0
+          ],
+          [
+            34.033,
+            2.744,
+            0.0
+          ],
+          [
+            35.187,
+            2.744,
+            0.0
+          ],
+          [
+            36.341,
+            2.744,
+            0.0
+          ],
+          [
+            37.495,
+            2.744,
+            0.0
+          ],
+          [
+            38.649,
+            2.744,
+            0.0
+          ],
+          [
+            39.803,
+            2.744,
+            0.0
+          ],
+          [
+            40.957,
+            2.744,
+            0.0
+          ],
+          [
+            40.957,
+            6.907,
+            0.0
+          ],
+          [
+            39.803,
+            6.907,
+            0.0
+          ],
+          [
+            38.649,
+            6.907,
+            0.0
+          ],
+          [
+            37.495,
+            6.907,
+            0.0
+          ],
+          [
+            36.341,
+            6.907,
+            0.0
+          ],
+          [
+            35.187,
+            6.907,
+            0.0
+          ],
+          [
+            34.033,
+            6.907,
+            0.0
+          ],
+          [
+            34.033,
+            0.0,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ]
+        ],
+        "route_m": 51.267711111111105,
+        "crossing_m": 0.0,
+        "length_m": 56.39448222222222,
+        "conductor_m": 56.39448222222222,
+        "one_way_m": 28.19724111111111,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 56.39448222222222
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.771210757625,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S003",
+        "inverter": 1,
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            32.879,
+            0.0
+          ],
+          [
+            32.879,
+            6.907
+          ],
+          [
+            31.725,
+            6.907
+          ],
+          [
+            30.571,
+            6.907
+          ],
+          [
+            29.417,
+            6.907
+          ],
+          [
+            28.263,
+            6.907
+          ],
+          [
+            27.109,
+            6.907
+          ],
+          [
+            25.955,
+            6.907
+          ],
+          [
+            24.801,
+            6.907
+          ],
+          [
+            23.647,
+            6.907
+          ],
+          [
+            22.6,
+            6.907
+          ],
+          [
+            21.4,
+            6.907
+          ],
+          [
+            20.185,
+            6.907
+          ],
+          [
+            19.031,
+            6.907
+          ],
+          [
+            17.877,
+            6.907
+          ],
+          [
+            16.723,
+            6.907
+          ],
+          [
+            15.569,
+            6.907
+          ],
+          [
+            14.415,
+            6.907
+          ],
+          [
+            13.261,
+            6.907
+          ],
+          [
+            12.107,
+            6.907
+          ],
+          [
+            10.953,
+            6.907
+          ],
+          [
+            9.799,
+            6.907
+          ],
+          [
+            8.645,
+            6.907
+          ],
+          [
+            8.645,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            32.879,
+            0.0,
+            0.0
+          ],
+          [
+            32.879,
+            6.907,
+            0.0
+          ],
+          [
+            31.725,
+            6.907,
+            0.0
+          ],
+          [
+            30.571,
+            6.907,
+            0.0
+          ],
+          [
+            29.417,
+            6.907,
+            0.0
+          ],
+          [
+            28.263,
+            6.907,
+            0.0
+          ],
+          [
+            27.109,
+            6.907,
+            0.0
+          ],
+          [
+            25.955,
+            6.907,
+            0.0
+          ],
+          [
+            24.801,
+            6.907,
+            0.0
+          ],
+          [
+            23.647,
+            6.907,
+            0.0
+          ],
+          [
+            22.6,
+            6.907,
+            0.0
+          ],
+          [
+            21.4,
+            6.907,
+            0.0
+          ],
+          [
+            20.185,
+            6.907,
+            0.0
+          ],
+          [
+            19.031,
+            6.907,
+            0.0
+          ],
+          [
+            17.877,
+            6.907,
+            0.0
+          ],
+          [
+            16.723,
+            6.907,
+            0.0
+          ],
+          [
+            15.569,
+            6.907,
+            0.0
+          ],
+          [
+            14.415,
+            6.907,
+            0.0
+          ],
+          [
+            13.261,
+            6.907,
+            0.0
+          ],
+          [
+            12.107,
+            6.907,
+            0.0
+          ],
+          [
+            10.953,
+            6.907,
+            0.0
+          ],
+          [
+            9.799,
+            6.907,
+            0.0
+          ],
+          [
+            8.645,
+            6.907,
+            0.0
+          ],
+          [
+            8.645,
+            0.0,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ]
+        ],
+        "route_m": 62.282,
+        "crossing_m": 1.1999998000000005,
+        "length_m": 68.5102,
+        "conductor_m": 68.5102,
+        "one_way_m": 34.2551,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 68.5102
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.7820366944347225,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S004",
+        "inverter": 1,
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            7.491,
+            0.0
+          ],
+          [
+            7.491,
+            6.907
+          ],
+          [
+            6.337,
+            6.907
+          ],
+          [
+            5.183,
+            6.907
+          ],
+          [
+            4.029,
+            6.907
+          ],
+          [
+            2.875,
+            6.907
+          ],
+          [
+            1.721,
+            6.907
+          ],
+          [
+            1.721,
+            11.069
+          ],
+          [
+            2.875,
+            11.069
+          ],
+          [
+            4.029,
+            11.069
+          ],
+          [
+            5.183,
+            11.069
+          ],
+          [
+            6.337,
+            11.069
+          ],
+          [
+            7.491,
+            11.069
+          ],
+          [
+            8.645,
+            11.069
+          ],
+          [
+            9.799,
+            11.069
+          ],
+          [
+            10.953,
+            11.069
+          ],
+          [
+            12.107,
+            11.069
+          ],
+          [
+            13.261,
+            11.069
+          ],
+          [
+            14.415,
+            11.069
+          ],
+          [
+            15.569,
+            11.069
+          ],
+          [
+            16.723,
+            11.069
+          ],
+          [
+            16.723,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            7.491,
+            0.0,
+            0.0
+          ],
+          [
+            7.491,
+            6.907,
+            0.0
+          ],
+          [
+            6.337,
+            6.907,
+            0.0
+          ],
+          [
+            5.183,
+            6.907,
+            0.0
+          ],
+          [
+            4.029,
+            6.907,
+            0.0
+          ],
+          [
+            2.875,
+            6.907,
+            0.0
+          ],
+          [
+            1.721,
+            6.907,
+            0.0
+          ],
+          [
+            1.721,
+            11.069,
+            0.0
+          ],
+          [
+            2.875,
+            11.069,
+            0.0
+          ],
+          [
+            4.029,
+            11.069,
+            0.0
+          ],
+          [
+            5.183,
+            11.069,
+            0.0
+          ],
+          [
+            6.337,
+            11.069,
+            0.0
+          ],
+          [
+            7.491,
+            11.069,
+            0.0
+          ],
+          [
+            8.645,
+            11.069,
+            0.0
+          ],
+          [
+            9.799,
+            11.069,
+            0.0
+          ],
+          [
+            10.953,
+            11.069,
+            0.0
+          ],
+          [
+            12.107,
+            11.069,
+            0.0
+          ],
+          [
+            13.261,
+            11.069,
+            0.0
+          ],
+          [
+            14.415,
+            11.069,
+            0.0
+          ],
+          [
+            15.569,
+            11.069,
+            0.0
+          ],
+          [
+            16.723,
+            11.069,
+            0.0
+          ],
+          [
+            16.723,
+            0.0,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ]
+        ],
+        "route_m": 63.156288888888895,
+        "crossing_m": 0.0,
+        "length_m": 69.47191777777779,
+        "conductor_m": 69.47191777777779,
+        "one_way_m": 34.735958888888895,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 69.47191777777779
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.9488014690000001,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S005",
+        "inverter": 1,
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            17.877,
+            0.0
+          ],
+          [
+            17.877,
+            11.069
+          ],
+          [
+            19.031,
+            11.069
+          ],
+          [
+            20.185,
+            11.069
+          ],
+          [
+            21.4,
+            11.069
+          ],
+          [
+            22.6,
+            11.069
+          ],
+          [
+            23.647,
+            11.069
+          ],
+          [
+            24.801,
+            11.069
+          ],
+          [
+            25.955,
+            11.069
+          ],
+          [
+            27.109,
+            11.069
+          ],
+          [
+            28.263,
+            11.069
+          ],
+          [
+            29.417,
+            11.069
+          ],
+          [
+            30.571,
+            11.069
+          ],
+          [
+            31.725,
+            11.069
+          ],
+          [
+            32.879,
+            11.069
+          ],
+          [
+            34.033,
+            11.069
+          ],
+          [
+            35.187,
+            11.069
+          ],
+          [
+            36.341,
+            11.069
+          ],
+          [
+            37.495,
+            11.069
+          ],
+          [
+            38.649,
+            11.069
+          ],
+          [
+            39.803,
+            11.069
+          ],
+          [
+            40.957,
+            11.069
+          ],
+          [
+            40.957,
+            15.232
+          ],
+          [
+            40.957,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            17.877,
+            0.0,
+            0.0
+          ],
+          [
+            17.877,
+            11.069,
+            0.0
+          ],
+          [
+            19.031,
+            11.069,
+            0.0
+          ],
+          [
+            20.185,
+            11.069,
+            0.0
+          ],
+          [
+            21.4,
+            11.069,
+            0.0
+          ],
+          [
+            22.6,
+            11.069,
+            0.0
+          ],
+          [
+            23.647,
+            11.069,
+            0.0
+          ],
+          [
+            24.801,
+            11.069,
+            0.0
+          ],
+          [
+            25.955,
+            11.069,
+            0.0
+          ],
+          [
+            27.109,
+            11.069,
+            0.0
+          ],
+          [
+            28.263,
+            11.069,
+            0.0
+          ],
+          [
+            29.417,
+            11.069,
+            0.0
+          ],
+          [
+            30.571,
+            11.069,
+            0.0
+          ],
+          [
+            31.725,
+            11.069,
+            0.0
+          ],
+          [
+            32.879,
+            11.069,
+            0.0
+          ],
+          [
+            34.033,
+            11.069,
+            0.0
+          ],
+          [
+            35.187,
+            11.069,
+            0.0
+          ],
+          [
+            36.341,
+            11.069,
+            0.0
+          ],
+          [
+            37.495,
+            11.069,
+            0.0
+          ],
+          [
+            38.649,
+            11.069,
+            0.0
+          ],
+          [
+            39.803,
+            11.069,
+            0.0
+          ],
+          [
+            40.957,
+            11.069,
+            0.0
+          ],
+          [
+            40.957,
+            15.232,
+            0.0
+          ],
+          [
+            40.957,
+            0.0,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ]
+        ],
+        "route_m": 76.624,
+        "crossing_m": 1.1999998000000005,
+        "length_m": 84.2864,
+        "conductor_m": 84.2864,
+        "one_way_m": 42.1432,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 84.2864
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.99640003925,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S006",
+        "inverter": 1,
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            39.803,
+            0.0
+          ],
+          [
+            39.803,
+            15.232
+          ],
+          [
+            38.649,
+            15.232
+          ],
+          [
+            37.495,
+            15.232
+          ],
+          [
+            36.341,
+            15.232
+          ],
+          [
+            35.187,
+            15.232
+          ],
+          [
+            34.033,
+            15.232
+          ],
+          [
+            32.879,
+            15.232
+          ],
+          [
+            31.725,
+            15.232
+          ],
+          [
+            30.571,
+            15.232
+          ],
+          [
+            29.417,
+            15.232
+          ],
+          [
+            28.263,
+            15.232
+          ],
+          [
+            27.109,
+            15.232
+          ],
+          [
+            25.955,
+            15.232
+          ],
+          [
+            24.801,
+            15.232
+          ],
+          [
+            23.647,
+            15.232
+          ],
+          [
+            22.6,
+            15.232
+          ],
+          [
+            22.6,
+            16.0
+          ],
+          [
+            21.4,
+            16.0
+          ],
+          [
+            21.4,
+            15.232
+          ],
+          [
+            20.185,
+            15.232
+          ],
+          [
+            19.031,
+            15.232
+          ],
+          [
+            17.877,
+            15.232
+          ],
+          [
+            16.723,
+            15.232
+          ],
+          [
+            15.569,
+            15.232
+          ],
+          [
+            15.569,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            39.803,
+            0.0,
+            0.0
+          ],
+          [
+            39.803,
+            15.232,
+            0.0
+          ],
+          [
+            38.649,
+            15.232,
+            0.0
+          ],
+          [
+            37.495,
+            15.232,
+            0.0
+          ],
+          [
+            36.341,
+            15.232,
+            0.0
+          ],
+          [
+            35.187,
+            15.232,
+            0.0
+          ],
+          [
+            34.033,
+            15.232,
+            0.0
+          ],
+          [
+            32.879,
+            15.232,
+            0.0
+          ],
+          [
+            31.725,
+            15.232,
+            0.0
+          ],
+          [
+            30.571,
+            15.232,
+            0.0
+          ],
+          [
+            29.417,
+            15.232,
+            0.0
+          ],
+          [
+            28.263,
+            15.232,
+            0.0
+          ],
+          [
+            27.109,
+            15.232,
+            0.0
+          ],
+          [
+            25.955,
+            15.232,
+            0.0
+          ],
+          [
+            24.801,
+            15.232,
+            0.0
+          ],
+          [
+            23.647,
+            15.232,
+            0.0
+          ],
+          [
+            22.6,
+            15.232,
+            0.0
+          ],
+          [
+            22.6,
+            16.0,
+            0.0
+          ],
+          [
+            21.4,
+            16.0,
+            0.0
+          ],
+          [
+            21.4,
+            15.232,
+            0.0
+          ],
+          [
+            20.185,
+            15.232,
+            0.0
+          ],
+          [
+            19.031,
+            15.232,
+            0.0
+          ],
+          [
+            17.877,
+            15.232,
+            0.0
+          ],
+          [
+            16.723,
+            15.232,
+            0.0
+          ],
+          [
+            15.569,
+            15.232,
+            0.0
+          ],
+          [
+            15.569,
+            0.0,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ]
+        ],
+        "route_m": 80.46799999999999,
+        "crossing_m": 0.0,
+        "length_m": 88.5148,
+        "conductor_m": 88.5148,
+        "one_way_m": 44.2574,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 88.5148
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.9882311251847224,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S007",
+        "inverter": 1,
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            14.415,
+            0.0
+          ],
+          [
+            14.415,
+            15.232
+          ],
+          [
+            13.261,
+            15.232
+          ],
+          [
+            12.107,
+            15.232
+          ],
+          [
+            10.953,
+            15.232
+          ],
+          [
+            9.799,
+            15.232
+          ],
+          [
+            8.645,
+            15.232
+          ],
+          [
+            7.491,
+            15.232
+          ],
+          [
+            6.337,
+            15.232
+          ],
+          [
+            5.183,
+            15.232
+          ],
+          [
+            4.029,
+            15.232
+          ],
+          [
+            2.875,
+            15.232
+          ],
+          [
+            1.721,
+            15.232
+          ],
+          [
+            1.721,
+            19.395
+          ],
+          [
+            2.875,
+            19.395
+          ],
+          [
+            4.029,
+            19.395
+          ],
+          [
+            5.183,
+            19.395
+          ],
+          [
+            6.337,
+            19.395
+          ],
+          [
+            7.491,
+            19.395
+          ],
+          [
+            8.645,
+            19.395
+          ],
+          [
+            9.799,
+            19.395
+          ],
+          [
+            9.799,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            14.415,
+            0.0,
+            0.0
+          ],
+          [
+            14.415,
+            15.232,
+            0.0
+          ],
+          [
+            13.261,
+            15.232,
+            0.0
+          ],
+          [
+            12.107,
+            15.232,
+            0.0
+          ],
+          [
+            10.953,
+            15.232,
+            0.0
+          ],
+          [
+            9.799,
+            15.232,
+            0.0
+          ],
+          [
+            8.645,
+            15.232,
+            0.0
+          ],
+          [
+            7.491,
+            15.232,
+            0.0
+          ],
+          [
+            6.337,
+            15.232,
+            0.0
+          ],
+          [
+            5.183,
+            15.232,
+            0.0
+          ],
+          [
+            4.029,
+            15.232,
+            0.0
+          ],
+          [
+            2.875,
+            15.232,
+            0.0
+          ],
+          [
+            1.721,
+            15.232,
+            0.0
+          ],
+          [
+            1.721,
+            19.395,
+            0.0
+          ],
+          [
+            2.875,
+            19.395,
+            0.0
+          ],
+          [
+            4.029,
+            19.395,
+            0.0
+          ],
+          [
+            5.183,
+            19.395,
+            0.0
+          ],
+          [
+            6.337,
+            19.395,
+            0.0
+          ],
+          [
+            7.491,
+            19.395,
+            0.0
+          ],
+          [
+            8.645,
+            19.395,
+            0.0
+          ],
+          [
+            9.799,
+            19.395,
+            0.0
+          ],
+          [
+            9.799,
+            0.0,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ]
+        ],
+        "route_m": 79.8082888888889,
+        "crossing_m": 0.0,
+        "length_m": 87.78911777777779,
+        "conductor_m": 87.78911777777779,
+        "one_way_m": 43.894558888888895,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 87.78911777777779
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 1.023319730125,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S008",
+        "inverter": 1,
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            10.953,
+            0.0
+          ],
+          [
+            10.953,
+            19.395
+          ],
+          [
+            12.107,
+            19.395
+          ],
+          [
+            13.261,
+            19.395
+          ],
+          [
+            14.415,
+            19.395
+          ],
+          [
+            15.569,
+            19.395
+          ],
+          [
+            16.723,
+            19.395
+          ],
+          [
+            17.877,
+            19.395
+          ],
+          [
+            19.031,
+            19.395
+          ],
+          [
+            20.185,
+            19.395
+          ],
+          [
+            21.339,
+            19.395
+          ],
+          [
+            22.493,
+            19.395
+          ],
+          [
+            23.647,
+            19.395
+          ],
+          [
+            24.801,
+            19.395
+          ],
+          [
+            25.955,
+            19.395
+          ],
+          [
+            27.109,
+            19.395
+          ],
+          [
+            28.263,
+            19.395
+          ],
+          [
+            29.417,
+            19.395
+          ],
+          [
+            30.571,
+            19.395
+          ],
+          [
+            31.725,
+            19.395
+          ],
+          [
+            32.879,
+            19.395
+          ],
+          [
+            32.879,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            10.953,
+            0.0,
+            0.0
+          ],
+          [
+            10.953,
+            19.395,
+            0.0
+          ],
+          [
+            12.107,
+            19.395,
+            0.0
+          ],
+          [
+            13.261,
+            19.395,
+            0.0
+          ],
+          [
+            14.415,
+            19.395,
+            0.0
+          ],
+          [
+            15.569,
+            19.395,
+            0.0
+          ],
+          [
+            16.723,
+            19.395,
+            0.0
+          ],
+          [
+            17.877,
+            19.395,
+            0.0
+          ],
+          [
+            19.031,
+            19.395,
+            0.0
+          ],
+          [
+            20.185,
+            19.395,
+            0.0
+          ],
+          [
+            21.339,
+            19.395,
+            0.0
+          ],
+          [
+            22.493,
+            19.395,
+            0.0
+          ],
+          [
+            23.647,
+            19.395,
+            0.0
+          ],
+          [
+            24.801,
+            19.395,
+            0.0
+          ],
+          [
+            25.955,
+            19.395,
+            0.0
+          ],
+          [
+            27.109,
+            19.395,
+            0.0
+          ],
+          [
+            28.263,
+            19.395,
+            0.0
+          ],
+          [
+            29.417,
+            19.395,
+            0.0
+          ],
+          [
+            30.571,
+            19.395,
+            0.0
+          ],
+          [
+            31.725,
+            19.395,
+            0.0
+          ],
+          [
+            32.879,
+            19.395,
+            0.0
+          ],
+          [
+            32.879,
+            0.0,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ]
+        ],
+        "route_m": 82.642,
+        "crossing_m": 0.0,
+        "length_m": 90.9062,
+        "conductor_m": 90.9062,
+        "one_way_m": 45.4531,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 90.9062
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 1.047164968315278,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S009",
+        "inverter": 1,
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            34.033,
+            0.0
+          ],
+          [
+            34.033,
+            19.395
+          ],
+          [
+            35.187,
+            19.395
+          ],
+          [
+            36.341,
+            19.395
+          ],
+          [
+            37.495,
+            19.395
+          ],
+          [
+            38.649,
+            19.395
+          ],
+          [
+            39.803,
+            19.395
+          ],
+          [
+            40.957,
+            19.395
+          ],
+          [
+            40.957,
+            23.557
+          ],
+          [
+            39.803,
+            23.557
+          ],
+          [
+            38.649,
+            23.557
+          ],
+          [
+            37.495,
+            23.557
+          ],
+          [
+            36.341,
+            23.557
+          ],
+          [
+            35.187,
+            23.557
+          ],
+          [
+            34.033,
+            23.557
+          ],
+          [
+            32.879,
+            23.557
+          ],
+          [
+            31.725,
+            23.557
+          ],
+          [
+            30.571,
+            23.557
+          ],
+          [
+            29.417,
+            23.557
+          ],
+          [
+            28.263,
+            23.557
+          ],
+          [
+            27.109,
+            23.557
+          ],
+          [
+            27.109,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            34.033,
+            0.0,
+            0.0
+          ],
+          [
+            34.033,
+            19.395,
+            0.0
+          ],
+          [
+            35.187,
+            19.395,
+            0.0
+          ],
+          [
+            36.341,
+            19.395,
+            0.0
+          ],
+          [
+            37.495,
+            19.395,
+            0.0
+          ],
+          [
+            38.649,
+            19.395,
+            0.0
+          ],
+          [
+            39.803,
+            19.395,
+            0.0
+          ],
+          [
+            40.957,
+            19.395,
+            0.0
+          ],
+          [
+            40.957,
+            23.557,
+            0.0
+          ],
+          [
+            39.803,
+            23.557,
+            0.0
+          ],
+          [
+            38.649,
+            23.557,
+            0.0
+          ],
+          [
+            37.495,
+            23.557,
+            0.0
+          ],
+          [
+            36.341,
+            23.557,
+            0.0
+          ],
+          [
+            35.187,
+            23.557,
+            0.0
+          ],
+          [
+            34.033,
+            23.557,
+            0.0
+          ],
+          [
+            32.879,
+            23.557,
+            0.0
+          ],
+          [
+            31.725,
+            23.557,
+            0.0
+          ],
+          [
+            30.571,
+            23.557,
+            0.0
+          ],
+          [
+            29.417,
+            23.557,
+            0.0
+          ],
+          [
+            28.263,
+            23.557,
+            0.0
+          ],
+          [
+            27.109,
+            23.557,
+            0.0
+          ],
+          [
+            27.109,
+            0.0,
+            0.0
+          ],
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ]
+        ],
+        "route_m": 84.5677111111111,
+        "crossing_m": 0.0,
+        "length_m": 93.02448222222222,
+        "conductor_m": 93.02448222222222,
+        "one_way_m": 46.51224111111111,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 93.02448222222222
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 1.1555411255972226,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S010",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            25.955,
+            36.0
+          ],
+          [
+            25.955,
+            23.557
+          ],
+          [
+            24.801,
+            23.557
+          ],
+          [
+            23.647,
+            23.557
+          ],
+          [
+            22.493,
+            23.557
+          ],
+          [
+            21.339,
+            23.557
+          ],
+          [
+            20.185,
+            23.557
+          ],
+          [
+            19.031,
+            23.557
+          ],
+          [
+            17.877,
+            23.557
+          ],
+          [
+            16.723,
+            23.557
+          ],
+          [
+            15.569,
+            23.557
+          ],
+          [
+            14.415,
+            23.557
+          ],
+          [
+            13.261,
+            23.557
+          ],
+          [
+            12.107,
+            23.557
+          ],
+          [
+            10.953,
+            23.557
+          ],
+          [
+            9.799,
+            23.557
+          ],
+          [
+            8.645,
+            23.557
+          ],
+          [
+            7.491,
+            23.557
+          ],
+          [
+            6.337,
+            23.557
+          ],
+          [
+            5.183,
+            23.557
+          ],
+          [
+            4.029,
+            23.557
+          ],
+          [
+            38.24601587301588,
+            23.557
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            25.955,
+            36.0,
+            0.0
+          ],
+          [
+            25.955,
+            23.557,
+            0.0
+          ],
+          [
+            24.801,
+            23.557,
+            0.0
+          ],
+          [
+            23.647,
+            23.557,
+            0.0
+          ],
+          [
+            22.493,
+            23.557,
+            0.0
+          ],
+          [
+            21.339,
+            23.557,
+            0.0
+          ],
+          [
+            20.185,
+            23.557,
+            0.0
+          ],
+          [
+            19.031,
+            23.557,
+            0.0
+          ],
+          [
+            17.877,
+            23.557,
+            0.0
+          ],
+          [
+            16.723,
+            23.557,
+            0.0
+          ],
+          [
+            15.569,
+            23.557,
+            0.0
+          ],
+          [
+            14.415,
+            23.557,
+            0.0
+          ],
+          [
+            13.261,
+            23.557,
+            0.0
+          ],
+          [
+            12.107,
+            23.557,
+            0.0
+          ],
+          [
+            10.953,
+            23.557,
+            0.0
+          ],
+          [
+            9.799,
+            23.557,
+            0.0
+          ],
+          [
+            8.645,
+            23.557,
+            0.0
+          ],
+          [
+            7.491,
+            23.557,
+            0.0
+          ],
+          [
+            6.337,
+            23.557,
+            0.0
+          ],
+          [
+            5.183,
+            23.557,
+            0.0
+          ],
+          [
+            4.029,
+            23.557,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            23.557,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 93.32003174603176,
+        "crossing_m": 0.0,
+        "length_m": 102.65203492063495,
+        "conductor_m": 102.65203492063495,
+        "one_way_m": 51.32601746031747,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 102.65203492063495
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 1.2565333053472227,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S011",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            2.875,
+            36.0
+          ],
+          [
+            2.875,
+            23.557
+          ],
+          [
+            1.721,
+            23.557
+          ],
+          [
+            1.721,
+            27.72
+          ],
+          [
+            2.875,
+            27.72
+          ],
+          [
+            4.029,
+            27.72
+          ],
+          [
+            5.183,
+            27.72
+          ],
+          [
+            9.45,
+            27.72
+          ],
+          [
+            9.45,
+            25.95
+          ],
+          [
+            14.55,
+            25.95
+          ],
+          [
+            14.55,
+            27.72
+          ],
+          [
+            19.031,
+            27.72
+          ],
+          [
+            20.185,
+            27.72
+          ],
+          [
+            21.339,
+            27.72
+          ],
+          [
+            22.493,
+            27.72
+          ],
+          [
+            23.647,
+            27.72
+          ],
+          [
+            24.801,
+            27.72
+          ],
+          [
+            25.955,
+            27.72
+          ],
+          [
+            27.109,
+            27.72
+          ],
+          [
+            28.263,
+            27.72
+          ],
+          [
+            29.417,
+            27.72
+          ],
+          [
+            30.571,
+            27.72
+          ],
+          [
+            31.725,
+            27.72
+          ],
+          [
+            32.879,
+            27.72
+          ],
+          [
+            34.033,
+            27.72
+          ],
+          [
+            38.24601587301588,
+            27.72
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            2.875,
+            36.0,
+            0.0
+          ],
+          [
+            2.875,
+            23.557,
+            0.0
+          ],
+          [
+            1.721,
+            23.557,
+            0.0
+          ],
+          [
+            1.721,
+            27.72,
+            0.0
+          ],
+          [
+            2.875,
+            27.72,
+            0.0
+          ],
+          [
+            4.029,
+            27.72,
+            0.0
+          ],
+          [
+            5.183,
+            27.72,
+            0.0
+          ],
+          [
+            9.45,
+            27.72,
+            0.0
+          ],
+          [
+            9.45,
+            25.95,
+            0.0
+          ],
+          [
+            14.55,
+            25.95,
+            0.0
+          ],
+          [
+            14.55,
+            27.72,
+            0.0
+          ],
+          [
+            19.031,
+            27.72,
+            0.0
+          ],
+          [
+            20.185,
+            27.72,
+            0.0
+          ],
+          [
+            21.339,
+            27.72,
+            0.0
+          ],
+          [
+            22.493,
+            27.72,
+            0.0
+          ],
+          [
+            23.647,
+            27.72,
+            0.0
+          ],
+          [
+            24.801,
+            27.72,
+            0.0
+          ],
+          [
+            25.955,
+            27.72,
+            0.0
+          ],
+          [
+            27.109,
+            27.72,
+            0.0
+          ],
+          [
+            28.263,
+            27.72,
+            0.0
+          ],
+          [
+            29.417,
+            27.72,
+            0.0
+          ],
+          [
+            30.571,
+            27.72,
+            0.0
+          ],
+          [
+            31.725,
+            27.72,
+            0.0
+          ],
+          [
+            32.879,
+            27.72,
+            0.0
+          ],
+          [
+            34.033,
+            27.72,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            27.72,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 101.47603174603177,
+        "crossing_m": 0.0,
+        "length_m": 111.62363492063496,
+        "conductor_m": 111.62363492063496,
+        "one_way_m": 55.81181746031748,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 111.62363492063496
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.5765816402500001,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S012",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            38.649,
+            36.0
+          ],
+          [
+            38.649,
+            31.882
+          ],
+          [
+            39.803,
+            31.882
+          ],
+          [
+            40.957,
+            31.882
+          ],
+          [
+            40.957,
+            27.72
+          ],
+          [
+            39.803,
+            27.72
+          ],
+          [
+            38.649,
+            27.72
+          ],
+          [
+            37.495,
+            27.72
+          ],
+          [
+            36.341,
+            27.72
+          ],
+          [
+            35.187,
+            27.72
+          ],
+          [
+            25.955,
+            27.72
+          ],
+          [
+            25.955,
+            31.882
+          ],
+          [
+            27.109,
+            31.882
+          ],
+          [
+            28.263,
+            31.882
+          ],
+          [
+            29.417,
+            31.882
+          ],
+          [
+            30.571,
+            31.882
+          ],
+          [
+            31.725,
+            31.882
+          ],
+          [
+            32.879,
+            31.882
+          ],
+          [
+            34.033,
+            31.882
+          ],
+          [
+            35.187,
+            31.882
+          ],
+          [
+            36.341,
+            31.882
+          ],
+          [
+            37.495,
+            31.882
+          ],
+          [
+            38.24601587301588,
+            31.882
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            38.649,
+            36.0,
+            0.0
+          ],
+          [
+            38.649,
+            31.882,
+            0.0
+          ],
+          [
+            39.803,
+            31.882,
+            0.0
+          ],
+          [
+            40.957,
+            31.882,
+            0.0
+          ],
+          [
+            40.957,
+            27.72,
+            0.0
+          ],
+          [
+            39.803,
+            27.72,
+            0.0
+          ],
+          [
+            38.649,
+            27.72,
+            0.0
+          ],
+          [
+            37.495,
+            27.72,
+            0.0
+          ],
+          [
+            36.341,
+            27.72,
+            0.0
+          ],
+          [
+            35.187,
+            27.72,
+            0.0
+          ],
+          [
+            25.955,
+            27.72,
+            0.0
+          ],
+          [
+            25.955,
+            31.882,
+            0.0
+          ],
+          [
+            27.109,
+            31.882,
+            0.0
+          ],
+          [
+            28.263,
+            31.882,
+            0.0
+          ],
+          [
+            29.417,
+            31.882,
+            0.0
+          ],
+          [
+            30.571,
+            31.882,
+            0.0
+          ],
+          [
+            31.725,
+            31.882,
+            0.0
+          ],
+          [
+            32.879,
+            31.882,
+            0.0
+          ],
+          [
+            34.033,
+            31.882,
+            0.0
+          ],
+          [
+            35.187,
+            31.882,
+            0.0
+          ],
+          [
+            36.341,
+            31.882,
+            0.0
+          ],
+          [
+            37.495,
+            31.882,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            31.882,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 46.56400000000001,
+        "crossing_m": 0.0,
+        "length_m": 51.22040000000001,
+        "conductor_m": 51.22040000000001,
+        "one_way_m": 25.610200000000006,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": true,
+        "baseline_length_m": 57.95023492063495
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 1.3594567717500001,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S013",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            24.801,
+            36.0
+          ],
+          [
+            24.801,
+            31.882
+          ],
+          [
+            23.647,
+            31.882
+          ],
+          [
+            22.493,
+            31.882
+          ],
+          [
+            21.339,
+            31.882
+          ],
+          [
+            20.185,
+            31.882
+          ],
+          [
+            19.031,
+            31.882
+          ],
+          [
+            5.183,
+            31.882
+          ],
+          [
+            4.029,
+            31.882
+          ],
+          [
+            2.875,
+            31.882
+          ],
+          [
+            1.721,
+            31.882
+          ],
+          [
+            42.111,
+            31.882
+          ],
+          [
+            43.265,
+            31.882
+          ],
+          [
+            44.419,
+            31.882
+          ],
+          [
+            45.573,
+            31.882
+          ],
+          [
+            46.727,
+            31.882
+          ],
+          [
+            47.881,
+            31.882
+          ],
+          [
+            49.035,
+            31.882
+          ],
+          [
+            50.189,
+            31.882
+          ],
+          [
+            51.343,
+            31.882
+          ],
+          [
+            52.497,
+            31.882
+          ],
+          [
+            38.24601587301588,
+            31.882
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            24.801,
+            36.0,
+            0.0
+          ],
+          [
+            24.801,
+            31.882,
+            0.0
+          ],
+          [
+            23.647,
+            31.882,
+            0.0
+          ],
+          [
+            22.493,
+            31.882,
+            0.0
+          ],
+          [
+            21.339,
+            31.882,
+            0.0
+          ],
+          [
+            20.185,
+            31.882,
+            0.0
+          ],
+          [
+            19.031,
+            31.882,
+            0.0
+          ],
+          [
+            5.183,
+            31.882,
+            0.0
+          ],
+          [
+            4.029,
+            31.882,
+            0.0
+          ],
+          [
+            2.875,
+            31.882,
+            0.0
+          ],
+          [
+            1.721,
+            31.882,
+            0.0
+          ],
+          [
+            42.111,
+            31.882,
+            0.0
+          ],
+          [
+            43.265,
+            31.882,
+            0.0
+          ],
+          [
+            44.419,
+            31.882,
+            0.0
+          ],
+          [
+            45.573,
+            31.882,
+            0.0
+          ],
+          [
+            46.727,
+            31.882,
+            0.0
+          ],
+          [
+            47.881,
+            31.882,
+            0.0
+          ],
+          [
+            49.035,
+            31.882,
+            0.0
+          ],
+          [
+            50.189,
+            31.882,
+            0.0
+          ],
+          [
+            51.343,
+            31.882,
+            0.0
+          ],
+          [
+            52.497,
+            31.882,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            31.882,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 109.788,
+        "crossing_m": 0.0,
+        "length_m": 120.7668,
+        "conductor_m": 120.7668,
+        "one_way_m": 60.3834,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 120.7668
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.7008774095277779,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S014",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            53.651,
+            36.0
+          ],
+          [
+            53.651,
+            31.882
+          ],
+          [
+            54.805,
+            31.882
+          ],
+          [
+            55.959,
+            31.882
+          ],
+          [
+            57.113,
+            31.882
+          ],
+          [
+            58.267,
+            31.882
+          ],
+          [
+            58.267,
+            27.72
+          ],
+          [
+            57.113,
+            27.72
+          ],
+          [
+            55.959,
+            27.72
+          ],
+          [
+            54.805,
+            27.72
+          ],
+          [
+            53.651,
+            27.72
+          ],
+          [
+            52.497,
+            27.72
+          ],
+          [
+            51.343,
+            27.72
+          ],
+          [
+            50.189,
+            27.72
+          ],
+          [
+            49.035,
+            27.72
+          ],
+          [
+            47.881,
+            27.72
+          ],
+          [
+            46.727,
+            27.72
+          ],
+          [
+            45.573,
+            27.72
+          ],
+          [
+            44.419,
+            27.72
+          ],
+          [
+            43.265,
+            27.72
+          ],
+          [
+            42.111,
+            27.72
+          ],
+          [
+            38.24601587301588,
+            27.72
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            53.651,
+            36.0,
+            0.0
+          ],
+          [
+            53.651,
+            31.882,
+            0.0
+          ],
+          [
+            54.805,
+            31.882,
+            0.0
+          ],
+          [
+            55.959,
+            31.882,
+            0.0
+          ],
+          [
+            57.113,
+            31.882,
+            0.0
+          ],
+          [
+            58.267,
+            31.882,
+            0.0
+          ],
+          [
+            58.267,
+            27.72,
+            0.0
+          ],
+          [
+            57.113,
+            27.72,
+            0.0
+          ],
+          [
+            55.959,
+            27.72,
+            0.0
+          ],
+          [
+            54.805,
+            27.72,
+            0.0
+          ],
+          [
+            53.651,
+            27.72,
+            0.0
+          ],
+          [
+            52.497,
+            27.72,
+            0.0
+          ],
+          [
+            51.343,
+            27.72,
+            0.0
+          ],
+          [
+            50.189,
+            27.72,
+            0.0
+          ],
+          [
+            49.035,
+            27.72,
+            0.0
+          ],
+          [
+            47.881,
+            27.72,
+            0.0
+          ],
+          [
+            46.727,
+            27.72,
+            0.0
+          ],
+          [
+            45.573,
+            27.72,
+            0.0
+          ],
+          [
+            44.419,
+            27.72,
+            0.0
+          ],
+          [
+            43.265,
+            27.72,
+            0.0
+          ],
+          [
+            42.111,
+            27.72,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            27.72,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 56.60196825396825,
+        "crossing_m": 0.0,
+        "length_m": 62.26216507936508,
+        "conductor_m": 62.26216507936508,
+        "one_way_m": 31.13108253968254,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 62.26216507936508
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.9070470751527778,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S015",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            42.111,
+            36.0
+          ],
+          [
+            42.111,
+            23.557
+          ],
+          [
+            43.265,
+            23.557
+          ],
+          [
+            44.419,
+            23.557
+          ],
+          [
+            45.573,
+            23.557
+          ],
+          [
+            46.727,
+            23.557
+          ],
+          [
+            47.881,
+            23.557
+          ],
+          [
+            49.035,
+            23.557
+          ],
+          [
+            50.189,
+            23.557
+          ],
+          [
+            51.343,
+            23.557
+          ],
+          [
+            52.497,
+            23.557
+          ],
+          [
+            53.651,
+            23.557
+          ],
+          [
+            54.805,
+            23.557
+          ],
+          [
+            55.959,
+            23.557
+          ],
+          [
+            57.113,
+            23.557
+          ],
+          [
+            58.267,
+            23.557
+          ],
+          [
+            58.267,
+            19.395
+          ],
+          [
+            57.113,
+            19.395
+          ],
+          [
+            55.959,
+            19.395
+          ],
+          [
+            54.805,
+            19.395
+          ],
+          [
+            53.651,
+            19.395
+          ],
+          [
+            38.24601587301588,
+            19.395
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            42.111,
+            36.0,
+            0.0
+          ],
+          [
+            42.111,
+            23.557,
+            0.0
+          ],
+          [
+            43.265,
+            23.557,
+            0.0
+          ],
+          [
+            44.419,
+            23.557,
+            0.0
+          ],
+          [
+            45.573,
+            23.557,
+            0.0
+          ],
+          [
+            46.727,
+            23.557,
+            0.0
+          ],
+          [
+            47.881,
+            23.557,
+            0.0
+          ],
+          [
+            49.035,
+            23.557,
+            0.0
+          ],
+          [
+            50.189,
+            23.557,
+            0.0
+          ],
+          [
+            51.343,
+            23.557,
+            0.0
+          ],
+          [
+            52.497,
+            23.557,
+            0.0
+          ],
+          [
+            53.651,
+            23.557,
+            0.0
+          ],
+          [
+            54.805,
+            23.557,
+            0.0
+          ],
+          [
+            55.959,
+            23.557,
+            0.0
+          ],
+          [
+            57.113,
+            23.557,
+            0.0
+          ],
+          [
+            58.267,
+            23.557,
+            0.0
+          ],
+          [
+            58.267,
+            19.395,
+            0.0
+          ],
+          [
+            57.113,
+            19.395,
+            0.0
+          ],
+          [
+            55.959,
+            19.395,
+            0.0
+          ],
+          [
+            54.805,
+            19.395,
+            0.0
+          ],
+          [
+            53.651,
+            19.395,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            19.395,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 73.25196825396824,
+        "crossing_m": 0.0,
+        "length_m": 80.57716507936507,
+        "conductor_m": 80.57716507936507,
+        "one_way_m": 40.28858253968254,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 80.57716507936507
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 810.0,
+        "drop_pct": 0.8672495192777778,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S016",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            42.111,
+            36.0
+          ],
+          [
+            42.111,
+            19.395
+          ],
+          [
+            43.265,
+            19.395
+          ],
+          [
+            44.419,
+            19.395
+          ],
+          [
+            45.573,
+            19.395
+          ],
+          [
+            46.727,
+            19.395
+          ],
+          [
+            47.881,
+            19.395
+          ],
+          [
+            49.035,
+            19.395
+          ],
+          [
+            50.189,
+            19.395
+          ],
+          [
+            51.343,
+            19.395
+          ],
+          [
+            52.497,
+            19.395
+          ],
+          [
+            52.497,
+            15.232
+          ],
+          [
+            51.343,
+            15.232
+          ],
+          [
+            50.189,
+            15.232
+          ],
+          [
+            49.035,
+            15.232
+          ],
+          [
+            47.881,
+            15.232
+          ],
+          [
+            46.727,
+            15.232
+          ],
+          [
+            45.573,
+            15.232
+          ],
+          [
+            44.419,
+            15.232
+          ],
+          [
+            43.265,
+            15.232
+          ],
+          [
+            42.111,
+            15.232
+          ],
+          [
+            38.24601587301588,
+            15.232
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            42.111,
+            36.0,
+            0.0
+          ],
+          [
+            42.111,
+            19.395,
+            0.0
+          ],
+          [
+            43.265,
+            19.395,
+            0.0
+          ],
+          [
+            44.419,
+            19.395,
+            0.0
+          ],
+          [
+            45.573,
+            19.395,
+            0.0
+          ],
+          [
+            46.727,
+            19.395,
+            0.0
+          ],
+          [
+            47.881,
+            19.395,
+            0.0
+          ],
+          [
+            49.035,
+            19.395,
+            0.0
+          ],
+          [
+            50.189,
+            19.395,
+            0.0
+          ],
+          [
+            51.343,
+            19.395,
+            0.0
+          ],
+          [
+            52.497,
+            19.395,
+            0.0
+          ],
+          [
+            52.497,
+            15.232,
+            0.0
+          ],
+          [
+            51.343,
+            15.232,
+            0.0
+          ],
+          [
+            50.189,
+            15.232,
+            0.0
+          ],
+          [
+            49.035,
+            15.232,
+            0.0
+          ],
+          [
+            47.881,
+            15.232,
+            0.0
+          ],
+          [
+            46.727,
+            15.232,
+            0.0
+          ],
+          [
+            45.573,
+            15.232,
+            0.0
+          ],
+          [
+            44.419,
+            15.232,
+            0.0
+          ],
+          [
+            43.265,
+            15.232,
+            0.0
+          ],
+          [
+            42.111,
+            15.232,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            15.232,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 70.03796825396824,
+        "crossing_m": 0.0,
+        "length_m": 77.04176507936508,
+        "conductor_m": 77.04176507936508,
+        "one_way_m": 38.52088253968254,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": true,
+        "baseline_length_m": 99.89096507936509
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 769.5,
+        "drop_pct": 1.4006629191081872,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S017",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            42.111,
+            36.0
+          ],
+          [
+            42.111,
+            11.069
+          ],
+          [
+            43.265,
+            11.069
+          ],
+          [
+            44.419,
+            11.069
+          ],
+          [
+            45.573,
+            11.069
+          ],
+          [
+            46.727,
+            11.069
+          ],
+          [
+            46.727,
+            6.907
+          ],
+          [
+            45.573,
+            6.907
+          ],
+          [
+            44.419,
+            6.907
+          ],
+          [
+            43.265,
+            6.907
+          ],
+          [
+            42.111,
+            6.907
+          ],
+          [
+            47.881,
+            6.907
+          ],
+          [
+            49.035,
+            6.907
+          ],
+          [
+            49.035,
+            11.069
+          ],
+          [
+            57.113,
+            11.069
+          ],
+          [
+            58.267,
+            11.069
+          ],
+          [
+            58.267,
+            15.232
+          ],
+          [
+            57.113,
+            15.232
+          ],
+          [
+            55.959,
+            15.232
+          ],
+          [
+            54.805,
+            15.232
+          ],
+          [
+            53.651,
+            15.232
+          ],
+          [
+            38.24601587301588,
+            15.232
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            42.111,
+            36.0,
+            0.0
+          ],
+          [
+            42.111,
+            11.069,
+            0.0
+          ],
+          [
+            43.265,
+            11.069,
+            0.0
+          ],
+          [
+            44.419,
+            11.069,
+            0.0
+          ],
+          [
+            45.573,
+            11.069,
+            0.0
+          ],
+          [
+            46.727,
+            11.069,
+            0.0
+          ],
+          [
+            46.727,
+            6.907,
+            0.0
+          ],
+          [
+            45.573,
+            6.907,
+            0.0
+          ],
+          [
+            44.419,
+            6.907,
+            0.0
+          ],
+          [
+            43.265,
+            6.907,
+            0.0
+          ],
+          [
+            42.111,
+            6.907,
+            0.0
+          ],
+          [
+            47.881,
+            6.907,
+            0.0
+          ],
+          [
+            49.035,
+            6.907,
+            0.0
+          ],
+          [
+            49.035,
+            11.069,
+            0.0
+          ],
+          [
+            57.113,
+            11.069,
+            0.0
+          ],
+          [
+            58.267,
+            11.069,
+            0.0
+          ],
+          [
+            58.267,
+            15.232,
+            0.0
+          ],
+          [
+            57.113,
+            15.232,
+            0.0
+          ],
+          [
+            55.959,
+            15.232,
+            0.0
+          ],
+          [
+            54.805,
+            15.232,
+            0.0
+          ],
+          [
+            53.651,
+            15.232,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            15.232,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 107.45996825396824,
+        "crossing_m": 0.0,
+        "length_m": 118.20596507936507,
+        "conductor_m": 118.20596507936507,
+        "one_way_m": 59.102982539682536,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": true,
+        "baseline_length_m": 123.28356507936509
+      },
+      {
+        "section_mm2": 4,
+        "ampacity_a": 44,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 769.5,
+        "drop_pct": 1.3888538647660822,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S018",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            54.805,
+            36.0
+          ],
+          [
+            54.805,
+            6.907
+          ],
+          [
+            55.959,
+            6.907
+          ],
+          [
+            57.113,
+            6.907
+          ],
+          [
+            58.267,
+            6.907
+          ],
+          [
+            58.267,
+            2.744
+          ],
+          [
+            57.113,
+            2.744
+          ],
+          [
+            55.959,
+            2.744
+          ],
+          [
+            54.805,
+            2.744
+          ],
+          [
+            53.651,
+            2.744
+          ],
+          [
+            52.497,
+            2.744
+          ],
+          [
+            51.343,
+            2.744
+          ],
+          [
+            50.189,
+            2.744
+          ],
+          [
+            49.035,
+            2.744
+          ],
+          [
+            47.881,
+            2.744
+          ],
+          [
+            46.727,
+            2.744
+          ],
+          [
+            45.573,
+            2.744
+          ],
+          [
+            44.419,
+            2.744
+          ],
+          [
+            43.265,
+            2.744
+          ],
+          [
+            42.111,
+            2.744
+          ],
+          [
+            38.24601587301588,
+            2.744
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            54.805,
+            36.0,
+            0.0
+          ],
+          [
+            54.805,
+            6.907,
+            0.0
+          ],
+          [
+            55.959,
+            6.907,
+            0.0
+          ],
+          [
+            57.113,
+            6.907,
+            0.0
+          ],
+          [
+            58.267,
+            6.907,
+            0.0
+          ],
+          [
+            58.267,
+            2.744,
+            0.0
+          ],
+          [
+            57.113,
+            2.744,
+            0.0
+          ],
+          [
+            55.959,
+            2.744,
+            0.0
+          ],
+          [
+            54.805,
+            2.744,
+            0.0
+          ],
+          [
+            53.651,
+            2.744,
+            0.0
+          ],
+          [
+            52.497,
+            2.744,
+            0.0
+          ],
+          [
+            51.343,
+            2.744,
+            0.0
+          ],
+          [
+            50.189,
+            2.744,
+            0.0
+          ],
+          [
+            49.035,
+            2.744,
+            0.0
+          ],
+          [
+            47.881,
+            2.744,
+            0.0
+          ],
+          [
+            46.727,
+            2.744,
+            0.0
+          ],
+          [
+            45.573,
+            2.744,
+            0.0
+          ],
+          [
+            44.419,
+            2.744,
+            0.0
+          ],
+          [
+            43.265,
+            2.744,
+            0.0
+          ],
+          [
+            42.111,
+            2.744,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            2.744,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 106.55396825396825,
+        "crossing_m": 0.0,
+        "length_m": 117.20936507936509,
+        "conductor_m": 117.20936507936509,
+        "one_way_m": 58.60468253968254,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": false,
+        "baseline_length_m": 117.20936507936509
+      },
+      {
+        "section_mm2": 10,
+        "ampacity_a": 79,
+        "required_a": 19.7875,
+        "current_a": 14.94,
+        "voltage_v": 445.5,
+        "drop_pct": 1.3746535530000004,
+        "feasible": true,
+        "temperature_c": 120,
+        "rho": 0.024412500000000004,
+        "id": "S019",
+        "inverter": 2,
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            17.877,
+            36.0
+          ],
+          [
+            17.877,
+            31.882
+          ],
+          [
+            16.723,
+            31.882
+          ],
+          [
+            7.491,
+            31.882
+          ],
+          [
+            6.337,
+            31.882
+          ],
+          [
+            6.337,
+            27.72
+          ],
+          [
+            9.45,
+            27.72
+          ],
+          [
+            9.45,
+            25.95
+          ],
+          [
+            14.55,
+            25.95
+          ],
+          [
+            14.55,
+            27.72
+          ],
+          [
+            16.723,
+            27.72
+          ],
+          [
+            17.877,
+            27.72
+          ],
+          [
+            47.881,
+            27.72
+          ],
+          [
+            47.881,
+            11.069
+          ],
+          [
+            49.035,
+            11.069
+          ],
+          [
+            54.805,
+            11.069
+          ],
+          [
+            55.959,
+            11.069
+          ],
+          [
+            38.24601587301588,
+            11.069
+          ],
+          [
+            38.24601587301588,
+            36.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            17.877,
+            36.0,
+            0.0
+          ],
+          [
+            17.877,
+            31.882,
+            0.0
+          ],
+          [
+            16.723,
+            31.882,
+            0.0
+          ],
+          [
+            7.491,
+            31.882,
+            0.0
+          ],
+          [
+            6.337,
+            31.882,
+            0.0
+          ],
+          [
+            6.337,
+            27.72,
+            0.0
+          ],
+          [
+            9.45,
+            27.72,
+            0.0
+          ],
+          [
+            9.45,
+            25.95,
+            0.0
+          ],
+          [
+            14.55,
+            25.95,
+            0.0
+          ],
+          [
+            14.55,
+            27.72,
+            0.0
+          ],
+          [
+            16.723,
+            27.72,
+            0.0
+          ],
+          [
+            17.877,
+            27.72,
+            0.0
+          ],
+          [
+            47.881,
+            27.72,
+            0.0
+          ],
+          [
+            47.881,
+            11.069,
+            0.0
+          ],
+          [
+            49.035,
+            11.069,
+            0.0
+          ],
+          [
+            54.805,
+            11.069,
+            0.0
+          ],
+          [
+            55.959,
+            11.069,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            11.069,
+            0.0
+          ],
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ]
+        ],
+        "route_m": 152.64600000000002,
+        "crossing_m": 0.0,
+        "length_m": 167.91060000000002,
+        "conductor_m": 167.91060000000002,
+        "one_way_m": 83.95530000000001,
+        "reserve_factor": 1.1,
+        "routing_status": "ok",
+        "optimized": true,
+        "baseline_length_m": 202.45500000000004
+      }
+    ],
+    "ac": [
+      {
+        "section_mm2": 50,
+        "ampacity_a": 154,
+        "required_a": 144.3231335406767,
+        "current_a": 144.3231335406767,
+        "voltage_v": 400,
+        "drop_pct": 0.6144757637001328,
+        "feasible": true,
+        "temperature_c": 90,
+        "rho": 0.02233875,
+        "id": "I1",
+        "route": [
+          [
+            22.23014444444445,
+            0.0
+          ],
+          [
+            30.238080158730163,
+            0.0
+          ],
+          [
+            30.238080158730163,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            22.23014444444445,
+            0.0,
+            0.0
+          ],
+          [
+            30.238080158730163,
+            0.0,
+            0.0
+          ],
+          [
+            30.238080158730163,
+            0.0,
+            -9.0
+          ]
+        ],
+        "crossing_m": 0.0,
+        "route_m": 17.007935714285715,
+        "length_m": 22.007935714285715,
+        "conductor_m": 88.03174285714286,
+        "cores": 4,
+        "vertical_allowance_m": 14.0,
+        "routing_status": "ok"
+      },
+      {
+        "section_mm2": 50,
+        "ampacity_a": 154,
+        "required_a": 144.3231335406767,
+        "current_a": 144.3231335406767,
+        "voltage_v": 400,
+        "drop_pct": 1.619618989325133,
+        "feasible": true,
+        "temperature_c": 90,
+        "rho": 0.02233875,
+        "id": "I2",
+        "route": [
+          [
+            38.24601587301588,
+            36.0
+          ],
+          [
+            30.238080158730163,
+            36.0
+          ],
+          [
+            30.238080158730163,
+            0.0
+          ],
+          [
+            30.238080158730163,
+            0.0
+          ]
+        ],
+        "route_3d": [
+          [
+            38.24601587301588,
+            36.0,
+            0.0
+          ],
+          [
+            30.238080158730163,
+            36.0,
+            0.0
+          ],
+          [
+            30.238080158730163,
+            0.0,
+            0.0
+          ],
+          [
+            30.238080158730163,
+            0.0,
+            -9.0
+          ]
+        ],
+        "crossing_m": 0.0,
+        "route_m": 53.007935714285715,
+        "length_m": 58.007935714285715,
+        "conductor_m": 232.03174285714286,
+        "cores": 4,
+        "vertical_allowance_m": 14.0,
+        "routing_status": "ok"
+      }
+    ],
+    "summary": [
+      {
+        "kind": "dc",
+        "section_mm2": 4,
+        "length_m": 1539.8084952380957,
+        "drop_pct_max": 1.4006629191081872
+      },
+      {
+        "kind": "dc",
+        "section_mm2": 10,
+        "length_m": 167.91060000000002,
+        "drop_pct_max": 1.3746535530000004
+      },
+      {
+        "kind": "ac",
+        "section_mm2": 50,
+        "length_m": 80.01587142857143,
+        "drop_pct_max": 1.619618989325133
+      }
+    ],
+    "notes": [
+      "场地内横竖走线，绕开屋面设备；设备净距0.05m为示意，圆形设备按外接方框保守避让。禁区、采光带和玻璃面尽量绕行，无法绕开时按桥架跨越计（示意，线长照计）。固定串成员及MPPT，比较原顺序与最近邻加2-opt候选，取可达且线长较短者；不保证全局最优。实际桥架、穿管、防火、支撑和施工净距须现场核定。",
+      "直流跳线及正负两端各计一次，导体总长乘1.1富余（示意）；等效单程=导体总长/2。",
+      "直流120°C、环境60°C、两带载贴面相触：Nexans 4/6/10mm²为44/57/79A；120°C仅20000h热耐久条件，非25年保证。",
+      "交流90°C XLPE/EPR铜多芯、三相、表面穿管、空气30°C：Prysmian C3.4。温度、成束及敷设均示意，现场复核降容。",
+      "铜ρ20=0.0175，α=0.00395（ABB2006附录E）；ρ(T)=ρ20[1+α(T−20)]，并非产品最大电阻保证。",
+      "直流2%为ABB2014建议1–2%内项目取值；交流2%为项目假设，均非中国强制限值。交流400V、功率因数1。",
+      "交流加屋面高度及5m落地余量（示意），按四芯电缆路线米计量，另列四根导体米；暂不改变造价。",
+      "发电按每块板单独计算，未模拟串内失配；改接法仅以串内遮挡差表示好处，不改发电量。",
+      "不可达线路不画通路，长度仅为未绕障碍的下界估算；E10/E11失败，不能作为可施工报价。",
+      "有2.4m线路须跨越采光带、禁区或玻璃面，按桥架跨越计（示意），施工时核定支架和防护。",
+      "采用屋面路径，未计组件接头短引线；三维显示的抬高不计入线长。"
+    ],
+    "total_length_m": 1787.7349666666669,
+    "routing": {
+      "version": 1,
+      "method": "固定组串的候选节线路径",
+      "optimized_strings": 4,
+      "blocked_routes": 0,
+      "baseline_dc_m": 1776.9201301587302,
+      "saved_dc_m": 69.20103492063481,
+      "crossing_m": 2.399999600000001
+    }
+  },
+  "candidates": [
+    {
+      "inverter_id": "huawei-sun2000-100ktl-m2",
+      "inverter_count": 2,
+      "inverters": [
+        {
+          "inverter_id": "huawei-sun2000-100ktl-m2",
+          "model": "SUN2000-100KTL-M2",
+          "count": 2
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 1.116225,
+      "hard_failures": 0,
+      "failed_checks": []
+    },
+    {
+      "inverter_id": "huawei-sun2000-115ktl-m2",
+      "inverter_count": 2,
+      "inverters": [
+        {
+          "inverter_id": "huawei-sun2000-115ktl-m2",
+          "model": "SUN2000-115KTL-M2",
+          "count": 2
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 0.9706304347826087,
+      "hard_failures": 0,
+      "failed_checks": [
+        "E07"
+      ]
+    },
+    {
+      "inverter_id": "huawei-sun2000-50ktl-m3",
+      "inverter_count": 4,
+      "inverters": [
+        {
+          "inverter_id": "huawei-sun2000-50ktl-m3",
+          "model": "SUN2000-50KTL-M3",
+          "count": 4
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 1.116225,
+      "hard_failures": 0,
+      "failed_checks": []
+    },
+    {
+      "inverter_id": "sungrow-sg100cx-p2",
+      "inverter_count": 2,
+      "inverters": [
+        {
+          "inverter_id": "sungrow-sg100cx-p2",
+          "model": "SG100CX-P2",
+          "count": 2
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 1.1163366336633664,
+      "hard_failures": 0,
+      "failed_checks": []
+    },
+    {
+      "inverter_id": "sungrow-sg125cx-p2",
+      "inverter_count": 2,
+      "inverters": [
+        {
+          "inverter_id": "sungrow-sg125cx-p2",
+          "model": "SG125CX-P2",
+          "count": 2
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 0.89298,
+      "hard_failures": 0,
+      "failed_checks": [
+        "E07"
+      ]
+    },
+    {
+      "inverter_id": "sungrow-sg50cx-p2",
+      "inverter_count": 4,
+      "inverters": [
+        {
+          "inverter_id": "sungrow-sg50cx-p2",
+          "model": "SG50CX-P2",
+          "count": 4
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 1.116225,
+      "hard_failures": 0,
+      "failed_checks": []
+    },
+    {
+      "inverter_id": "huawei-sun2000-100ktl-m2",
+      "inverter_count": 3,
+      "inverters": [
+        {
+          "inverter_id": "huawei-sun2000-100ktl-m2",
+          "model": "SUN2000-100KTL-M2",
+          "count": 2
+        },
+        {
+          "inverter_id": "huawei-sun2000-50ktl-m3",
+          "model": "SUN2000-50KTL-M3",
+          "count": 1
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 0.89298,
+      "hard_failures": 0,
+      "failed_checks": [
+        "E07"
+      ]
+    },
+    {
+      "inverter_id": "huawei-sun2000-115ktl-m2",
+      "inverter_count": 2,
+      "inverters": [
+        {
+          "inverter_id": "huawei-sun2000-115ktl-m2",
+          "model": "SUN2000-115KTL-M2",
+          "count": 1
+        },
+        {
+          "inverter_id": "huawei-sun2000-100ktl-m2",
+          "model": "SUN2000-100KTL-M2",
+          "count": 1
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 1.0383488372093024,
+      "hard_failures": 0,
+      "failed_checks": []
+    },
+    {
+      "inverter_id": "huawei-sun2000-115ktl-m2",
+      "inverter_count": 3,
+      "inverters": [
+        {
+          "inverter_id": "huawei-sun2000-115ktl-m2",
+          "model": "SUN2000-115KTL-M2",
+          "count": 2
+        },
+        {
+          "inverter_id": "huawei-sun2000-50ktl-m3",
+          "model": "SUN2000-50KTL-M3",
+          "count": 1
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 0.7973035714285714,
+      "hard_failures": 0,
+      "failed_checks": [
+        "E07"
+      ]
+    },
+    {
+      "inverter_id": "sungrow-sg100cx-p2",
+      "inverter_count": 3,
+      "inverters": [
+        {
+          "inverter_id": "sungrow-sg100cx-p2",
+          "model": "SG100CX-P2",
+          "count": 2
+        },
+        {
+          "inverter_id": "sungrow-sg50cx-p2",
+          "model": "SG50CX-P2",
+          "count": 1
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 0.8930514441155293,
+      "hard_failures": 0,
+      "failed_checks": [
+        "E07"
+      ]
+    },
+    {
+      "inverter_id": "sungrow-sg125cx-p2",
+      "inverter_count": 2,
+      "inverters": [
+        {
+          "inverter_id": "sungrow-sg125cx-p2",
+          "model": "SG125CX-P2",
+          "count": 1
+        },
+        {
+          "inverter_id": "sungrow-sg100cx-p2",
+          "model": "SG100CX-P2",
+          "count": 1
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 0.9922440997377661,
+      "hard_failures": 0,
+      "failed_checks": [
+        "E07"
+      ]
+    },
+    {
+      "inverter_id": "sungrow-sg125cx-p2",
+      "inverter_count": 3,
+      "inverters": [
+        {
+          "inverter_id": "sungrow-sg125cx-p2",
+          "model": "SG125CX-P2",
+          "count": 2
+        },
+        {
+          "inverter_id": "sungrow-sg50cx-p2",
+          "model": "SG50CX-P2",
+          "count": 1
+        }
+      ],
+      "modules_per_string": 20,
+      "dc_ac_ratio": 0.74415,
+      "hard_failures": 0,
+      "failed_checks": [
+        "E07"
+      ]
+    }
+  ],
+  "selection_reason": "优先硬失败最少，再取容配比最接近示意目标1.2，再取台数少、编号顺序",
+  "metadata": {
+    "module_source": "https://static.trinasolar.com/sites/default/files/DT-M-0045%20E%20Datasheet_Vertex_NEG19RC.20_EN_2024_A_E1_print.pdf；TSM_EN_2024_A_E1；第2.0页",
+    "inverter_source": "https://info-support.sungrowpower.com/datasheet-materials/fe40521c-fd35-4a37-9b79-fdf4d29d51b2.pdf；AU Version 4；第2.0页",
+    "standard_ref": "GB 50797-2012（2024年局部修订）6.4.2",
+    "standard_revision": "2024修订附件PDF第26页（印刷20）：6.4.2删除旧Vmpptmax上界，E04另按厂家规格书校核MPPT范围",
+    "working_voltage_coefficient": "功率温度系数近似工作电压温度系数",
+    "dc_capacity_basis": "整体按全部排板组件，含未接入剩余；每台按实际接入组件；另列connected_dc_kw"
+  },
+  "wiring": {
+    "method": "按阴影接",
+    "position_spread_pct": 7.175111052338394,
+    "shadow_spread_pct": 4.646201476637175,
+    "position_length_m": 1732.8581517318437,
+    "shadow_length_m": 1787.7349666666669,
+    "reason": "串内最大遮挡差7.18→4.65个百分点；电缆1732.9→1787.7m；达到至少降1个百分点、增长不超过10%"
+  }
+}

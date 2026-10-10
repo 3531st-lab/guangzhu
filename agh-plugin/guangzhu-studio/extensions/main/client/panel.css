@@ -1,0 +1,97 @@
+.gz-tool, .gz-user-brief {
+  margin-block: 10px;
+  max-width: 100%;
+  color: var(--agnes-text-primary);
+  background: var(--agnes-bg-card);
+  border-color: var(--agnes-line-primary);
+}
+/* Plugin Card/Tag/Table styles can carry Ant Design's default light palette. */
+:is(.gz-tool.ant-card, .gz-user-brief.ant-card) .ant-card-head { color: var(--agnes-text-primary); border-color: var(--agnes-line-primary); }
+:is(.gz-tool, .gz-user-brief) .ant-tag { color: var(--agnes-text-primary); background: var(--agnes-bg-surface); border-color: var(--agnes-line-primary); }
+.gz-tool .ant-tag-success { color: var(--agnes-status-success-text); background: var(--agnes-status-success-bg); }
+.gz-tool .ant-tag-error { color: var(--agnes-status-danger-text); background: var(--agnes-status-danger-bg); }
+.gz-tool .ant-tag-processing { color: var(--agnes-status-info-text); background: var(--agnes-bg-selected); }
+.gz-metrics .ant-statistic .ant-statistic-content { color: var(--agnes-text-primary); }
+.gz-metrics .ant-statistic .ant-statistic-title { color: var(--agnes-text-secondary); }
+.gz-tool .ant-table-wrapper .ant-table { color: var(--agnes-text-primary); background: var(--agnes-bg-card); }
+.gz-tool .ant-table-wrapper .ant-table-thead > tr > th {
+  color: var(--agnes-text-primary);
+  background: var(--agnes-bg-surface);
+  border-color: var(--agnes-line-primary);
+}
+.gz-tool .ant-table-wrapper .ant-table-tbody > tr > td { border-color: var(--agnes-line-primary); }
+.gz-tool .ant-table-wrapper .ant-table-tbody > tr > td.ant-table-cell-row-hover { background: var(--agnes-bg-hover); }
+.gz-tool .ant-table-wrapper .ant-table-tbody > .ant-table-placeholder,
+.gz-tool .ant-table-wrapper .ant-table-tbody > .ant-table-placeholder > td,
+.gz-tool .ant-table-wrapper .ant-table-tbody > .ant-table-placeholder:hover > td {
+  color: var(--agnes-text-secondary);
+  background: var(--agnes-bg-card);
+}
+.gz-tool .ant-table-wrapper .ant-empty-description { color: var(--agnes-text-secondary); }
+:is(.gz-tool .ant-alert, .gz-approval-hint.ant-alert) {
+  color: var(--agnes-text-primary);
+  background: var(--agnes-status-warning-bg);
+  border-color: var(--agnes-status-warning-text);
+}
+:is(.gz-tool .ant-alert, .gz-approval-hint.ant-alert) :is(.ant-alert-title, .ant-alert-message, .ant-alert-description) { color: var(--agnes-text-primary); }
+:is(.gz-tool .ant-alert, .gz-approval-hint.ant-alert) .ant-alert-icon { color: var(--agnes-status-warning-text); }
+.gz-tool pre, .gz-user-brief pre { max-height: 20lh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-family: 'IBM Plex Mono', monospace; }
+.gz-user-plain { white-space: pre-wrap; overflow-wrap: anywhere; }
+.gz-user-brief small { white-space: normal; font-weight: 400; color: var(--agnes-text-secondary); }
+.gz-user-brief summary { margin-top: 12px; cursor: pointer; color: var(--agnes-brand-primary); }
+.gz-metrics { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-bottom: 12px; }
+.gz-metrics > * { min-width: 90px; max-width: 100%; }
+.gz-metrics .ant-statistic-content { font-family: 'IBM Plex Mono', monospace; font-size: 18px; overflow-wrap: anywhere; }
+.gz-tool .ant-card-head-title, .gz-user-brief .ant-card-head-title { white-space: normal; }
+.gz-roof-thumb { position: relative; width: 180px; max-width: 100%; margin: 8px 0; }
+.gz-roof-thumb > span { position: absolute; right: 0; font-size: 11px; }
+.gz-roof-thumb svg { width: 100%; height: 120px; }
+.gz-outline { fill: var(--agnes-bg-surface); stroke: var(--agnes-brand-primary); stroke-width: .6; }
+.gz-obstacle { fill: var(--agnes-text-secondary); opacity: .7; }
+.gz-keepout { fill: none; stroke: var(--agnes-status-warning-text); stroke-width: .5; stroke-dasharray: 1; }
+.gz-approval-hint { margin-block: 10px; }
+.gz-brand { font-size: 12px; white-space: normal; }
+.gz-brand b { font-family: 'Noto Serif SC', serif; font-size: 22px; }
+.gz-mark { color: var(--agnes-brand-primary); }
+html[data-gz-embedded] [data-agnes-region='sidebar'],
+html[data-gz-embedded] [data-agnes-region='topbar'],
+html[data-gz-embedded] [data-agnes-region='rightbar'] { display: none !important; }
+html[data-gz-embedded] [data-agnes-region='app'] { grid-template-columns: minmax(0,1fr); }
+html[data-gz-embedded] [data-agnes-region='conversation'] { min-width: 0; }
+/* Reserve room for the native composer; long previews scroll inside the card. */
+html[data-gz-embedded] [data-agnes-region='approval'] { flex: none; max-height: calc(100dvh - 13rem); }
+html[data-gz-embedded] [data-agnes-region='approval'] [data-approval-key] {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 15rem);
+  overflow-y: auto;
+}
+html[data-gz-embedded] [data-approval-key] > :not(pre) { flex-shrink: 0; }
+html[data-gz-embedded] [data-approval-key] > p:first-of-type { max-height: 5lh; overflow: auto; }
+html[data-gz-embedded] [data-approval-key] > pre { flex: 0 1 auto; min-height: 3lh; max-height: 24dvh; overflow: auto; overscroll-behavior: contain; }
+html[data-gz-embedded] [data-approval-key] > .approval-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding-block: .5rem;
+  background: var(--agnes-bg-page);
+}
+/* Embedded pages load these rules even when AGH has no cached skin selection. */
+@font-face {
+  font-family: 'Noto Serif SC';
+  src: url('../skins/guangzhu/assets/NotoSerifSC-900-guangzhu.woff2') format('woff2');
+  font-weight: 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('../skins/guangzhu/assets/IBMPlexMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+html[data-gz-embedded] [data-agnes-region='app'] {
+  font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+}
+html[data-gz-embedded] [data-agnes-region='sidebar'] { border-right: 1px solid var(--agnes-line-primary); }
+html[data-gz-embedded] [data-agnes-region='composer'] { border-color: var(--agnes-line-primary); }
+html[data-gz-embedded] [data-agnes-region='approval'] { border-inline-start: 4px solid var(--agnes-brand-primary); }

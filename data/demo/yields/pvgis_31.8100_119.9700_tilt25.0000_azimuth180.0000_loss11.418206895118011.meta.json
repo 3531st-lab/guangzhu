@@ -1,0 +1,33 @@
+{
+  "source": "pvgis_pvcalc",
+  "latitude": 31.81,
+  "longitude": 119.97,
+  "tilt": 25.0,
+  "azimuth": 180.0,
+  "peakpower_kw": 1,
+  "loss_percent": 11.418206895118011,
+  "request_url": "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc?lat=31.81&lon=119.97&peakpower=1&loss=11.418206895118011&angle=25.0&aspect=0.0&raddatabase=PVGIS-ERA5&outputformat=json",
+  "download_time": "2026-10-01T15:51:14.255138+00:00",
+  "used": "download",
+  "data_file": "pvgis_31.8100_119.9700_tilt25.0000_azimuth180.0000_loss11.418206895118011.json",
+  "data_file_sha256": "ca911a3edb68fdf0dcd1cc84a8c2632b427814530e9c8e52b12960e0806d67f0",
+  "design_file": "data/demo/projects/changzhou-demo/designs/v3.json",
+  "design_version": 3,
+  "license": "JRC PVGIS usage conditions: output freely available with no restriction of use; source attribution",
+  "loss_source": "NREL/TP-6A20-62641 (September 2014), Table 6 / Eq. 9; shading 3% omitted",
+  "loss_components_percent": [
+    2,
+    0,
+    2,
+    2,
+    0.5,
+    1.5,
+    1,
+    0,
+    3
+  ],
+  "loss_source_url": "https://pvwatts.nrel.gov/downloads/pvwattsv5.pdf",
+  "source_title": "European Commission Joint Research Centre, PVGIS 5.3 PVcalc / PVGIS-ERA5",
+  "source_url": "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc",
+  "license_url": "https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/general-information/usage-conditions-data-protection_en"
+}

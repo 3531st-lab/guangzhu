@@ -1,0 +1,551 @@
+{
+  "apiversion": "4.0.1", 
+  "geometry": {
+    "coordinates": [
+      119.97, 
+      31.81
+    ], 
+    "type": "Point"
+  }, 
+  "properties": {
+    "data": [
+      {
+        "almanac_data": {
+          "dec": -0.210222, 
+          "gha": 208.110173, 
+          "hc": 46.00187, 
+          "zn": 130.433402
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.001699, 
+          "refr": -0.016143, 
+          "sd": 0.267708, 
+          "sum": 0.253264
+        }, 
+        "object": "Sun"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 7.803407, 
+          "gha": 196.89512, 
+          "hc": 43.311427, 
+          "zn": 111.417891
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.725773, 
+          "refr": -0.018184, 
+          "sd": 0.272228, 
+          "sum": 0.979818
+        }, 
+        "object": "Moon"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 5.828885, 
+          "gha": 191.682294, 
+          "hc": 37.980711, 
+          "zn": 109.42985
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.001195, 
+          "refr": -0.021187, 
+          "sd": 0.0, 
+          "sum": -0.019991
+        }, 
+        "object": "Venus"
+      }, 
+      {
+        "almanac_data": {
+          "dec": -7.376686, 
+          "gha": 222.16004, 
+          "hc": 47.259274, 
+          "zn": 153.359208
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.000714, 
+          "refr": -0.015307, 
+          "sd": 0.0, 
+          "sum": -0.014593
+        }, 
+        "object": "Mars"
+      }, 
+      {
+        "almanac_data": {
+          "dec": -0.335069, 
+          "gha": 203.055294, 
+          "hc": 42.517286, 
+          "zn": 125.313621
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.000171, 
+          "refr": -0.018056, 
+          "sd": 0.0, 
+          "sum": -0.017885
+        }, 
+        "object": "Saturn"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 29.234051, 
+          "gha": 205.193743, 
+          "hc": 60.007679, 
+          "zn": 85.699137
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.009565, 
+          "sd": 0.0, 
+          "sum": -0.009565
+        }, 
+        "nav_star_number": 1, 
+        "object": "Alpheratz"
+      }, 
+      {
+        "almanac_data": {
+          "dec": -42.164841, 
+          "gha": 200.734597, 
+          "hc": 7.679779, 
+          "zn": 151.726879
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.112895, 
+          "sd": 0.0, 
+          "sum": -0.112895
+        }, 
+        "nav_star_number": 2, 
+        "object": "Ankaa"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 56.681473, 
+          "gha": 197.133411, 
+          "hc": 51.48326, 
+          "zn": 36.898118
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.013188, 
+          "sd": 0.0, 
+          "sum": -0.013188
+        }, 
+        "nav_star_number": 3, 
+        "object": "Schedar"
+      }, 
+      {
+        "almanac_data": {
+          "dec": -17.8445, 
+          "gha": 196.40211, 
+          "hc": 25.08746, 
+          "zn": 133.515177
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.035123, 
+          "sd": 0.0, 
+          "sum": -0.035123
+        }, 
+        "nav_star_number": 4, 
+        "object": "Diphda"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 23.586158, 
+          "gha": 175.464631, 
+          "hc": 33.051466, 
+          "zn": 80.900384
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.025382, 
+          "sd": 0.0, 
+          "sum": -0.025382
+        }, 
+        "nav_star_number": 6, 
+        "object": "Hamal"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 4.191323, 
+          "gha": 161.713892, 
+          "hc": 12.131677, 
+          "zn": 92.6
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.074231, 
+          "sd": 0.0, 
+          "sum": -0.074231
+        }, 
+        "nav_star_number": 8, 
+        "object": "Menkar"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 49.956366, 
+          "gha": 156.077446, 
+          "hc": 27.459846, 
+          "zn": 46.139199
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.031696, 
+          "sd": 0.0, 
+          "sum": -0.031696
+        }, 
+        "nav_star_number": 9, 
+        "object": "Mirfak"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 46.026459, 
+          "gha": 127.966851, 
+          "hc": 9.073465, 
+          "zn": 40.664975
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.09734, 
+          "sd": 0.0, 
+          "sum": -0.09734
+        }, 
+        "nav_star_number": 12, 
+        "object": "CAPELLA"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 61.608924, 
+          "gha": 41.277184, 
+          "hc": 4.651013, 
+          "zn": 351.177871
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.169459, 
+          "sd": 0.0, 
+          "sum": -0.169459
+        }, 
+        "nav_star_number": 27, 
+        "object": "Dubhe"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 55.814255, 
+          "gha": 13.81731, 
+          "hc": 6.062908, 
+          "zn": 335.926473
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.137827, 
+          "sd": 0.0, 
+          "sum": -0.137827
+        }, 
+        "nav_star_number": 32, 
+        "object": "Alioth"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 49.177983, 
+          "gha": 0.47142, 
+          "hc": 6.743365, 
+          "zn": 325.422403
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.126199, 
+          "sd": 0.0, 
+          "sum": -0.126199
+        }, 
+        "nav_star_number": 34, 
+        "object": "Alkaid"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 74.041926, 
+          "gha": 344.940775, 
+          "hc": 26.530392, 
+          "zn": 342.725777
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.032973, 
+          "sd": 0.0, 
+          "sum": -0.032973
+        }, 
+        "nav_star_number": 40, 
+        "object": "Kochab"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 26.621451, 
+          "gha": 333.670029, 
+          "hc": 10.833744, 
+          "zn": 294.718499
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.082648, 
+          "sd": 0.0, 
+          "sum": -0.082648
+        }, 
+        "nav_star_number": 41, 
+        "object": "Alphecca"
+      }, 
+      {
+        "almanac_data": {
+          "dec": -15.758496, 
+          "gha": 309.651523, 
+          "hc": 8.142923, 
+          "zn": 245.695195
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.107239, 
+          "sd": 0.0, 
+          "sum": -0.107239
+        }, 
+        "nav_star_number": 44, 
+        "object": "Sabik"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 12.536919, 
+          "gha": 303.58512, 
+          "hc": 28.936607, 
+          "zn": 267.07378
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.029819, 
+          "sd": 0.0, 
+          "sum": -0.029819
+        }, 
+        "nav_star_number": 46, 
+        "object": "Rasalhague"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 51.478691, 
+          "gha": 298.320469, 
+          "hc": 43.676063, 
+          "zn": 312.89771
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.01734, 
+          "sd": 0.0, 
+          "sum": -0.01734
+        }, 
+        "nav_star_number": 47, 
+        "object": "Eltanin"
+      }, 
+      {
+        "almanac_data": {
+          "dec": -34.370996, 
+          "gha": 291.145937, 
+          "hc": 8.206481, 
+          "zn": 220.477759
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.106504, 
+          "sd": 0.0, 
+          "sum": -0.106504
+        }, 
+        "nav_star_number": 48, 
+        "object": "Kaus Australis"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 38.80209, 
+          "gha": 288.168878, 
+          "hc": 50.556038, 
+          "zn": 293.997869
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.013631, 
+          "sd": 0.0, 
+          "sum": -0.013631
+        }, 
+        "nav_star_number": 49, 
+        "object": "VEGA"
+      }, 
+      {
+        "almanac_data": {
+          "dec": -26.263851, 
+          "gha": 283.402172, 
+          "hc": 18.705876, 
+          "zn": 220.555513
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.04818, 
+          "sd": 0.0, 
+          "sum": -0.04818
+        }, 
+        "nav_star_number": 50, 
+        "object": "Nunki"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 8.934442, 
+          "gha": 269.610892, 
+          "hc": 54.285114, 
+          "zn": 236.656736
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.011914, 
+          "sd": 0.0, 
+          "sum": -0.011914
+        }, 
+        "nav_star_number": 51, 
+        "object": "ALTAIR"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 45.369218, 
+          "gha": 257.049119, 
+          "hc": 71.081924, 
+          "zn": 320.637503
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.005675, 
+          "sd": 0.0, 
+          "sum": -0.005675
+        }, 
+        "nav_star_number": 53, 
+        "object": "DENEB"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 9.992742, 
+          "gha": 241.260065, 
+          "hc": 68.153029, 
+          "zn": 183.256838
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.006641, 
+          "sd": 0.0, 
+          "sum": -0.006641
+        }, 
+        "nav_star_number": 54, 
+        "object": "Enif"
+      }, 
+      {
+        "almanac_data": {
+          "dec": -46.833327, 
+          "gha": 235.159549, 
+          "hc": 11.234022, 
+          "zn": 176.605027
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.07987, 
+          "sd": 0.0, 
+          "sum": -0.07987
+        }, 
+        "nav_star_number": 55, 
+        "object": "Alnair"
+      }, 
+      {
+        "almanac_data": {
+          "dec": -29.484102, 
+          "gha": 222.854533, 
+          "hc": 26.572174, 
+          "zn": 163.296762
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.032913, 
+          "sd": 0.0, 
+          "sum": -0.032913
+        }, 
+        "nav_star_number": 56, 
+        "object": "FOMALHAUT"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 15.344366, 
+          "gha": 221.11237, 
+          "hc": 66.166666, 
+          "zn": 129.308967
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.007319, 
+          "sd": 0.0, 
+          "sum": -0.007319
+        }, 
+        "nav_star_number": 57, 
+        "object": "Markab"
+      }, 
+      {
+        "almanac_data": {
+          "dec": 89.378462, 
+          "gha": 161.490118, 
+          "hc": 31.931477, 
+          "zn": 0.717761
+        }, 
+        "altitude_corrections": {
+          "isCorrected": true, 
+          "pa": 0.0, 
+          "refr": -0.02649, 
+          "sd": 0.0, 
+          "sum": -0.02649
+        }, 
+        "nav_star_number": "", 
+        "object": "POLARIS"
+      }, 
+      {
+        "almanac_data": {
+          "gha": 207.62507767535945
+        }, 
+        "altitude_corrections": {}, 
+        "object": "ARIES"
+      }
+    ], 
+    "day": 20, 
+    "month": 3, 
+    "moon_illum": 1, 
+    "moon_phase": "Waxing Crescent", 
+    "time": "02:00:00.000000", 
+    "tz": 0, 
+    "year": 2026
+  }, 
+  "type": "Feature"
+}

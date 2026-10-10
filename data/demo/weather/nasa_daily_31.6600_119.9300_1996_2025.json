@@ -1,0 +1,50 @@
+{
+  "schema": "guangzhu.weather.daily/1",
+  "source": "nasa_daily",
+  "source_description": "NASA POWER LST daily 2 m air temperature",
+  "latitude": 31.66,
+  "longitude": 119.93,
+  "start_year": 1996,
+  "end_year": 2025,
+  "request_url": "https://power.larc.nasa.gov/api/temporal/daily/point?latitude=31.66&longitude=119.93&start=19960101&end=20251231&parameters=T2M_MIN%2CT2M_MAX&community=RE&time-standard=LST&format=JSON",
+  "download_time": "2026-10-03T09:03:06.242181+00:00",
+  "used": "download",
+  "time_standard": "LST",
+  "row_count": 10958,
+  "missing_counts": {
+    "T2M_MIN": 0,
+    "T2M_MAX": 0
+  },
+  "units": {
+    "T2M_MIN": "degC",
+    "T2M_MAX": "degC"
+  },
+  "nasa_header": {
+    "title": "NASA/POWER Source Native Resolution Daily Data",
+    "api": {
+      "version": "v2.10.0",
+      "name": "POWER Daily API"
+    },
+    "sources": [
+      "MERRA2",
+      "POWER"
+    ],
+    "fill_value": -999.0,
+    "time_standard": "LST",
+    "start": "19960101",
+    "end": "20251231"
+  },
+  "nasa_parameters": {
+    "T2M_MIN": {
+      "units": "C",
+      "longname": "Temperature at 2 Meters Minimum"
+    },
+    "T2M_MAX": {
+      "units": "C",
+      "longname": "Temperature at 2 Meters Maximum"
+    }
+  },
+  "license": "CC-BY-4.0",
+  "data_file": "nasa_daily_31.6600_119.9300_1996_2025.csv.gz",
+  "data_file_sha256": "a40e0798673b4463131c055c8e954886f46272c0b5782e2df4a7468798fd5c7b"
+}

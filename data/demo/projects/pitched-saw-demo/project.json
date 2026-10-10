@@ -1,0 +1,304 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "pitched-saw-demo",
+  "name": "常州示意锯齿形厂房",
+  "collection": null,
+  "site": {
+    "lat": 31.81,
+    "lon": 119.97,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2,
+    "design_temp_min_c": null,
+    "design_temp_max_c": null
+  },
+  "roof": {
+    "planes": [
+      {
+        "id": 1,
+        "outline": [
+          [
+            60.0,
+            9.396926207859085
+          ],
+          [
+            0.0,
+            9.396926207859078
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            60.0,
+            0.0
+          ]
+        ],
+        "slope_deg": 10.0,
+        "slope_azimuth_deg": 180.0,
+        "offset_m": 0.0,
+        "material": "metal",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      },
+      {
+        "id": 2,
+        "outline": [
+          [
+            60.0,
+            10.000000000000002
+          ],
+          [
+            0.0,
+            9.999999999999995
+          ],
+          [
+            0.0,
+            9.396926207859078
+          ],
+          [
+            60.0,
+            9.396926207859085
+          ]
+        ],
+        "slope_deg": 70.0,
+        "slope_azimuth_deg": 0.0,
+        "offset_m": 0.0,
+        "material": "glass",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      },
+      {
+        "id": 3,
+        "outline": [
+          [
+            60.0,
+            19.39692620785909
+          ],
+          [
+            0.0,
+            19.39692620785908
+          ],
+          [
+            0.0,
+            9.999999999999995
+          ],
+          [
+            60.0,
+            10.000000000000002
+          ]
+        ],
+        "slope_deg": 10.0,
+        "slope_azimuth_deg": 180.0,
+        "offset_m": 0.0,
+        "material": "metal",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      },
+      {
+        "id": 4,
+        "outline": [
+          [
+            60.0,
+            20.000000000000004
+          ],
+          [
+            0.0,
+            19.999999999999996
+          ],
+          [
+            0.0,
+            19.39692620785908
+          ],
+          [
+            60.0,
+            19.39692620785909
+          ]
+        ],
+        "slope_deg": 70.0,
+        "slope_azimuth_deg": 0.0,
+        "offset_m": 0.0,
+        "material": "glass",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      },
+      {
+        "id": 5,
+        "outline": [
+          [
+            60.0,
+            29.39692620785909
+          ],
+          [
+            0.0,
+            29.39692620785908
+          ],
+          [
+            0.0,
+            19.999999999999996
+          ],
+          [
+            60.0,
+            20.000000000000004
+          ]
+        ],
+        "slope_deg": 10.0,
+        "slope_azimuth_deg": 180.0,
+        "offset_m": 0.0,
+        "material": "metal",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      },
+      {
+        "id": 6,
+        "outline": [
+          [
+            60.0,
+            30.000000000000007
+          ],
+          [
+            0.0,
+            30.0
+          ],
+          [
+            0.0,
+            29.39692620785908
+          ],
+          [
+            60.0,
+            29.39692620785909
+          ]
+        ],
+        "slope_deg": 70.0,
+        "slope_azimuth_deg": 0.0,
+        "offset_m": 0.0,
+        "material": "glass",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      },
+      {
+        "id": 7,
+        "outline": [
+          [
+            60.0,
+            39.39692620785909
+          ],
+          [
+            0.0,
+            39.39692620785908
+          ],
+          [
+            0.0,
+            30.0
+          ],
+          [
+            60.0,
+            30.000000000000007
+          ]
+        ],
+        "slope_deg": 10.0,
+        "slope_azimuth_deg": 180.0,
+        "offset_m": 0.0,
+        "material": "metal",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      },
+      {
+        "id": 8,
+        "outline": [
+          [
+            0.0,
+            39.39692620785908
+          ],
+          [
+            60.0,
+            39.39692620785909
+          ],
+          [
+            60.0,
+            40.0
+          ],
+          [
+            0.0,
+            40.0
+          ]
+        ],
+        "slope_deg": 70.0,
+        "slope_azimuth_deg": 0.0,
+        "offset_m": 0.0,
+        "material": "glass",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      }
+    ],
+    "pitched": {
+      "kind": "sawtooth",
+      "slope_deg": 10.0,
+      "azimuth_deg": 180.0,
+      "material": "metal",
+      "ridge_mode": "long",
+      "ridge": null,
+      "teeth": 4,
+      "tooth_width_m": null,
+      "glass_deg": 70.0
+    },
+    "seam_setback_m": 0.5,
+    "type": "pitched",
+    "outline": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        60.0,
+        0.0
+      ],
+      [
+        60.0,
+        40.0
+      ],
+      [
+        0.0,
+        40.0
+      ]
+    ],
+    "height_m": 9.0,
+    "parapet_height_m": 0.0,
+    "load_capacity_kn_m2": 0.3,
+    "obstacles": [],
+    "keepouts": [],
+    "underlay": null
+  },
+  "requirements": {
+    "text": "",
+    "structured": {
+      "budget_cny_max": null,
+      "payback_years_max": null,
+      "capacity_kw_min": null,
+      "capacity_kw_max": null,
+      "walkway_m_min": null,
+      "obstacle_clearance_m_min": null,
+      "edge_setback_m_min": null,
+      "keep_clear_ids": [],
+      "tilt_deg_range": null,
+      "notes": null
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "plane_flush"
+  },
+  "economics": {
+    "capex_cny_per_w": null,
+    "self_use_ratio": 0.8,
+    "price_self_cny_kwh": 0.65,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "T32示意整栋厂房；经济参数按当前逐项来源，材料与安装价格待工程报价。风荷载、夹具和锚固均待结构人员及厂家复核。"
+  },
+  "designs": []
+}

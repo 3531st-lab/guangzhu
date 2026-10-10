@@ -1,0 +1,21 @@
+.scene-view { position:relative; min-height:240px; overflow:hidden; isolation:isolate; }
+.scene-view canvas { display:block; width:100%; height:100%; touch-action:none; }
+.scene-note { position:absolute; left:12px; bottom:12px; max-width:calc(100% - 24px); padding:10px 12px; background:var(--card,#fffefa); color:var(--ink,#221d18); border:1px solid var(--line,#ece4da); border-radius:10px; white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; pointer-events:none; }
+.scene-unavailable { position:absolute; inset:0; display:grid; place-content:center; padding:28px; color:var(--muted,#998e83); text-align:center; background:var(--track,#f4ece3); }
+.scene-view [hidden] { display:none; }
+.wiring-tools { display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; border:1px solid var(--line); border-radius:10px;
+  padding:8px 12px; background:var(--card); }
+.wiring-tools[hidden], #heat-legend[hidden], #scene-retry[hidden] { display:none; }
+.wire-controls { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.wire-controls label { display:flex; align-items:center; gap:6px; font-size:12px; }
+.wire-controls select { max-width:240px; min-width:120px; }
+.wiring-tools p { flex:1 1 300px; margin:0; font-size:12px; overflow-wrap:anywhere; }
+.wiring-tools small { flex:1 1 100%; font-size:11px; color:var(--muted); }
+.scene-toolbar { flex-wrap:wrap; }
+.replay-list { display:flex; flex-direction:column; gap:12px; overflow:auto; min-width:0; height:100%; padding:16px; }
+.replay-entry { padding:12px 14px; border:1px solid var(--line,#ece4da); border-radius:12px; background:var(--card,#fffefa); overflow-wrap:anywhere; }
+.replay-entry p { white-space:pre-wrap; margin:8px 0 0; }
+.replay-entry small { color:var(--muted,#998e83); }
+.replay-entry pre { white-space:pre-wrap; overflow-wrap:anywhere; max-height:240px; overflow:auto; font-size:11px; }
+.replay-entry[data-status="error"],.replay-entry[data-verdict="rejected"] { border-color:var(--bad,#d1493f); }
+.replay-entry summary { cursor:pointer; color:var(--ink-2,#4b423a); }

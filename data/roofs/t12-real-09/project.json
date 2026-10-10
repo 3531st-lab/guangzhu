@@ -1,0 +1,199 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "t12-real-09",
+  "name": "测试屋顶09（轮廓真实、屋面示意）",
+  "site": {
+    "lat": 31.67,
+    "lon": 119.94,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2
+  },
+  "roof": {
+    "type": "flat",
+    "outline": [
+      [
+        -60.734,
+        -16.492
+      ],
+      [
+        -58.072,
+        24.24
+      ],
+      [
+        60.73,
+        16.492
+      ],
+      [
+        58.077,
+        -24.24
+      ]
+    ],
+    "height_m": 10.0,
+    "parapet_height_m": 1.0,
+    "load_capacity_kn_m2": 0.5,
+    "obstacles": [
+      {
+        "id": "device-1",
+        "label": "楼梯间（示意）",
+        "kind": "prism",
+        "footprint": [
+          [
+            41.254,
+            4.667
+          ],
+          [
+            41.254,
+            8.667
+          ],
+          [
+            37.254,
+            8.667
+          ],
+          [
+            37.254,
+            4.667
+          ]
+        ],
+        "height_m": 3.2
+      },
+      {
+        "id": "device-2",
+        "label": "空调外机（示意）",
+        "kind": "prism",
+        "footprint": [
+          [
+            22.941,
+            7.99
+          ],
+          [
+            22.941,
+            11.99
+          ],
+          [
+            18.941,
+            11.99
+          ],
+          [
+            18.941,
+            7.99
+          ]
+        ],
+        "height_m": 1
+      },
+      {
+        "id": "device-4",
+        "label": "楼梯间（示意）",
+        "kind": "prism",
+        "footprint": [
+          [
+            -10.764,
+            8.461
+          ],
+          [
+            -10.764,
+            12.461
+          ],
+          [
+            -14.764,
+            12.461
+          ],
+          [
+            -14.764,
+            8.461
+          ]
+        ],
+        "height_m": 3.2
+      },
+      {
+        "id": "device-5",
+        "label": "空调外机（示意）",
+        "kind": "prism",
+        "footprint": [
+          [
+            -19.18,
+            -13.861
+          ],
+          [
+            -19.18,
+            -9.861
+          ],
+          [
+            -23.18,
+            -9.861
+          ],
+          [
+            -23.18,
+            -13.861
+          ]
+        ],
+        "height_m": 1
+      }
+    ],
+    "keepouts": [
+      {
+        "id": "sky-1",
+        "label": "天窗（示意）",
+        "polygon": [
+          [
+            19.624,
+            -0.862
+          ],
+          [
+            19.624,
+            3.138
+          ],
+          [
+            15.624,
+            3.138
+          ],
+          [
+            15.624,
+            -0.862
+          ]
+        ]
+      },
+      {
+        "id": "sky-2",
+        "label": "天窗（示意）",
+        "polygon": [
+          [
+            9.587,
+            -16.479
+          ],
+          [
+            9.587,
+            -12.479
+          ],
+          [
+            5.587,
+            -12.479
+          ],
+          [
+            5.587,
+            -16.479
+          ]
+        ]
+      }
+    ]
+  },
+  "requirements": {},
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "ballast_tilt"
+  },
+  "economics": {
+    "capex_cny_per_w": null,
+    "self_use_ratio": 0.8,
+    "price_self_cny_kwh": 0.65,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "用户示意覆盖：自用比例0.8、自用电价0.65元/kWh、折现率0.06；计算期25年对应天合DE19功率质保。造价和运维填null，采用data/catalog/assumptions.csv已查证默认2.59元/W、0.046元/(W·年)；其他null或缺失经济参数取表默认：年衰减0.55%、江苏排放因子0.5827。余电单价0.391元/kWh仍为江苏燃煤基准价示意占位，不能视为2026年新建项目实际上网价。演示206.25kW按一般工商业假设，公共电网连接点电压和省级自用要求尚待接网核实。首年模拟已含1.5%初始光衰；逆变器更换视为运维已含的简化示意；不含税费、补贴、贷款、储能或电价上涨。逐项来源、限制见data/catalog/ASSUMPTIONS.md"
+  },
+  "designs": [],
+  "collection": "real"
+}

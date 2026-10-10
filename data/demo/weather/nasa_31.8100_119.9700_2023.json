@@ -1,0 +1,70 @@
+{
+  "schema": "guangzhu.weather/1",
+  "source": "nasa",
+  "source_description": "NASA POWER UTC hourly",
+  "latitude": 31.81,
+  "longitude": 119.97,
+  "year": 2023,
+  "request_url": "https://power.larc.nasa.gov/api/temporal/hourly/point?latitude=31.81&longitude=119.97&start=20230101&end=20231231&parameters=ALLSKY_SFC_SW_DWN%2CALLSKY_SFC_SW_DNI%2CALLSKY_SFC_SW_DIFF%2CT2M%2CWS10M&community=RE&time-standard=UTC&format=JSON",
+  "download_time": "2026-10-01T12:31:05.059948+00:00",
+  "used": "download",
+  "timezone": "UTC",
+  "interval_minutes": 60,
+  "hour_midpoint_offset_minutes": 30.0,
+  "units": {
+    "ghi": "W/m2",
+    "dni": "W/m2",
+    "dhi": "W/m2",
+    "temp_air": "degC",
+    "wind_speed": "m/s"
+  },
+  "missing_counts": {
+    "ghi": 0,
+    "dni": 0,
+    "dhi": 0,
+    "temp_air": 0,
+    "wind_speed": 0
+  },
+  "timestamp_semantics": "start of one-hour interval",
+  "timestamp_source": "https://power.larc.nasa.gov/docs/faqs/other/#time-range",
+  "nasa_header": {
+    "title": "NASA/POWER Source Native Resolution Hourly Data",
+    "api": {
+      "version": "v2.10.2",
+      "name": "POWER Hourly API"
+    },
+    "sources": [
+      "MERRA2",
+      "SYN1DEG",
+      "POWER"
+    ],
+    "fill_value": -999.0,
+    "time_standard": "UTC",
+    "start": "20230101",
+    "end": "20231231"
+  },
+  "nasa_parameters": {
+    "ALLSKY_SFC_SW_DWN": {
+      "units": "Wh/m^2",
+      "longname": "All Sky Surface Shortwave Downward Irradiance"
+    },
+    "ALLSKY_SFC_SW_DNI": {
+      "units": "Wh/m^2",
+      "longname": "All Sky Surface Shortwave Downward Direct Normal Irradiance"
+    },
+    "ALLSKY_SFC_SW_DIFF": {
+      "units": "Wh/m^2",
+      "longname": "All Sky Surface Shortwave Diffuse Irradiance"
+    },
+    "T2M": {
+      "units": "C",
+      "longname": "Temperature at 2 Meters"
+    },
+    "WS10M": {
+      "units": "m/s",
+      "longname": "Wind Speed at 10 Meters"
+    }
+  },
+  "data_file": "nasa_31.8100_119.9700_2023.csv.gz",
+  "data_file_sha256": "9acbf5c97ee291eab4bc0f23bc4bb325118979d9b4c60e693efac1137445cb3d"
+}

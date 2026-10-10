@@ -1,0 +1,448 @@
+{
+  "plant": {
+    "id": 2107,
+    "year": 2022,
+    "capacity_kw": 893.0,
+    "latitude": 38.996306,
+    "longitude": -122.134111,
+    "tilt": 25.0,
+    "azimuth": 180.0,
+    "timezone": "PST8PDT",
+    "license": "CC-BY-4.0",
+    "sensor_metadata": {
+      "meter_revenue_grade_ac_output_meter_149578": {
+        "metric_id": 149578,
+        "sensor_name": "meter_revenue_grade_ac_output (kW)",
+        "common_name": "AC power",
+        "raw_units": "kw",
+        "units": "kw",
+        "calc_scale": 1.0,
+        "calc_offset": 0.0,
+        "calc_details": null,
+        "aggregation_type": "avg",
+        "source_type": "METER",
+        "source_id": null,
+        "comments": "",
+        "offline": false
+      },
+      "ambient_temperature_o_149575": {
+        "metric_id": 149575,
+        "sensor_name": "ambient_temperature (F)",
+        "common_name": "Temperature ambient",
+        "raw_units": "F",
+        "units": "F",
+        "calc_scale": 1.0,
+        "calc_offset": 0.0,
+        "calc_details": null,
+        "aggregation_type": "sample",
+        "source_type": "OTHER",
+        "source_id": null,
+        "comments": "",
+        "offline": false
+      },
+      "wind_speed_o_149576": {
+        "metric_id": 149576,
+        "sensor_name": "wind_speed (mph)",
+        "common_name": "Wind speed",
+        "raw_units": "mph",
+        "units": "mph",
+        "calc_scale": 1.0,
+        "calc_offset": 0.0,
+        "calc_details": null,
+        "aggregation_type": "sample",
+        "source_type": "OTHER",
+        "source_id": null,
+        "comments": "",
+        "offline": false
+      },
+      "poa_irradiance_o_149574": {
+        "metric_id": 149574,
+        "sensor_name": "poa_irradiance (W/m^2)",
+        "common_name": "Irradiance POA",
+        "raw_units": "W/m^2",
+        "units": "W/m^2",
+        "calc_scale": 1.0,
+        "calc_offset": 0.0,
+        "calc_details": null,
+        "aggregation_type": "avg",
+        "source_type": "OTHER",
+        "source_id": null,
+        "comments": "",
+        "offline": false
+      }
+    },
+    "equipment": {
+      "module": "Hyundai HiS-M310TI",
+      "inverter": "ABB TRIO-27.6-TL-OUTD-S1B",
+      "inverter_count": 24,
+      "mount": "ground"
+    },
+    "time_alignment": "left (L); unresolved DST samples excluded, never guessed"
+  },
+  "sources": [
+    {
+      "url": "https://oedi-data-lake.s3.amazonaws.com/pvdaq/2023-solar-data-prize/2107_OEDI/metadata/2107_system_metadata.json",
+      "sha256": "17e4f7f448fcb2bec43f7610b40c1f7f4fc794ccc185e41dcde0514afba73ae5",
+      "bytes": 64652,
+      "downloaded_at": "2026-10-03T09:03:05.415278+00:00"
+    },
+    {
+      "url": "https://oedi-data-lake.s3.amazonaws.com/pvdaq/2023-solar-data-prize/2107_OEDI/data/2107_meter_15m_data.csv",
+      "sha256": "7f6c7cf80aae5dd8dd3687a7df95e35d03ffdc5bc0848256a1d76147bce9eb47",
+      "bytes": 6319525,
+      "downloaded_at": "2026-10-03T09:05:13.101912+00:00"
+    },
+    {
+      "url": "https://oedi-data-lake.s3.amazonaws.com/pvdaq/2023-solar-data-prize/2107_OEDI/data/2107_environment_data.csv",
+      "sha256": "669f59c7bbcecc6d621788041188454986be1bf8a68c34ef544c2ef640404e06",
+      "bytes": 7700486,
+      "downloaded_at": "2026-10-03T09:05:29.568495+00:00"
+    },
+    {
+      "url": "https://oedi-data-lake.s3.amazonaws.com/pvdaq/2023-solar-data-prize/2107_OEDI/data/2107_irradiance_data.csv",
+      "sha256": "f3820b3c705eecabdc76a9a0363b576cae68bc77492891c5da91017d1489031f",
+      "bytes": 13990782,
+      "downloaded_at": "2026-10-03T09:06:03.106674+00:00"
+    }
+  ],
+  "nasa": {
+    "schema": "guangzhu.weather/1",
+    "source": "nasa",
+    "source_description": "NASA POWER UTC hourly",
+    "latitude": 38.996306,
+    "longitude": -122.134111,
+    "year": 2022,
+    "request_url": "https://power.larc.nasa.gov/api/temporal/hourly/point?latitude=38.996306&longitude=-122.134111&start=20220101&end=20221231&parameters=ALLSKY_SFC_SW_DWN%2CALLSKY_SFC_SW_DNI%2CALLSKY_SFC_SW_DIFF%2CT2M%2CWS10M&community=RE&time-standard=UTC&format=JSON",
+    "download_time": "2026-10-03T09:07:08.724462+00:00",
+    "used": "cache",
+    "timezone": "UTC",
+    "interval_minutes": 60,
+    "hour_midpoint_offset_minutes": 30.0,
+    "units": {
+      "ghi": "W/m2",
+      "dni": "W/m2",
+      "dhi": "W/m2",
+      "temp_air": "degC",
+      "wind_speed": "m/s"
+    },
+    "missing_counts": {
+      "ghi": 0,
+      "dni": 0,
+      "dhi": 0,
+      "temp_air": 0,
+      "wind_speed": 0
+    },
+    "timestamp_semantics": "start of one-hour interval",
+    "timestamp_source": "https://power.larc.nasa.gov/docs/faqs/other/#time-range",
+    "nasa_header": {
+      "title": "NASA/POWER Source Native Resolution Hourly Data",
+      "api": {
+        "version": "v2.10.2",
+        "name": "POWER Hourly API"
+      },
+      "sources": [
+        "MERRA2",
+        "SYN1DEG",
+        "POWER"
+      ],
+      "fill_value": -999.0,
+      "time_standard": "UTC",
+      "start": "20220101",
+      "end": "20221231"
+    },
+    "nasa_parameters": {
+      "ALLSKY_SFC_SW_DWN": {
+        "units": "Wh/m^2",
+        "longname": "All Sky Surface Shortwave Downward Irradiance"
+      },
+      "ALLSKY_SFC_SW_DNI": {
+        "units": "Wh/m^2",
+        "longname": "All Sky Surface Shortwave Downward Direct Normal Irradiance"
+      },
+      "ALLSKY_SFC_SW_DIFF": {
+        "units": "Wh/m^2",
+        "longname": "All Sky Surface Shortwave Diffuse Irradiance"
+      },
+      "T2M": {
+        "units": "C",
+        "longname": "Temperature at 2 Meters"
+      },
+      "WS10M": {
+        "units": "m/s",
+        "longname": "Wind Speed at 10 Meters"
+      }
+    },
+    "data_file": "nasa_38.9963_-122.1341_2022.csv.gz",
+    "data_file_sha256": "86d35de1b0466b2503e7beb17cab9d0719f8963285b1f9c5e270627a0848e725"
+  },
+  "sampling": [
+    {
+      "cadence_seconds": 900.0,
+      "unresolved_dst": 4
+    },
+    {
+      "cadence_seconds": 900.0,
+      "unresolved_dst": 4
+    },
+    {
+      "cadence_seconds": 300.0,
+      "unresolved_dst": 12
+    }
+  ],
+  "qc": {
+    "loss_percent": 11.418206895118011,
+    "reference_model": {
+      "model": "CEC single diode + SAM NOCT + Sandia inverter",
+      "catalog": {
+        "sam_commit": "cba319ded1c32a7f5b3ac76545a29e1f7181d238",
+        "source_used": "subset",
+        "series": 22,
+        "parallel": 6,
+        "module_count": 132,
+        "dc_capacity_kw": 72.6,
+        "dc_ac_ratio": 1.2063407663420957,
+        "stc_string_vmp_v": 695.2,
+        "stc_string_voc_v": 833.8,
+        "module_name": "Trina Solar TSM-550DE19",
+        "module_key": "Trina_Solar_TSM_550DE19",
+        "inverter_name": "Sungrow: SG60CX-US {480V}",
+        "inverter_key": "Sungrow__SG60CX_US_{480V}",
+        "urls": {
+          "modules": "https://raw.githubusercontent.com/NREL/SAM/cba319ded1c32a7f5b3ac76545a29e1f7181d238/deploy/libraries/CEC%20Modules.csv",
+          "inverters": "https://raw.githubusercontent.com/NREL/SAM/cba319ded1c32a7f5b3ac76545a29e1f7181d238/deploy/libraries/CEC%20Inverters.csv"
+        },
+        "fullfile_sha256": {
+          "modules": "a28cf8956a839ed98bb941809b439e4907f5b4c237bd9299bc123fb502c29aff",
+          "inverters": "0c1b2188415dad6928f91f1a4c9a820dadc80962549f903d57d9282ba3753760"
+        },
+        "sha256": {
+          "modules": "1d1da584463895c704aa832deedd73cc806cffe7d1d003ce1e99d7941b03b3f4",
+          "inverters": "20d16c82e572e585183d980a3dbc7ee0661be1f9425902f961c6a52adfdd8eee"
+        },
+        "inverter_application": "US 480 V / 60 Hz efficiency model only; T06 electrical design remains separate"
+      },
+      "array_dc_capacity_kw": 72.6,
+      "array_ac_rating_kw": 60.182,
+      "array_annual_generated_kwh": 118090.87352202833,
+      "normalization_factor": 0.013774104683195593,
+      "loss_percent": 11.418206895118011,
+      "noct_c": 45.7,
+      "module_efficiency": 0.21235521235521235,
+      "iam": "physical glass; Marion diffuse integration",
+      "transposition": "perez",
+      "hour_midpoint_offset_minutes": 30.0,
+      "output_dc_capacity_kw": 1.0,
+      "aggregation_timezone": "UTC",
+      "negative_night_tare": "clipped to zero for generated energy"
+    },
+    "warnings": [
+      "691 points failed to converge after 30 iterations. best_diff:\ntime\n2022-01-01 00:30:00+00:00    9999.000000\n2022-01-01 01:30:00+00:00    9999.000000\n2022-01-01 15:30:00+00:00    9999.000000\n2022-01-01 20:30:00+00:00       2.724064\n2022-01-02 00:30:00+00:00      79.872927\n                                ...     \n2022-12-29 15:30:00+00:00    9999.000000\n2022-12-30 01:30:00+00:00    9999.000000\n2022-12-30 15:30:00+00:00    9999.000000\n2022-12-31 01:30:00+00:00    9999.000000\n2022-12-31 15:30:00+00:00    9999.000000\nLength: 691, dtype: float64"
+    ],
+    "poa_roundtrip_mae_w_m2": 0.27197106222213757,
+    "poa_roundtrip_p95_w_m2": 0.19029859154257842
+  },
+  "summary": {
+    "nasa": {
+      "mape_pct": 11.348908750375358,
+      "bias_pct": 11.685199632538158
+    },
+    "station": {
+      "mape_pct": 5.120351600137742,
+      "bias_pct": 4.656736861064759
+    }
+  },
+  "monthly": [
+    {
+      "month": 1,
+      "missing": 420,
+      "nonphysical": 0,
+      "outage_proxy": 0,
+      "low_angle": 63,
+      "inversion": 1,
+      "candidate_hours": 744,
+      "kept_hours": 267,
+      "excluded_hours": 477,
+      "measured_kwh": 92921.279981,
+      "nasa_kwh": 98394.81701790083,
+      "nasa_ape_pct": 5.890509728256044,
+      "station_kwh": 91727.47126916371,
+      "station_ape_pct": 1.2847527628551791
+    },
+    {
+      "month": 2,
+      "missing": 476,
+      "nonphysical": 1,
+      "outage_proxy": 0,
+      "low_angle": 54,
+      "inversion": 112,
+      "candidate_hours": 672,
+      "kept_hours": 162,
+      "excluded_hours": 510,
+      "measured_kwh": 76634.559989,
+      "nasa_kwh": 78521.96913440131,
+      "nasa_ape_pct": 2.462869422976044,
+      "station_kwh": 73861.8423863444,
+      "station_ape_pct": 3.6181033766665927
+    },
+    {
+      "month": 3,
+      "missing": 439,
+      "nonphysical": 0,
+      "outage_proxy": 0,
+      "low_angle": 52,
+      "inversion": 72,
+      "candidate_hours": 744,
+      "kept_hours": 273,
+      "excluded_hours": 471,
+      "measured_kwh": 107283.999986,
+      "nasa_kwh": 115912.32997803988,
+      "nasa_ape_pct": 8.042513322737621,
+      "station_kwh": 107563.3396276087,
+      "station_ape_pct": 0.26037399952010265
+    },
+    {
+      "month": 4,
+      "missing": 319,
+      "nonphysical": 0,
+      "outage_proxy": 0,
+      "low_angle": 67,
+      "inversion": 37,
+      "candidate_hours": 720,
+      "kept_hours": 342,
+      "excluded_hours": 378,
+      "measured_kwh": 134934.159977,
+      "nasa_kwh": 149102.37772231686,
+      "nasa_ape_pct": 10.500097045649426,
+      "station_kwh": 142645.22752692044,
+      "station_ape_pct": 5.714688964777204
+    },
+    {
+      "month": 5,
+      "missing": 284,
+      "nonphysical": 0,
+      "outage_proxy": 0,
+      "low_angle": 71,
+      "inversion": 63,
+      "candidate_hours": 744,
+      "kept_hours": 390,
+      "excluded_hours": 354,
+      "measured_kwh": 148539.039976,
+      "nasa_kwh": 167007.84551578143,
+      "nasa_ape_pct": 12.433637340570879,
+      "station_kwh": 155513.19606782176,
+      "station_ape_pct": 4.6951670705214
+    },
+    {
+      "month": 6,
+      "missing": 410,
+      "nonphysical": 1,
+      "outage_proxy": 0,
+      "low_angle": 88,
+      "inversion": 171,
+      "candidate_hours": 720,
+      "kept_hours": 245,
+      "excluded_hours": 475,
+      "measured_kwh": 86019.519979,
+      "nasa_kwh": 108179.54313137082,
+      "nasa_ape_pct": 25.76162149914434,
+      "station_kwh": 100614.86301261692,
+      "station_ape_pct": 16.96747789011155
+    },
+    {
+      "month": 7,
+      "missing": 275,
+      "nonphysical": 0,
+      "outage_proxy": 0,
+      "low_angle": 106,
+      "inversion": 44,
+      "candidate_hours": 744,
+      "kept_hours": 364,
+      "excluded_hours": 380,
+      "measured_kwh": 133015.599971,
+      "nasa_kwh": 161281.9446325952,
+      "nasa_ape_pct": 21.250398199728316,
+      "station_kwh": 151287.81131086653,
+      "station_ape_pct": 13.736893525158123
+    },
+    {
+      "month": 8,
+      "missing": 314,
+      "nonphysical": 0,
+      "outage_proxy": 0,
+      "low_angle": 80,
+      "inversion": 41,
+      "candidate_hours": 744,
+      "kept_hours": 359,
+      "excluded_hours": 385,
+      "measured_kwh": 133461.279963,
+      "nasa_kwh": 156860.81476463465,
+      "nasa_ape_pct": 17.53282660568052,
+      "station_kwh": 140613.0173143746,
+      "station_ape_pct": 5.358660844071994
+    },
+    {
+      "month": 9,
+      "missing": 344,
+      "nonphysical": 10,
+      "outage_proxy": 0,
+      "low_angle": 55,
+      "inversion": 4,
+      "candidate_hours": 720,
+      "kept_hours": 323,
+      "excluded_hours": 397,
+      "measured_kwh": 121321.75997300001,
+      "nasa_kwh": 131092.47228435343,
+      "nasa_ape_pct": 8.053553058847719,
+      "station_kwh": 122654.53517175035,
+      "station_ape_pct": 1.0985458824920968
+    },
+    {
+      "month": 10,
+      "missing": 421,
+      "nonphysical": 0,
+      "outage_proxy": 0,
+      "low_angle": 53,
+      "inversion": 30,
+      "candidate_hours": 744,
+      "kept_hours": 283,
+      "excluded_hours": 461,
+      "measured_kwh": 108938.079975,
+      "nasa_kwh": 114365.66195334788,
+      "nasa_ape_pct": 4.982263300026446,
+      "station_kwh": 114247.44128945697,
+      "station_ape_pct": 4.873742327453723
+    },
+    {
+      "month": 11,
+      "missing": 409,
+      "nonphysical": 0,
+      "outage_proxy": 1,
+      "low_angle": 60,
+      "inversion": 4,
+      "candidate_hours": 720,
+      "kept_hours": 251,
+      "excluded_hours": 469,
+      "measured_kwh": 96906.239984,
+      "nasa_kwh": 103960.01730155126,
+      "nasa_ape_pct": 7.278971218691277,
+      "station_kwh": 98455.43259231406,
+      "station_ape_pct": 1.5986510348248384
+    },
+    {
+      "month": 12,
+      "missing": 442,
+      "nonphysical": 0,
+      "outage_proxy": 0,
+      "low_angle": 69,
+      "inversion": 0,
+      "candidate_hours": 744,
+      "kept_hours": 244,
+      "excluded_hours": 500,
+      "measured_kwh": 60599.919983,
+      "nasa_kwh": 67870.48280573555,
+      "nasa_ape_pct": 11.99764426219565,
+      "station_kwh": 61955.638075949726,
+      "station_ape_pct": 2.237161523200104
+    }
+  ]
+}

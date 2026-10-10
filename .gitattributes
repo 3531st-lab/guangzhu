@@ -1,0 +1,18 @@
+# Preserve bytes across default Windows clones, including frozen source bindings.
+# -text disables newline conversion; it does not disable textual Git diffs.
+* -text
+# Explicit evidence boundaries also document the byte-integrity contract.
+runs/** -text
+reports/assets/** -text
+tests/fixtures/** -text
+*.jsonl -text
+# Preserve the original SAM rows byte-for-byte for pinned subset SHA-256 checks.
+data/catalog/cec_modules_subset.csv -text
+data/catalog/cec_inverters_subset.csv -text
+data/catalog/LICENSE-SAM.txt -text
+# These real PVGIS response bytes are checked against their metadata hashes.
+data/demo/yields/*.json -text
+# Versioned demo and machine-generated evidence have recorded byte hashes.
+data/demo/projects/*/designs/*.json -text
+reports/assets/*.json -text
+reports/assets/T08-smoke-designs/*.json -text

@@ -1,0 +1,18 @@
+{
+  "client": {
+    "entry": "./client/index.js",
+    "styles": [
+      "./client/panel.css"
+    ],
+    "slots": [
+      "conversation.chat.node",
+      "tool.call.toolview",
+      "conversation.approval.detail",
+      "sidebar.brand.mark",
+      "sidebar.brand.name"
+    ],
+    "slotCatalogVersion": "dsh-client-slots/v1",
+    "services": [],
+    "projections": []
+  }
+}

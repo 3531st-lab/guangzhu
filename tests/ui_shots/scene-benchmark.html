@@ -1,0 +1,57 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>T14 离线 3D 验证</title>
+<link rel="stylesheet" href="/desktop/web/scene.css">
+<style>
+body{margin:0;padding:16px;font:14px system-ui;background:var(--paper,#faf6f1);color:var(--ink,#221d18)}
+#scene{width:min(1100px,100%);height:650px;border:1px solid #998e83}button{padding:8px;margin:4px}pre{white-space:pre-wrap;overflow-wrap:anywhere}
+body[data-theme=dark]{--paper:#171411;--card:#221d19;--ink:#f2ebe3;--track:#2b241e;--line:#352d26;--muted:#a2968a}
+</style>
+<h1>真实场景与 500 块渲染压力验证</h1>
+<p>仅离线渲染；500 块 fixture 由真实模块几何重复构成，不作为工程设计或计算结果。</p>
+<button id="real">常州 v12（父 v11，删除 6 块）</button><button id="heat">年度遮挡</button><button id="strings">组串</button>
+<button id="light">光影</button><button id="dark">切换主题</button><button id="morning">冬至 09:00</button><button id="noon">冬至 12:00</button><button id="afternoon">冬至 15:00</button>
+<button id="benchmark">500 块 · 预热 2 秒后测 10 秒</button><button id="memory">20 次版本切换资源计数</button>
+<button id="lose-context">使当前真实 WebGL 上下文丢失</button>
+<div id="scene"></div><pre id="output">加载本地记录…</pre>
+<script src="/desktop/web/vendor/three.min.js"></script><script src="/desktop/web/vendor/OrbitControls.min.js"></script>
+<script type="module">
+import {createScene} from '/desktop/web/scene.js';
+import {normalizeScene,heatColor} from '/desktop/web/scene-data.js';
+const get = path => fetch('/projects/t10-changzhou-006/'+path).then(r => {if(!r.ok) throw Error(path+' unavailable');return r.json();});
+const [project,design,parent_design,shading,electrical,previous] = await Promise.all(['project.json','designs/v12.json','designs/v11.json','analysis/v12/shading.json','analysis/v12/electrical.json','designs/v2.json'].map(get));
+const data={project,design,parent_design,shading,electrical}, output=document.querySelector('#output');
+if(new URLSearchParams(location.search).has('fallback')) globalThis.THREE=undefined;
+const scene=createScene(document.querySelector('#scene'));
+const print=value => output.textContent=JSON.stringify(value,null,2);
+window.sceneTest={scene,data};
+const real=()=>{scene.setData(data);scene.setMode('light');print(scene.stats());}; real();
+document.querySelector('#real').onclick=real;
+document.querySelector('#heat').onclick=()=>{scene.setMode('heat');const sorted=normalizeScene(data).modules.sort((a,b)=>a.loss-b.loss);print([sorted[0],sorted[Math.floor(sorted.length/2)],sorted.at(-1)].map(m=>({id:m.id,loss:m.loss,color:heatColor(m.loss,shading.summary.threshold_pct)})));};
+document.querySelector('#strings').onclick=()=>{scene.setMode('string');print({strings:electrical.strings.length,voc_cold_v:electrical.voc_cold_v,vmp_hot_v:electrical.vmp_hot_v});};
+document.querySelector('#light').onclick=()=>scene.setMode('light');
+document.querySelector('#dark').onclick=()=>{document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark';scene.setTheme(document.body.dataset.theme);};
+for(const [id,hour] of [['morning',9],['noon',12],['afternoon',15]]) document.querySelector('#'+id).onclick=()=>print(scene.setSun('2026-12-21',hour));
+const tick=()=>new Promise(resolve=>requestAnimationFrame(resolve));
+document.querySelector('#lose-context').onclick=()=>{
+  const canvas=document.querySelector('#scene canvas');
+  const context=canvas?.getContext('webgl2') || canvas?.getContext('webgl');
+  const extension=context?.getExtension('WEBGL_lose_context');
+  if(!extension){print({error:'当前设备未提供 WEBGL_lose_context，不能执行此项真实上下文验证。'});return;}
+  canvas.addEventListener('webglcontextlost',()=>print({test:'使当前真实 WebGL 上下文丢失',event:'webglcontextlost',contextLost:context.isContextLost(),note:'重新加载页面可恢复 3D。'}),{once:true});
+  extension.loseContext();
+};
+document.querySelector('#benchmark').onclick=async()=>{
+  const modules=Array.from({length:500},(_,i)=>({...design.modules[i%design.modules.length],id:'benchmark-'+i}));
+  scene.setData({...data,design:{...design,modules},parent_design:null,shading:null,electrical:null});
+  const warming=performance.now();while(performance.now()-warming<2000) await tick();
+  const start=performance.now(),first=scene.stats().frames,times=[];let last=start;
+  while(performance.now()-start<10000){scene.setSun('2026-12-21',9+((performance.now()-start)/10000)*6);await tick();const now=performance.now();times.push(now-last);last=now;}
+  times.sort((a,b)=>a-b);const stats=scene.stats(),seconds=(performance.now()-start)/1000;
+  const result={fixture:'500 repeated real-corner modules; not a saved design',date:new Date().toISOString(),viewport:[innerWidth,innerHeight],dpr:devicePixelRatio,seconds,fps:(stats.frames-first)/seconds,p95_ms:times[Math.floor(times.length*.95)],stats};
+  window.sceneTest.performance=result;print(result);
+};
+document.querySelector('#memory').onclick=async()=>{
+  scene.setData(data);await tick();await tick();const before=scene.stats();
+  for(let i=0;i<20;i++){scene.setData(i%2?data:{project,design:previous,parent_design:null});await tick();}
+  const result={before,after:scene.stats(),switches:20};window.sceneTest.memory=result;print(result);
+};
+</script></html>

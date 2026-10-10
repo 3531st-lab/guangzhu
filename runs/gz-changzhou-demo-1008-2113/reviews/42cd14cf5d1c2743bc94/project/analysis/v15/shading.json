@@ -1,0 +1,4260 @@
+{
+  "version": 15,
+  "modules": [
+    {
+      "id": "R01-1-C001",
+      "beam_loss_pct": 0.8411189427993738,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.8411189427993738,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C002",
+      "beam_loss_pct": 2.441189877396012,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 2.441189877396012,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R01-1-C003",
+      "beam_loss_pct": 0.9784277616278978,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.9784277616278978,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C004",
+      "beam_loss_pct": 3.120650620085595,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 3.120650620085595,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R01-1-C005",
+      "beam_loss_pct": 1.0115915013503423,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 1.0115915013503423,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C006",
+      "beam_loss_pct": 3.869621767978963,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 3.869621767978963,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R01-1-C007",
+      "beam_loss_pct": 0.970077821588183,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.970077821588183,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C008",
+      "beam_loss_pct": 4.768451406837621,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 4.768451406837621,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R01-1-C009",
+      "beam_loss_pct": 0.9451038949433871,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.9451038949433871,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C010",
+      "beam_loss_pct": 5.633326877784548,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 5.633326877784548,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R01-1-C011",
+      "beam_loss_pct": 0.921524887478443,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.921524887478443,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C012",
+      "beam_loss_pct": 4.443430481266559,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 4.443430481266559,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R01-1-C013",
+      "beam_loss_pct": 0.8560129180792901,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.8560129180792901,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C014",
+      "beam_loss_pct": 3.2150988694671248,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 3.2150988694671248,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R01-1-C015",
+      "beam_loss_pct": 0.7306388950985053,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.7306388950985053,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C016",
+      "beam_loss_pct": 1.4011323662395903,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 1.4011323662395903,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R01-1-C017",
+      "beam_loss_pct": 0.6866250502621329,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.6866250502621329,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C018",
+      "beam_loss_pct": 0.4897608240555526,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.4897608240555526,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R01-1-C019",
+      "beam_loss_pct": 0.636597652831499,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.636597652831499,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C020",
+      "beam_loss_pct": 0.21399084497959361,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.21399084497959361,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C021",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C022",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C023",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C024",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C025",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C026",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C027",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C028",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C029",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C030",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C031",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C032",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C033",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C034",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C035",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C036",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C037",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C038",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C039",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C040",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C041",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C042",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C043",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C044",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C045",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C046",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C047",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C048",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C049",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C050",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C051",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C052",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C053",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C054",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.14185926190921527,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C055",
+      "beam_loss_pct": 0.606253976821043,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.606253976821043,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C056",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.15947362273138854,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R01-1-C057",
+      "beam_loss_pct": 0.7493282337389762,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.7493282337389762,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R01-1-C058",
+      "beam_loss_pct": 0.45602867010295883,
+      "diffuse_loss_pct": 0.0,
+      "total_loss_pct": 0.45602867010295883,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R02-1-C001",
+      "beam_loss_pct": 1.8684698868087577,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 1.9285265856409426,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R02-1-C002",
+      "beam_loss_pct": 3.610491518759312,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 3.6701436451666174,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R02-1-C003",
+      "beam_loss_pct": 3.6986812930662536,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 3.758737991898438,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R02-1-C004",
+      "beam_loss_pct": 11.001424502251089,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 11.061076628658396,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R02-1-C005",
+      "beam_loss_pct": 6.244795671132553,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 6.304852369964738,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R02-1-C006",
+      "beam_loss_pct": 19.43917463428466,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 19.498826760691966,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R02-1-C007",
+      "beam_loss_pct": 0.2409380283525538,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.30099472718473896,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C008",
+      "beam_loss_pct": 0.24941939857046366,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.3090715249777692,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C009",
+      "beam_loss_pct": 0.15699329511986335,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.2170499939520485,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C010",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C011",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C012",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C013",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C014",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C015",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C016",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C017",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C018",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C019",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C020",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C021",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C022",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C023",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C024",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C025",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C026",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C027",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C028",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C029",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C030",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C031",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C032",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C033",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C034",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C035",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C036",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C037",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C038",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C039",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C040",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C041",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C042",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C043",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C044",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C045",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C046",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R02-1-C047",
+      "beam_loss_pct": 0.39906103069022236,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.45911772952240754,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R02-1-C048",
+      "beam_loss_pct": 0.45602867010295883,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5156807965102643,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R03-1-C001",
+      "beam_loss_pct": 3.0720563545439026,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 3.1321130533760875,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R03-1-C002",
+      "beam_loss_pct": 1.5797776922096942,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 1.6394298186169998,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R03-1-C003",
+      "beam_loss_pct": 11.265558179829606,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 11.325614878661792,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R03-1-C004",
+      "beam_loss_pct": 5.925281090622553,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 5.984933217029859,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R03-1-C005",
+      "beam_loss_pct": 20.643104447945355,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 20.70316114677754,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R03-1-C006",
+      "beam_loss_pct": 11.439227256454853,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 11.498879382862158,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R03-1-C007",
+      "beam_loss_pct": 0.2201873040036695,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.28024400283585466,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C008",
+      "beam_loss_pct": 0.25434070379835305,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.31399283020565855,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C009",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C010",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C011",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C012",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C013",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C014",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C015",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C016",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C017",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C018",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C019",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C020",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C021",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C022",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C023",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C024",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C025",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C026",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C027",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C028",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C029",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C030",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C031",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C032",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C033",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C034",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C035",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C036",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C037",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C038",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C039",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C040",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C041",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C042",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C043",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C044",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C045",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C046",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R03-1-C047",
+      "beam_loss_pct": 0.39906103069022236,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.45911772952240754,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R03-1-C048",
+      "beam_loss_pct": 0.45602867010295883,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5156807965102643,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R04-1-C001",
+      "beam_loss_pct": 2.330236641361254,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 2.3902933401934385,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C002",
+      "beam_loss_pct": 0.3680309302581415,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.42768305666544704,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C003",
+      "beam_loss_pct": 4.336741795095101,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 4.396798493927286,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C004",
+      "beam_loss_pct": 0.552236573911985,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.6118887003192904,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C005",
+      "beam_loss_pct": 5.807306424738724,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 5.867363123570909,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C006",
+      "beam_loss_pct": 0.6972694436180404,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.7569215700253459,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C007",
+      "beam_loss_pct": 8.298008628009747,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 8.358065326841931,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C008",
+      "beam_loss_pct": 0.785207539784247,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.8448596661915524,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C009",
+      "beam_loss_pct": 10.631184232419788,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 10.691240931251974,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C010",
+      "beam_loss_pct": 0.9117112228634223,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.9713633492707279,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C011",
+      "beam_loss_pct": 9.749188575126222,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 9.809245273958409,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C012",
+      "beam_loss_pct": 0.7304283994266523,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.7900805258339578,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C013",
+      "beam_loss_pct": 6.41339645059084,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 6.473453149423025,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C014",
+      "beam_loss_pct": 0.5725473031848286,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.632199429592134,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C015",
+      "beam_loss_pct": 1.8626863845098802,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 1.9227430833420653,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C016",
+      "beam_loss_pct": 0.3201542887453047,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.37980641515261027,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C017",
+      "beam_loss_pct": 0.4599294049436525,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.5199861037758376,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C018",
+      "beam_loss_pct": 0.1253491388592479,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.18500126526655342,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R04-1-C019",
+      "beam_loss_pct": 0.2153779437706421,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.27543464260282724,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C020",
+      "beam_loss_pct": 0.07154251978785886,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.13119464619516435,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C021",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C022",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C023",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C024",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C025",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C026",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C027",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C028",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C029",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C030",
+      "beam_loss_pct": 0.03154445874048451,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.09119658514779001,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C031",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C032",
+      "beam_loss_pct": 0.020016037786578633,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.07966816419388413,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C033",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C034",
+      "beam_loss_pct": 0.013554099763059806,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.0732062261703653,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C035",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C036",
+      "beam_loss_pct": 0.010323130751300393,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.0699752571586059,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C037",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C038",
+      "beam_loss_pct": 0.010323130751300393,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.0699752571586059,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C039",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C040",
+      "beam_loss_pct": 0.013537632149581575,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.07318975855688709,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C041",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C042",
+      "beam_loss_pct": 0.019966634946143945,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.07961876135344945,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C043",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C044",
+      "beam_loss_pct": 0.019966634946143945,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.07961876135344945,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C045",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C046",
+      "beam_loss_pct": 0.010323130751300393,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.0699752571586059,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C047",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C048",
+      "beam_loss_pct": 0.010323130751300393,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.0699752571586059,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C049",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C050",
+      "beam_loss_pct": 0.010323130751300393,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.0699752571586059,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C051",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C052",
+      "beam_loss_pct": 0.010323130751300393,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.0699752571586059,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C053",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C054",
+      "beam_loss_pct": 0.023736468464268586,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.08338859487157409,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C055",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R04-1-C056",
+      "beam_loss_pct": 0.12696486821183758,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1866169946191431,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R04-1-C057",
+      "beam_loss_pct": 0.39906103069022236,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.45911772952240754,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R04-1-C058",
+      "beam_loss_pct": 0.4476126820425781,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5072648084498836,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R05-1-C001",
+      "beam_loss_pct": 0.832807085898034,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.8928637847302191,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C002",
+      "beam_loss_pct": 0.14779371255749837,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20744583896480387,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C003",
+      "beam_loss_pct": 0.8613783866397833,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.9214350854719685,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C004",
+      "beam_loss_pct": 0.1507609378816399,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21041306428894543,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C005",
+      "beam_loss_pct": 0.6853650540095689,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.7454217528417542,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C006",
+      "beam_loss_pct": 0.1507609378816399,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21041306428894543,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C007",
+      "beam_loss_pct": 0.5329674873234681,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.5930241861556533,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C008",
+      "beam_loss_pct": 0.1507609378816399,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21041306428894543,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C009",
+      "beam_loss_pct": 0.4562690568362536,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.5163257556684387,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C010",
+      "beam_loss_pct": 0.14955934949924088,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.2092114759065464,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C011",
+      "beam_loss_pct": 0.5634069475518738,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.6234636463840592,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C012",
+      "beam_loss_pct": 0.14715617273444287,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20680829914174836,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C013",
+      "beam_loss_pct": 0.580245201593441,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.6403019004256262,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C014",
+      "beam_loss_pct": 0.14715617273444287,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20680829914174836,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C015",
+      "beam_loss_pct": 0.49771218574584525,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.5577688845780304,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C016",
+      "beam_loss_pct": 0.14715617273444287,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20680829914174836,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C017",
+      "beam_loss_pct": 0.3924012781477535,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.45245797697993867,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C018",
+      "beam_loss_pct": 0.1436248988509578,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20327702525826333,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C019",
+      "beam_loss_pct": 0.16037526776071215,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.2204319665928973,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R05-1-C020",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C021",
+      "beam_loss_pct": 0.0685698906906807,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.12862658952286588,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C022",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C023",
+      "beam_loss_pct": 0.0685698906906807,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.12862658952286588,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C024",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C025",
+      "beam_loss_pct": 0.06449591681623487,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.12455261564842003,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C026",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C027",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C028",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C029",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C030",
+      "beam_loss_pct": 0.1370815923489718,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1967337187562773,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C031",
+      "beam_loss_pct": 0.08082209604729251,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.1408787948794777,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R05-1-C032",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R05-1-C033",
+      "beam_loss_pct": 0.34611480045770854,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.40617149928989366,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R05-1-C034",
+      "beam_loss_pct": 0.45602867010295883,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5156807965102643,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R06-1-C001",
+      "beam_loss_pct": 0.3266929192728892,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.38674961810507436,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R06-1-C002",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C003",
+      "beam_loss_pct": 0.2595171912261131,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.3195738900582983,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R06-1-C004",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C005",
+      "beam_loss_pct": 0.2870338994439939,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.347090598276179,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C006",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C007",
+      "beam_loss_pct": 0.2870338994439939,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.347090598276179,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R06-1-C008",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C009",
+      "beam_loss_pct": 0.17419290918454364,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.23424960801672878,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C010",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C011",
+      "beam_loss_pct": 0.2408334411919837,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.30089014002416886,
+      "main_cause": "stair-1"
+    },
+    {
+      "id": "R06-1-C012",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C013",
+      "beam_loss_pct": 0.21331673297410292,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.2733734318062881,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C014",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C015",
+      "beam_loss_pct": 0.21331673297410292,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.2733734318062881,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C016",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C017",
+      "beam_loss_pct": 0.16888971163580951,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.2289464104679947,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C018",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C019",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C020",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C021",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C022",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C023",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C024",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C025",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C026",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C027",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C028",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C029",
+      "beam_loss_pct": 0.09215853851266478,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.15221523734484996,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C030",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C031",
+      "beam_loss_pct": 0.031046023085000485,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.09110272191718564,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C032",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C033",
+      "beam_loss_pct": 0.014140772102538121,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.07419747093472329,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C034",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C035",
+      "beam_loss_pct": 0.014140772102538121,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.07419747093472329,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C036",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C037",
+      "beam_loss_pct": 0.014140772102538121,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.07419747093472329,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C038",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C039",
+      "beam_loss_pct": 0.014140772102538121,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.07419747093472329,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C040",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C041",
+      "beam_loss_pct": 0.014140772102538121,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.07419747093472329,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C042",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C043",
+      "beam_loss_pct": 0.014140772102538121,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.07419747093472329,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C044",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C045",
+      "beam_loss_pct": 0.014140772102538121,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.07419747093472329,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C046",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C047",
+      "beam_loss_pct": 0.014140772102538121,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.07419747093472329,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C048",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C049",
+      "beam_loss_pct": 0.014140772102538121,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.07419747093472329,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C050",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C051",
+      "beam_loss_pct": 0.04324260400111966,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.10329930283330481,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C052",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C053",
+      "beam_loss_pct": 0.09038826376878768,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.15044496260097284,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C054",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C055",
+      "beam_loss_pct": 0.13199875462777466,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.19205545345995984,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C056",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R06-1-C057",
+      "beam_loss_pct": 0.39906103069022236,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.45911772952240754,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R06-1-C058",
+      "beam_loss_pct": 0.45602867010295883,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5156807965102643,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R07-1-C001",
+      "beam_loss_pct": 0.14215501962762914,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.20221171845981428,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C002",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C003",
+      "beam_loss_pct": 0.15584843703928974,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.21590513587147495,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C004",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C005",
+      "beam_loss_pct": 0.17419290918454364,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.23424960801672878,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C006",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C007",
+      "beam_loss_pct": 0.17419290918454364,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.23424960801672878,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C008",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C009",
+      "beam_loss_pct": 0.17419290918454364,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.23424960801672878,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C010",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C011",
+      "beam_loss_pct": 0.16502067311191668,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.22507737194410185,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C012",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C013",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C014",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C015",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C016",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C017",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C018",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C019",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C020",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C021",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C022",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C023",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C024",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C025",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C026",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C027",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C028",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C029",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C030",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C031",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C032",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C033",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C034",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C035",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C036",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C037",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C038",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C039",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C040",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C041",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C042",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C043",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C044",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C045",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C046",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C047",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C048",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C049",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C050",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C051",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C052",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C053",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C054",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C055",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C056",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R07-1-C057",
+      "beam_loss_pct": 0.39906103069022236,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.45911772952240754,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R07-1-C058",
+      "beam_loss_pct": 0.45602867010295883,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5156807965102643,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R08-1-C001",
+      "beam_loss_pct": 0.14215501962762914,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.20221171845981428,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C002",
+      "beam_loss_pct": 0.05015928311555214,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.10981140952285763,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C003",
+      "beam_loss_pct": 0.15584843703928974,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.21590513587147495,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C004",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C005",
+      "beam_loss_pct": 0.17419290918454364,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.23424960801672878,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C006",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C007",
+      "beam_loss_pct": 0.17419290918454364,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.23424960801672878,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C008",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C009",
+      "beam_loss_pct": 0.17419290918454364,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.23424960801672878,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C010",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C011",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C012",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C013",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C014",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C015",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C016",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C017",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C018",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C019",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C020",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C021",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C022",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C023",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C024",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C025",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C026",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C027",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C028",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C029",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C030",
+      "beam_loss_pct": 0.08018651809779925,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.13983864450510475,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C031",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C032",
+      "beam_loss_pct": 0.13544838368618356,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.19510051009348908,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C033",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C034",
+      "beam_loss_pct": 0.15427213606928913,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.2139242624765946,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C035",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C036",
+      "beam_loss_pct": 0.17604263892952102,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.2356947653368265,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C037",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C038",
+      "beam_loss_pct": 0.16674056218346503,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.22639268859077052,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C039",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C040",
+      "beam_loss_pct": 0.11026930503414847,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.16992143144145397,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C041",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C042",
+      "beam_loss_pct": 0.08849880217391655,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.14815092858122206,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C043",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C044",
+      "beam_loss_pct": 0.07250420397491554,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.13215633038222105,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C045",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C046",
+      "beam_loss_pct": 0.08627740773564696,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.14592953414295248,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C047",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C048",
+      "beam_loss_pct": 0.16652070392306545,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.22617283033037094,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C049",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C050",
+      "beam_loss_pct": 0.1252010926408712,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.18485321904817673,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R08-1-C051",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C052",
+      "beam_loss_pct": 0.04495779645345271,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.1046099228607582,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C053",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C054",
+      "beam_loss_pct": 0.04842545422818565,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.10807758063549118,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C055",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R08-1-C056",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R08-1-C057",
+      "beam_loss_pct": 0.39906103069022236,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.45911772952240754,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R08-1-C058",
+      "beam_loss_pct": 0.4528141687046775,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.512466295111983,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R09-1-C001",
+      "beam_loss_pct": 0.064048709351647,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.12410540818383216,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C002",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C003",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C004",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C005",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C006",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C007",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C008",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C009",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C010",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C011",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C012",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C013",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C014",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C015",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C016",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C017",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C018",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C019",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C020",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C021",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C022",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C023",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C024",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C025",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C026",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C027",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C028",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C029",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C030",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C031",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C032",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C033",
+      "beam_loss_pct": 0.061906675007652304,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.12196337383983745,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C034",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C035",
+      "beam_loss_pct": 0.07570733167579767,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.13576403050798283,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C036",
+      "beam_loss_pct": 0.4396614922574552,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.49931361866476065,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R09-1-C037",
+      "beam_loss_pct": 0.07570733167579767,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.13576403050798283,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C038",
+      "beam_loss_pct": 0.9199167542464819,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.9795688806537872,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R09-1-C039",
+      "beam_loss_pct": 0.07570733167579767,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.13576403050798283,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C040",
+      "beam_loss_pct": 1.1543256724957847,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 1.2139777989030902,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R09-1-C041",
+      "beam_loss_pct": 0.061906675007652304,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.12196337383983745,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C042",
+      "beam_loss_pct": 1.0491672411006294,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 1.1088193675079347,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R09-1-C043",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C044",
+      "beam_loss_pct": 0.7681622279495585,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.8278143543568639,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R09-1-C045",
+      "beam_loss_pct": 0.06045541195693868,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.12051211078912386,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C046",
+      "beam_loss_pct": 0.9059037895158774,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.9655559159231829,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R09-1-C047",
+      "beam_loss_pct": 0.08074673982626204,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.14080343865844722,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C048",
+      "beam_loss_pct": 0.9236477678652965,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.983299894272602,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R09-1-C049",
+      "beam_loss_pct": 0.08074673982626204,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.14080343865844722,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C050",
+      "beam_loss_pct": 0.5379748362493971,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5976269626567027,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R09-1-C051",
+      "beam_loss_pct": 0.06671754349200881,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.126774242324194,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C052",
+      "beam_loss_pct": 0.37921179395273774,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.4388639203600432,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R09-1-C053",
+      "beam_loss_pct": 0.05500634667357961,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.11506304550576477,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C054",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C055",
+      "beam_loss_pct": 0.08082209604729251,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.1408787948794777,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R09-1-C056",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R09-1-C057",
+      "beam_loss_pct": 0.34611480045770854,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.40617149928989366,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R09-1-C058",
+      "beam_loss_pct": 0.45602867010295883,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5156807965102643,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R10-1-C001",
+      "beam_loss_pct": 0.14215501962762914,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.20221171845981428,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C002",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C003",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C004",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C005",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C006",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C007",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C008",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C009",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C010",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C011",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C012",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C013",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C014",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C015",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C016",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C017",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C018",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C019",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C020",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C021",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C022",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C023",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C024",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C025",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C026",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C027",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C028",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C029",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C030",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C031",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C032",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C033",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C034",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C035",
+      "beam_loss_pct": 0.17891384677035496,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.23897054560254016,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C036",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C037",
+      "beam_loss_pct": 0.3608401819427755,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.4208968807749606,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R10-1-C038",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C039",
+      "beam_loss_pct": 1.064656995937892,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 1.124713694770077,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R10-1-C040",
+      "beam_loss_pct": 4.9259052564813395,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 4.985557382888645,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R10-1-C041",
+      "beam_loss_pct": 1.6877847068843606,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 1.7478414057165454,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R10-1-C042",
+      "beam_loss_pct": 10.652795364736882,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 10.712447491144188,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R10-1-C043",
+      "beam_loss_pct": 0.17701987697711888,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.23707657580930405,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C044",
+      "beam_loss_pct": 0.13765878595629966,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.19731091236360518,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C045",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C046",
+      "beam_loss_pct": 0.14185926190921527,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.20151138831652077,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C047",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C048",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R10-1-C049",
+      "beam_loss_pct": 0.39906103069022236,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.45911772952240754,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R10-1-C050",
+      "beam_loss_pct": 0.45602867010295883,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5156807965102643,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C001",
+      "beam_loss_pct": 0.14215501962762914,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.20221171845981428,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C002",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C003",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C004",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C005",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C006",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C007",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C008",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C009",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C010",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C011",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C012",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C013",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C014",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C015",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C016",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C017",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C018",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C019",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C020",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C021",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C022",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C023",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C024",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C025",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C026",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C027",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C028",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C029",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C030",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C031",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C032",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C033",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C034",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C035",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C036",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C037",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C038",
+      "beam_loss_pct": 0.2988487475200492,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.35850087392735464,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C039",
+      "beam_loss_pct": 4.067522003878714,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 4.127578702710898,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R11-1-C040",
+      "beam_loss_pct": 1.7978572150748284,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 1.857509341482134,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R11-1-C041",
+      "beam_loss_pct": 13.80715188387666,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 13.867208582708846,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R11-1-C042",
+      "beam_loss_pct": 3.9160789292785667,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 3.9757310556858725,
+      "main_cause": "tank-1"
+    },
+    {
+      "id": "R11-1-C043",
+      "beam_loss_pct": 0.13199875462777466,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.19205545345995984,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C044",
+      "beam_loss_pct": 0.16676556010045618,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.22641768650776167,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C045",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C046",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C047",
+      "beam_loss_pct": 0.14667620096666284,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.206732899798848,
+      "main_cause": "front_row"
+    },
+    {
+      "id": "R11-1-C048",
+      "beam_loss_pct": 0.15947362273138854,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.21912574913869406,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C049",
+      "beam_loss_pct": 0.39906103069022236,
+      "diffuse_loss_pct": 0.06005669883218516,
+      "total_loss_pct": 0.45911772952240754,
+      "main_cause": "parapet"
+    },
+    {
+      "id": "R11-1-C050",
+      "beam_loss_pct": 0.45602867010295883,
+      "diffuse_loss_pct": 0.0596521264073055,
+      "total_loss_pct": 0.5156807965102643,
+      "main_cause": "parapet"
+    }
+  ],
+  "summary": {
+    "module_count": 578,
+    "avg_loss_pct": 0.6245617224783596,
+    "max_loss_pct": 20.70316114677754,
+    "modules_over_threshold": 10,
+    "threshold_pct": 8.0,
+    "source_loss_pct": {
+      "front_row": 0.15764645943372424,
+      "obstacles": 0.4154896963453327,
+      "parapet": 0.05142556669930272
+    },
+    "source_loss_share_pct": {
+      "front_row": 25.241133703832848,
+      "obstacles": 66.52500167583179,
+      "parapet": 8.23386462033535
+    },
+    "beam_cause_loss_pct": {
+      "front_row": 0.10379819894537205,
+      "parapet": 0.05142556669930272,
+      "stair-1": 0.33043938699706554,
+      "tank-1": 0.08505030934826711
+    }
+  },
+  "metadata": {
+    "groups": [
+      {
+        "group": [
+          0,
+          10.0,
+          270.0
+        ],
+        "weather": {
+          "schema": "guangzhu.weather/1",
+          "source": "nasa",
+          "source_description": "NASA POWER UTC hourly",
+          "latitude": 31.81,
+          "longitude": 119.97,
+          "year": 2023,
+          "request_url": "https://power.larc.nasa.gov/api/temporal/hourly/point?latitude=31.81&longitude=119.97&start=20230101&end=20231231&parameters=ALLSKY_SFC_SW_DWN%2CALLSKY_SFC_SW_DNI%2CALLSKY_SFC_SW_DIFF%2CT2M%2CWS10M&community=RE&time-standard=UTC&format=JSON",
+          "download_time": "2026-10-04T15:02:37.029571+00:00",
+          "used": "cache",
+          "timezone": "UTC",
+          "interval_minutes": 60,
+          "hour_midpoint_offset_minutes": 30.0,
+          "units": {
+            "ghi": "W/m2",
+            "dni": "W/m2",
+            "dhi": "W/m2",
+            "temp_air": "degC",
+            "wind_speed": "m/s"
+          },
+          "missing_counts": {
+            "ghi": 0,
+            "dni": 0,
+            "dhi": 0,
+            "temp_air": 0,
+            "wind_speed": 0
+          },
+          "timestamp_semantics": "start of one-hour interval",
+          "timestamp_source": "https://power.larc.nasa.gov/docs/faqs/other/#time-range",
+          "nasa_header": {
+            "title": "NASA/POWER Source Native Resolution Hourly Data",
+            "api": {
+              "version": "v2.10.2",
+              "name": "POWER Hourly API"
+            },
+            "sources": [
+              "MERRA2",
+              "SYN1DEG",
+              "POWER"
+            ],
+            "fill_value": -999.0,
+            "time_standard": "UTC",
+            "start": "20230101",
+            "end": "20231231"
+          },
+          "nasa_parameters": {
+            "ALLSKY_SFC_SW_DWN": {
+              "units": "Wh/m^2",
+              "longname": "All Sky Surface Shortwave Downward Irradiance"
+            },
+            "ALLSKY_SFC_SW_DNI": {
+              "units": "Wh/m^2",
+              "longname": "All Sky Surface Shortwave Downward Direct Normal Irradiance"
+            },
+            "ALLSKY_SFC_SW_DIFF": {
+              "units": "Wh/m^2",
+              "longname": "All Sky Surface Shortwave Diffuse Irradiance"
+            },
+            "T2M": {
+              "units": "C",
+              "longname": "Temperature at 2 Meters"
+            },
+            "WS10M": {
+              "units": "m/s",
+              "longname": "Wind Speed at 10 Meters"
+            }
+          },
+          "data_file": "nasa_31.8100_119.9700_2023.csv.gz",
+          "data_file_sha256": "9acbf5c97ee291eab4bc0f23bc4bb325118979d9b4c60e693efac1137445cb3d"
+        },
+        "weather_sha256": "9acbf5c97ee291eab4bc0f23bc4bb325118979d9b4c60e693efac1137445cb3d",
+        "threshold_pct": 8.0,
+        "threshold_note": "示意",
+        "sample_year": 2023,
+        "representative_days": 12,
+        "daylight_hours": 144,
+        "points_per_module": 9,
+        "timestamp_rule": "UTC month-15 hour label + 30 minutes",
+        "sky_masking_fraction": 0.0011202167864201584,
+        "poa_global_wh_m2": 1281221.7337744595,
+        "poa_direct_wh_m2": 592271.8588186327,
+        "poa_sky_diffuse_wh_m2": 686884.4382205391,
+        "elapsed_seconds": 2.247595999855548
+      },
+      {
+        "group": [
+          0,
+          10.0,
+          90.0
+        ],
+        "weather": {
+          "schema": "guangzhu.weather/1",
+          "source": "nasa",
+          "source_description": "NASA POWER UTC hourly",
+          "latitude": 31.81,
+          "longitude": 119.97,
+          "year": 2023,
+          "request_url": "https://power.larc.nasa.gov/api/temporal/hourly/point?latitude=31.81&longitude=119.97&start=20230101&end=20231231&parameters=ALLSKY_SFC_SW_DWN%2CALLSKY_SFC_SW_DNI%2CALLSKY_SFC_SW_DIFF%2CT2M%2CWS10M&community=RE&time-standard=UTC&format=JSON",
+          "download_time": "2026-10-04T15:02:37.029571+00:00",
+          "used": "cache",
+          "timezone": "UTC",
+          "interval_minutes": 60,
+          "hour_midpoint_offset_minutes": 30.0,
+          "units": {
+            "ghi": "W/m2",
+            "dni": "W/m2",
+            "dhi": "W/m2",
+            "temp_air": "degC",
+            "wind_speed": "m/s"
+          },
+          "missing_counts": {
+            "ghi": 0,
+            "dni": 0,
+            "dhi": 0,
+            "temp_air": 0,
+            "wind_speed": 0
+          },
+          "timestamp_semantics": "start of one-hour interval",
+          "timestamp_source": "https://power.larc.nasa.gov/docs/faqs/other/#time-range",
+          "nasa_header": {
+            "title": "NASA/POWER Source Native Resolution Hourly Data",
+            "api": {
+              "version": "v2.10.2",
+              "name": "POWER Hourly API"
+            },
+            "sources": [
+              "MERRA2",
+              "SYN1DEG",
+              "POWER"
+            ],
+            "fill_value": -999.0,
+            "time_standard": "UTC",
+            "start": "20230101",
+            "end": "20231231"
+          },
+          "nasa_parameters": {
+            "ALLSKY_SFC_SW_DWN": {
+              "units": "Wh/m^2",
+              "longname": "All Sky Surface Shortwave Downward Irradiance"
+            },
+            "ALLSKY_SFC_SW_DNI": {
+              "units": "Wh/m^2",
+              "longname": "All Sky Surface Shortwave Downward Direct Normal Irradiance"
+            },
+            "ALLSKY_SFC_SW_DIFF": {
+              "units": "Wh/m^2",
+              "longname": "All Sky Surface Shortwave Diffuse Irradiance"
+            },
+            "T2M": {
+              "units": "C",
+              "longname": "Temperature at 2 Meters"
+            },
+            "WS10M": {
+              "units": "m/s",
+              "longname": "Wind Speed at 10 Meters"
+            }
+          },
+          "data_file": "nasa_31.8100_119.9700_2023.csv.gz",
+          "data_file_sha256": "9acbf5c97ee291eab4bc0f23bc4bb325118979d9b4c60e693efac1137445cb3d"
+        },
+        "weather_sha256": "9acbf5c97ee291eab4bc0f23bc4bb325118979d9b4c60e693efac1137445cb3d",
+        "threshold_pct": 8.0,
+        "threshold_note": "示意",
+        "sample_year": 2023,
+        "representative_days": 12,
+        "daylight_hours": 144,
+        "points_per_module": 9,
+        "timestamp_rule": "UTC month-15 hour label + 30 minutes",
+        "sky_masking_fraction": 0.0011202167864201584,
+        "poa_global_wh_m2": 1288532.605503483,
+        "poa_direct_wh_m2": 600316.8557644116,
+        "poa_sky_diffuse_wh_m2": 686150.313003784,
+        "elapsed_seconds": 0.04310130001977086
+      }
+    ],
+    "elapsed_seconds": 2.3054112000390887,
+    "design_sha256": "aa9e23da4cf25f6afc67c0e6c57225576ff83512c16cd6517aa6597113c4c1a3"
+  }
+}

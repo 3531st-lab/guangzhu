@@ -1,0 +1,27 @@
+{
+  "version": "r128",
+  "license": "MIT",
+  "files": [
+    {
+      "url": "https://raw.githubusercontent.com/mrdoob/three.js/r128/build/three.min.js",
+      "path": "desktop/web/vendor/three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/js/controls/OrbitControls.js",
+      "path": "docs/sources/three-r128/OrbitControls.js",
+      "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mrdoob/three.js/r128/LICENSE",
+      "path": "desktop/web/vendor/LICENSE-three.txt",
+      "sha256": "7dddf7c5b8fd10ee654db8857d75d104b5557889aa5a91fc4ca545ea7c07062f"
+    },
+    {
+      "path": "desktop/web/vendor/OrbitControls.min.js",
+      "sha256": "f10ee488705325bab6493c3f4852e499c21f25afe1959618a32e1bd0dfb5e458",
+      "transformation": "esbuild --minify --legal-comments=inline; third-party source only",
+      "esbuild_version": "0.28.2"
+    }
+  ]
+}

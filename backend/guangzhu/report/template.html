@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ context.project.name }} · 光筑方案书</title>
+<style>
+@font-face {
+  font-family: Plex;
+  src: url(data:font/woff2;base64,{{ fonts.mono }}) format('woff2');
+}
+@font-face {
+  font-family: Brand;
+  src: url(data:font/woff2;base64,{{ fonts.brand }}) format('woff2');
+  font-weight: 900;
+}
+{% include 'proposal.css' %}
+@page {
+  @top-left { content: "光筑 / 光伏初步设计方案"; }
+  @top-right { content: "{{ document.code }}"; }
+  @bottom-left { content: "{{ document.revision }} · 初步设计 / 施工前须专业复核"; }
+  @bottom-right { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; }
+}
+</style>
+<body>
+{% for page in pages %}
+<section id="{{ 'cover' if page.kind == 'cover' else 'part-' + page.number }}"
+  class="{{ page.kind }}{{ ' newpage' if page.newpage }}{{ ' compact' if page.compact }}">
+{% if page.kind == 'cover' %}
+<div class="cover-brand"><b>光筑</b><span>光伏工程方案</span><small>{{ document.code }}</small></div>
+<div class="cover-label">PHOTOVOLTAIC PROJECT · {{ document.revision }}</div>
+<div class="cover-title">光伏发电项目<br>初步设计方案</div>
+<h1 data-topic="{{ page.title }}">{{ page.heading }}</h1>
+<div class="cover-purpose">{{ document.purpose }}<span>{{ document.stage }}</span></div>
+<div class="cover-metrics">{% for label, value in page.metrics %}
+<div><span>{{ label }}</span><strong>{{ value }}</strong></div>{% endfor %}</div>
+{% if page.chart %}<figure class="cover-plan">{{ page.chart }}<figcaption>组件布置总览 · 详细布置与电气连接见正文</figcaption></figure>{% endif %}
+<dl class="document-meta">
+<div><dt>文件编号</dt><dd>{{ document.code }}</dd></div><div><dt>项目编号</dt><dd>{{ document.project_id }}</dd></div>
+<div><dt>编制日期</dt><dd>{{ document.date }}</dd></div><div><dt>资料依据</dt><dd>{{ document.evidence }}</dd></div>
+</dl>
+<p class="document-status{{ ' failed' if document.failed }}">{{ document.status }} · 待专业复核</p>
+<div class="cover-notes">{% for paragraph in page.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}</div>
+{% else %}
+<div class="section-heading">
+<div class="section-number">{{ page.number }}<span>{{ page.chapter }}</span></div>
+<h1 data-topic="{{ page.title }}">{{ page.heading }}</h1>
+</div>
+{% if page.metrics %}<div class="metrics">{% for label, value in page.metrics %}
+<div class="metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+{% endfor %}</div>{% endif %}
+{% if page.kind != 'economics' %}{% for paragraph in page.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}{% endif %}
+{% if page.chart %}<figure>{{ page.chart }}<figcaption>图 {{ page.number }}-1　{{ page.heading }}</figcaption></figure>{% endif %}
+{% if page.rows %}
+<table{{ ' class=short-table' if page.rows|length <= 10 }}>
+<caption>表 {{ page.number }}-1　{{ page.heading }}</caption>
+{% set widths = [7, 20, 14, 14, 45] if page.kind == 'electrical' else [7, 22, 13, 21, 14, 23] if page.kind == 'rules' else
+  [18, 12, 70] if page.kind == 'site' else [17, 18, 7, 9, 12, 9, 9, 8, 11] if page.kind == 'options' else
+  [12, 30, 12, 16, 14, 16] if page.kind == 'allocation' else [30, 70] if page.headers|length == 2 else [] %}
+{% if widths %}<colgroup>{% for width in widths %}<col style="width: {{ width }}%">{% endfor %}</colgroup>{% endif %}
+<thead><tr>{% for label in page.headers %}<th scope="col">{{ label }}</th>{% endfor %}</tr></thead><tbody>
+{% for row in page.rows %}<tr>{% for cell in row %}
+<td{% if loop.first and cell is string and cell.startswith('✓') %} class="selected"{% endif %}>{{ cell }}</td>
+{% endfor %}</tr>{% endfor %}
+</tbody></table>
+{% endif %}
+{% if page.kind == 'economics' and page.paragraphs %}<div class="calculation-notes"><h2>测算口径与假设</h2>
+{% for paragraph in page.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}</div>{% endif %}
+{% endif %}
+</section>
+{% if loop.first %}
+<nav class="contents newpage" aria-label="方案书目录">
+<div class="section-number">CONTENTS<span>文件说明与章节导航</span></div><h1>目录</h1>
+<p class="contents-intro">CONTENTS / 电子版可点击标题跳转；页次按本文件实际分页编排。</p>
+<div class="contents-grid">{% for chapter in document.contents %}<div class="contents-group">
+<a href="#{{ chapter.anchor }}"><b>{{ chapter.number }}</b>{{ chapter.title }}</a>
+{% for item in chapter.sections %}<a class="toc-entry" href="#part-{{ item.number }}">
+<span class="toc-number">{{ item.number }}</span><span>{{ item.title }}</span><i></i>
+<span class="toc-page" data-section="{{ item.number }}" data-heading="{{ item.chapter }} {{ item.title }}">—</span>
+</a>{% endfor %}
+</div>{% endfor %}</div>
+<div class="document-notes"><b>阅读说明</b>
+<p>本文件为初步设计。自动校核与模型审核不替代现场勘察、结构复核、电气施工设计或专业审签。</p>
+<p>金额以人民币计，数值按显示精度四舍五入；表内单位另有注明时从其注明。示意参数与未提供资料在对应章节标明。</p>
+<p>计算值、审核意见和审批记录来自本版归档。未提供、未通过与不适用分别列示；未提供不等于零或已批准。</p>
+<p>目录页次由PDF生成后核定；显示“—”时尚未核定页次，可使用电子标题链接。</p>
+</div>
+</nav>
+{% endif %}
+{% endfor %}
+<footer>{{ document.code }} · {{ context.project.name }} · 光筑方案书</footer>
+</body>
+</html>

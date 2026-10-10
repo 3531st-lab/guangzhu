@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "scope": "independent-review",
+  "checks": [],
+  "review": {
+    "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+    "model": "agnes-3.0-flash",
+    "agnes": true,
+    "actual_model_verified": true,
+    "json_unchanged": null,
+    "valid": true,
+    "passed": true,
+    "high": false,
+    "retryable": false,
+    "versions": [
+      14
+    ],
+    "fork_call_seq": null,
+    "fork_result_seq": null,
+    "started_at": "2026-10-08T13:17:23.869Z",
+    "saved_at": "2026-10-08T13:18:04.190Z",
+    "high_items": [],
+    "problems": [],
+    "extra_read_only_calls": 0
+  }
+}

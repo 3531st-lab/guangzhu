@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>光筑 T10 内嵌验收页</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header><strong>光筑 · T10 内嵌验收</strong><span id="connection">等待插件握手</span><a href="http://127.0.0.1:4177" target="_blank" rel="noreferrer">直接打开 AGH</a></header>
+<details id="setup" open><summary>任务书与会话控制</summary>
+  <div class="controls">
+    <label>样例<select id="sample"></select></label>
+    <label>项目编号<input id="project" aria-label="项目编号"></label>
+    <label>设计模型<select id="design-model"><option value="">等候模型清单</option></select></label>
+    <label>审核模型<select id="review-model"><option value="agnes-3.0-flash">agnes-3.0-flash</option></select></label>
+    <label>审核方式<select id="review-mode"><option value="subagent">Agnes 子会话</option><option value="independent">后备：独立会话</option></select></label>
+    <button id="generate">生成任务书</button>
+  </div>
+  <textarea id="brief" rows="8" spellcheck="false" aria-label="任务书文本"></textarea>
+  <div class="controls"><label><input type="checkbox" id="conversation">对话模式：brief = null</label><button id="start" disabled>开始自动设计</button><button id="stop" disabled>停止</button><label>会话编号<input id="session" aria-label="会话编号"></label><button id="open">打开会话</button><label><input type="checkbox" id="compact" checked>iframe 640 px 验证</label></div>
+  <div class="controls"><textarea id="followup" rows="2" aria-label="追问文本" placeholder="同会话追问或普通消息样例"></textarea><button id="send-followup">发送追问</button><button id="comparison">填入三方案追问</button><button id="price">填入电价追问</button><button id="multiline">填入多行消息</button><button id="html-text">填入 HTML 字符消息</button></div>
+  <div class="controls"><button id="unknown">发送未知类型测试</button><button id="wrong-origin">发送错误来源测试</button><button id="error-test">发送缺失工作区测试</button><button id="save">导出日志与状态</button><button id="reset-log">新建日志段</button><span id="disk">消息自动落盘</span></div>
+</details>
+<div id="warning" role="alert" hidden></div>
+<main class="compact"><aside><h2>设计进度</h2><ol id="steps"></ol><p id="usage">AGH 用量待导出执行记录核对。</p><section id="checkpoint"></section></aside><section class="conversation"><iframe id="agh" title="AGH 官方会话" src="http://127.0.0.1:4177"></iframe></section><section class="log"><h2>传话日志 <small id="log-count">0</small></h2><pre id="messages"></pre></section></main>
+<footer id="status" role="status">只有点击「开始」或「发送追问」才会发送模型任务。</footer>
+<script type="module" src="/app.js"></script>
+</body></html>

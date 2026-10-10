@@ -1,0 +1,453 @@
+{
+  "total": 23,
+  "passed": 17,
+  "hard_failed": 1,
+  "warnings": 0,
+  "na": 5,
+  "items": [
+    {
+      "id": "S01",
+      "name_zh": "单块全年遮挡损失不超阈值",
+      "category": "shading",
+      "source_type": "行业做法",
+      "source_ref": "T05三段遮挡规则",
+      "level": "hard",
+      "status": "fail",
+      "value": 22.955634250551917,
+      "limit": 8.0,
+      "unit": "%",
+      "evidence": "22.955634250551917；限值8.0",
+      "suggestion": {
+        "op": "remove_modules",
+        "where": {
+          "shading_loss_gt": 8.0
+        }
+      },
+      "hint_zh": "移除遮挡损失过高的组件",
+      "note": "示意，可改"
+    },
+    {
+      "id": "E01",
+      "name_zh": "最冷开路电压不超逆变器上限",
+      "category": "electrical",
+      "source_type": "国家标准",
+      "source_ref": "GB 50797-2012（2024年局部修订）6.4.2；https://solar.huawei.com/admin/asset/v1/pro/view/3159c4e8755b497cbdd47e7ca7020d19.pdf；规格书未给出；第2.0页",
+      "level": "hard",
+      "status": "pass",
+      "value": 1063.8807199999999,
+      "limit": 1100.0,
+      "unit": "V",
+      "evidence": "20×48.7×[1+(-13.45−25)×(-0.0024)]=1063.880720 V",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "E02",
+      "name_zh": "最冷开路电压不超组件系统上限",
+      "category": "electrical",
+      "source_type": "厂家规格书",
+      "source_ref": "https://static.trinasolar.com/sites/default/files/DT-M-0045%20E%20Datasheet_Vertex_NEG19RC.20_EN_2024_A_E1_print.pdf；TSM_EN_2024_A_E1；第2.0页",
+      "level": "hard",
+      "status": "pass",
+      "value": 1063.8807199999999,
+      "limit": 1500.0,
+      "unit": "V",
+      "evidence": "20×48.7×[1+(-13.45−25)×(-0.0024)]=1063.880720 V",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "E03",
+      "name_zh": "最热工作电压不低于MPPT下限",
+      "category": "electrical",
+      "source_type": "国家标准",
+      "source_ref": "GB 50797-2012（2024年局部修订）6.4.2；https://solar.huawei.com/admin/asset/v1/pro/view/3159c4e8755b497cbdd47e7ca7020d19.pdf；规格书未给出；第2.0页",
+      "level": "hard",
+      "status": "pass",
+      "value": 491.674617,
+      "limit": 200.0,
+      "unit": "V",
+      "evidence": "14×40.5×[1+(70.81−25)×(-0.0029)]=491.674617 V；K′v以厂家功率温度系数近似",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "E04",
+      "name_zh": "最冷工作电压不超MPPT上限",
+      "category": "electrical",
+      "source_type": "厂家规格书",
+      "source_ref": "https://solar.huawei.com/admin/asset/v1/pro/view/3159c4e8755b497cbdd47e7ca7020d19.pdf；规格书未给出；第2.0页",
+      "level": "hard",
+      "status": "pass",
+      "value": 900.31905,
+      "limit": 1000.0,
+      "unit": "V",
+      "evidence": "20×40.5×[1+(-13.45−25)×(-0.0029)]=900.319050 V；K′v以厂家功率温度系数近似；2024条文删除旧MPPT上界，本项另按厂家规格书检查",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "E05",
+      "name_zh": "每路最大短路电流不超允许值",
+      "category": "electrical",
+      "source_type": "厂家规格书",
+      "source_ref": "https://solar.huawei.com/admin/asset/v1/pro/view/3159c4e8755b497cbdd47e7ca7020d19.pdf；规格书未给出；第2.0页",
+      "level": "hard",
+      "status": "pass",
+      "value": 32.24013784,
+      "limit": 40.0,
+      "unit": "A",
+      "evidence": "各MPPT按对应型号限值校核，最不利Isc=32.240138/40 A；Imp=29.880000/30 A",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "E06",
+      "name_zh": "每路工作电流不超最大输入",
+      "category": "electrical",
+      "source_type": "厂家规格书",
+      "source_ref": "https://solar.huawei.com/admin/asset/v1/pro/view/3159c4e8755b497cbdd47e7ca7020d19.pdf；规格书未给出；第2.0页",
+      "level": "advice",
+      "status": "pass",
+      "value": 29.88,
+      "limit": 30.0,
+      "unit": "A",
+      "evidence": "各MPPT按对应型号限值校核，最不利Isc=32.240138/40 A；Imp=29.880000/30 A",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "E07",
+      "name_zh": "容配比在示意范围内",
+      "category": "electrical",
+      "source_type": "行业做法",
+      "source_ref": "行业做法；示意，可改",
+      "level": "hard",
+      "status": "pass",
+      "value": 1.244195652173913,
+      "limit": [
+        1.0,
+        1.3
+      ],
+      "unit": "",
+      "evidence": "全部473块；整体容配比=1.244196；接线、整体与每台容配比上限要求的最小台数=2；第1台：235块×605/1000/115=1.236304；上限1.3；MPPT1=S001；MPPT2=S002；MPPT3=S003；MPPT4=S004；MPPT5=S005；MPPT6=S006；MPPT7=S007；MPPT8=S008,S011；MPPT9=S009,S012；MPPT10=S010；第2台：238块×605/1000/115=1.252087；上限1.3；MPPT1=S013,S021；MPPT2=S014,S022；MPPT3=S015,S023；MPPT4=S016；MPPT5=S024；MPPT6=S025；MPPT7=S017；MPPT8=S018；MPPT9=S019；MPPT10=S020",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": "示意，可改"
+    },
+    {
+      "id": "E08",
+      "name_zh": "全部组件接入组串",
+      "category": "electrical",
+      "source_type": "行业做法",
+      "source_ref": "行业做法",
+      "level": "hard",
+      "status": "pass",
+      "value": 0,
+      "limit": 0,
+      "unit": "块",
+      "evidence": "473块，25串，0块剩余",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "E09",
+      "name_zh": "同路MPPT各串块数一致",
+      "category": "electrical",
+      "source_type": "行业做法",
+      "source_ref": "行业做法",
+      "level": "hard",
+      "status": "pass",
+      "value": [
+        [
+          20
+        ],
+        [
+          20
+        ],
+        [
+          20
+        ],
+        [
+          20
+        ],
+        [
+          20
+        ],
+        [
+          20
+        ],
+        [
+          20
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          19
+        ],
+        [
+          15
+        ],
+        [
+          14
+        ]
+      ],
+      "limit": 20,
+      "unit": "块/串",
+      "evidence": "同路串长集合[[20], [20], [20], [20], [20], [20], [20], [19], [19], [19], [19], [19], [19], [19], [19], [19], [19], [19], [15], [14]]",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "E10",
+      "name_zh": "直流线路压降不超过限值",
+      "category": "electrical",
+      "source_type": "设计假设",
+      "source_ref": "docs/sources.md#t26；ABB2006附录E；ABB2014§3.4.2；Nexans产品页2；Prysmian C3.4",
+      "level": "hard",
+      "status": "pass",
+      "value": 1.6201580633333337,
+      "limit": 2,
+      "unit": "%",
+      "evidence": "最大压降1.620158%；同时校核载流量及路径可达；温度/敷设示意，见电缆页",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "E11",
+      "name_zh": "交流线路压降不超过限值",
+      "category": "electrical",
+      "source_type": "设计假设",
+      "source_ref": "docs/sources.md#t26；ABB2006附录E；ABB2014§3.4.2；Nexans产品页2；Prysmian C3.4",
+      "level": "hard",
+      "status": "pass",
+      "value": 1.3546077625635946,
+      "limit": 2,
+      "unit": "%",
+      "evidence": "最大压降1.354608%；同时校核载流量及路径可达；温度/敷设示意，见电缆页",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "G01",
+      "name_zh": "组件都在可用区域内",
+      "category": "layout",
+      "source_type": "行业做法",
+      "source_ref": "T04排板规则",
+      "level": "hard",
+      "status": "pass",
+      "value": 0,
+      "limit": 0,
+      "unit": "块",
+      "evidence": "0；限值0",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "G02",
+      "name_zh": "冬至真太阳9–15时前后排不遮挡",
+      "category": "layout",
+      "source_type": "国家标准",
+      "source_ref": "https://www.mohurd.gov.cn/gongkai/zc/wjk/art/2024/art_96bd1b03e8d54760b4dff9ad60352ddc.html 7.2.2(2)",
+      "level": "advice",
+      "status": "pass",
+      "value": 3.3299999999999947,
+      "limit": 3.315767816624156,
+      "unit": "m",
+      "evidence": "3.3299999999999947；限值3.315767816624156",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": "2024改为宜；屋顶旧条文删除，本项目建议级保守规则"
+    },
+    {
+      "id": "G03",
+      "name_zh": "检修通道宽度达到要求",
+      "category": "requirement",
+      "source_type": "用户要求",
+      "source_ref": "requirements.walkway_m_min",
+      "level": "hard",
+      "status": "pass",
+      "value": 0.9999999999999893,
+      "limit": 1.0,
+      "unit": "m",
+      "evidence": "前后排最小净距 1.000 m ≥ 要求 1 m",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "G04",
+      "name_zh": "要求留空的区域没有组件",
+      "category": "requirement",
+      "source_type": "用户要求",
+      "source_ref": "requirements.keep_clear_ids",
+      "level": "hard",
+      "status": "pass",
+      "value": [],
+      "limit": 0,
+      "unit": "区域",
+      "evidence": "[]；限值0",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "L01",
+      "name_zh": "附加荷载不超屋面核定值",
+      "category": "structure",
+      "source_type": "用户要求",
+      "source_ref": "roof.load_capacity_kn_m2",
+      "level": "hard",
+      "status": "pass",
+      "value": 0.14740095878345075,
+      "limit": 0.5,
+      "unit": "kN/㎡",
+      "evidence": "最不利中部=0.147401kN/㎡；总平均18778.1kg×9.81/1000/1249.741946㎡=0.147401；473块组件的支架压块超承重，改用946个锚栓固定（示意）",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": "示意，不能代替结构计算，施工前要由结构工程师按规范复核；不能代替结构复核；分母仅支架投影，不含排间空地。压块后超过屋面承重的支架改用化学锚栓与屋面结构层连接（示意：每个锚栓抗拉、抗剪设计值各按5kN，每块组件至少2个）；锚固抗拔、局部防水和主体传力须结构人员及厂家核定。"
+    },
+    {
+      "id": "S02",
+      "name_zh": "平均遮挡损失不超提醒阈值",
+      "category": "shading",
+      "source_type": "行业做法",
+      "source_ref": "T05三段遮挡规则",
+      "level": "advice",
+      "status": "pass",
+      "value": 1.0833903148578201,
+      "limit": 3.0,
+      "unit": "%",
+      "evidence": "1.0833903148578201；限值3.0",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": "示意，可改"
+    },
+    {
+      "id": "G05",
+      "name_zh": "倾角在要求范围内",
+      "category": "requirement",
+      "source_type": "用户要求",
+      "source_ref": "requirements.tilt_deg_range",
+      "level": "hard",
+      "status": "na",
+      "value": 12.0,
+      "limit": null,
+      "unit": "°",
+      "evidence": "12.0；限值None",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "G06",
+      "name_zh": "边距和障碍物避让达到要求",
+      "category": "requirement",
+      "source_type": "用户要求",
+      "source_ref": "requirements.edge_setback_m_min/obstacle_clearance_m_min",
+      "level": "hard",
+      "status": "na",
+      "value": {
+        "edge_setback_m": 1.0,
+        "obstacle_clearance_m": 0.5
+      },
+      "limit": {
+        "edge_setback_m": null,
+        "obstacle_clearance_m": null
+      },
+      "unit": "m",
+      "evidence": "{'edge_setback_m': 1.0, 'obstacle_clearance_m': 0.5}；限值{'edge_setback_m': None, 'obstacle_clearance_m': None}",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "U01",
+      "name_zh": "装机不低于要求下限",
+      "category": "requirement",
+      "source_type": "用户要求",
+      "source_ref": "requirements.capacity_kw_min",
+      "level": "hard",
+      "status": "na",
+      "value": 286.165,
+      "limit": null,
+      "unit": "kW",
+      "evidence": "286.165；限值None",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "U02",
+      "name_zh": "装机不超要求上限",
+      "category": "requirement",
+      "source_type": "用户要求",
+      "source_ref": "requirements.capacity_kw_max",
+      "level": "hard",
+      "status": "na",
+      "value": 286.165,
+      "limit": null,
+      "unit": "kW",
+      "evidence": "286.165；限值None",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": ""
+    },
+    {
+      "id": "W01",
+      "name_zh": "夹具抗风揭",
+      "category": "structure",
+      "source_type": "设计假设",
+      "source_ref": "structure.wind",
+      "level": "hard",
+      "status": "na",
+      "value": 0,
+      "limit": 0,
+      "unit": "块组件",
+      "evidence": "需求0个；实际布点0个；同时核对最大间距",
+      "suggestion": null,
+      "hint_zh": "",
+      "note": "示意，不能代替结构计算，施工前要由结构工程师按规范复核"
+    }
+  ],
+  "elapsed_seconds": 0.7344216001220047
+}

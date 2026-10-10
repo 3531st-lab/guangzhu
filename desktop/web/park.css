@@ -1,0 +1,64 @@
+.park-editor {
+  display: grid;
+  grid-template-columns: var(--split-park, 220px) 18px minmax(0, 1fr);
+  gap: 18px 0;
+  overflow: auto;
+}
+.park-editor .card,
+#park-queue-display {
+  padding: 18px;
+}
+.park-editor label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 10px;
+}
+.park-editor p,
+#park-queue-display p {
+  line-height: 1.7;
+}
+.park-editor button,
+#park-queue-display button {
+  margin: 4px;
+}
+.park-editor aside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: start;
+}
+.park-editor main {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+.park-editor input {
+  max-width: 140px;
+  margin: 5px;
+  padding: 6px;
+}
+.park-editor select {
+  max-width: 100%;
+  padding: 8px;
+}
+.park-editor .tbl input[type="number"] {
+  width: 70px;
+}
+#park-map {
+  width: 100%;
+  max-height: 480px;
+  touch-action: none;
+  background: #f7f5ef;
+}
+#park-map [data-building] {
+  cursor: grab;
+}
+@media (max-width: 900px) {
+  .park-editor {
+    grid-template-columns: 1fr;
+  }
+  .park-editor > .splitter {
+    display: none;
+  }
+}

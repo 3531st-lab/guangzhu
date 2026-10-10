@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+node_modules/
+data/cache/
+projects/*
+!projects/.gitkeep
+data/my-roofs/
+.env
+*.log
+dist/
+build/
+.playwright-cli/
+output/

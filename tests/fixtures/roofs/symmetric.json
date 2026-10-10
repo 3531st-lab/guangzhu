@@ -1,0 +1,21 @@
+{
+  "schema": "guangzhu.project/1", "id": "symmetric", "name": "东西镜像对称测试屋顶",
+  "site": {"lat": 31.81, "lon": 119.97, "timezone": "Asia/Shanghai", "albedo": 0.2},
+  "roof": {
+    "type": "flat", "outline": [[0, 0], [60, 0], [60, 36], [0, 36]],
+    "height_m": 9, "parapet_height_m": 1, "load_capacity_kn_m2": 0.5,
+    "obstacles": [
+      {"id": "stair-west", "label": "西楼梯间", "kind": "prism", "footprint": [[8, 25], [13, 25], [13, 30], [8, 30]], "height_m": 3},
+      {"id": "stair-east", "label": "东楼梯间", "kind": "prism", "footprint": [[47, 25], [52, 25], [52, 30], [47, 30]], "height_m": 3},
+      {"id": "tank-west", "label": "西水箱", "kind": "cylinder", "center": [10, 8], "radius_m": 1.5, "height_m": 2.5},
+      {"id": "tank-east", "label": "东水箱", "kind": "cylinder", "center": [50, 8], "radius_m": 1.5, "height_m": 2.5}
+    ],
+    "keepouts": [
+      {"id": "sky-west", "label": "西天窗", "polygon": [[20, 12], [22, 12], [22, 22], [20, 22]]},
+      {"id": "sky-east", "label": "东天窗", "polygon": [[38, 12], [40, 12], [40, 22], [38, 22]]}
+    ]
+  },
+  "requirements": {"text": "镜像验收用", "structured": {}},
+  "equipment": {"module_id": "trina-tsm-550de19", "inverter_id": null, "racking": "ballast_tilt"},
+  "economics": {"capex_cny_per_w": 2.6, "self_use_ratio": 0.8, "price_self_cny_kwh": 0.65, "price_export_cny_kwh": null, "om_cny_per_w_year": 0.04, "lifetime_years": 25, "discount_rate": 0.06, "assumptions_note": "示意值"}, "designs": []
+}

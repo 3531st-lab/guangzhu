@@ -1,0 +1,127 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "rotated",
+  "name": "旋转厂房倾角演示",
+  "site": {
+    "lat": 31.81,
+    "lon": 119.97,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2
+  },
+  "roof": {
+    "type": "flat",
+    "outline": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        56.381557,
+        20.521209
+      ],
+      [
+        44.068832,
+        54.350143
+      ],
+      [
+        -12.312725,
+        33.828934
+      ]
+    ],
+    "height_m": 9.0,
+    "parapet_height_m": 1.0,
+    "load_capacity_kn_m2": 0.5,
+    "obstacles": [
+      {
+        "id": "stair-1",
+        "label": "楼梯间",
+        "kind": "prism",
+        "footprint": [
+          [
+            0.034556,
+            27.6812
+          ],
+          [
+            4.733019,
+            29.3913
+          ],
+          [
+            3.364939,
+            33.150071
+          ],
+          [
+            -1.333524,
+            31.43997
+          ]
+        ],
+        "height_m": 3.2
+      },
+      {
+        "id": "tank-1",
+        "label": "水箱",
+        "kind": "cylinder",
+        "center": [
+          46.127855,
+          25.302588
+        ],
+        "radius_m": 1.4,
+        "height_m": 2.6
+      }
+    ],
+    "keepouts": [
+      {
+        "id": "sky-1",
+        "label": "天窗",
+        "polygon": [
+          [
+            18.741342,
+            11.078002
+          ],
+          [
+            19.868973,
+            11.488426
+          ],
+          [
+            15.764731,
+            22.764737
+          ],
+          [
+            14.6371,
+            22.354313
+          ]
+        ]
+      }
+    ]
+  },
+  "requirements": {
+    "text": "组件倾角15至20度，留1米检修通道，天窗sky-1不装组件",
+    "structured": {
+      "tilt_deg_range": [
+        15,
+        20
+      ],
+      "walkway_m_min": 1,
+      "keep_clear_ids": [
+        "sky-1"
+      ]
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "ballast_tilt"
+  },
+  "economics": {
+    "capex_cny_per_w": null,
+    "self_use_ratio": 0.8,
+    "price_self_cny_kwh": 0.65,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "用户示意覆盖：自用比例0.8、自用电价0.65元/kWh、折现率0.06；计算期25年对应天合DE19功率质保。造价和运维填null，采用data/catalog/assumptions.csv已查证默认2.59元/W、0.046元/(W·年)；其他null或缺失经济参数取表默认：年衰减0.55%、江苏排放因子0.5827。余电单价0.391元/kWh仍为江苏燃煤基准价示意占位，不能视为2026年新建项目实际上网价。演示206.25kW按一般工商业假设，公共电网连接点电压和省级自用要求尚待接网核实。首年模拟已含1.5%初始光衰；逆变器更换视为运维已含的简化示意；不含税费、补贴、贷款、储能或电价上涨。逐项来源、限制见data/catalog/ASSUMPTIONS.md"
+  },
+  "designs": []
+}

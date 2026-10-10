@@ -1,0 +1,83 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "stage": "任务规划",
+      "passed": true,
+      "reason": "事件证据齐全"
+    },
+    {
+      "stage": "能力调用",
+      "passed": true,
+      "reason": "事件证据齐全"
+    },
+    {
+      "stage": "反馈处理",
+      "passed": true,
+      "reason": "事件证据齐全"
+    },
+    {
+      "stage": "结果验证",
+      "passed": true,
+      "reason": "事件证据齐全"
+    }
+  ],
+  "errors": [],
+  "review": {
+    "requested": true,
+    "passed": true,
+    "mode": "independent",
+    "children": [],
+    "independent": [
+      {
+        "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+        "model": "agnes-3.0-flash",
+        "agnes": true,
+        "actual_model_verified": true,
+        "json_unchanged": null,
+        "valid": true,
+        "passed": true,
+        "high": false,
+        "retryable": false,
+        "versions": [
+          14
+        ],
+        "fork_call_seq": null,
+        "fork_result_seq": null,
+        "started_at": "2026-10-08T13:17:23.869Z",
+        "saved_at": "2026-10-08T13:18:04.190Z",
+        "high_items": [],
+        "problems": [],
+        "extra_read_only_calls": 0
+      }
+    ],
+    "reason": "审核证据齐全",
+    "associations": [
+      {
+        "run": "gz-changzhou-demo-1008-2113",
+        "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+        "ledger_sha256": "63afdf24ced5e3236370c8349e1eeafdb684b23a43a850c2f1b5b49dac453d2b"
+      }
+    ]
+  },
+  "feedback_sequences": [
+    [
+      136,
+      150
+    ]
+  ],
+  "failed_call_count": 0,
+  "failed_calls": [],
+  "pending_calls": [],
+  "rejected_approval_count": 0,
+  "rejected_approvals": [],
+  "verified_exports": [
+    {
+      "version": 14,
+      "analysis_seq": 245,
+      "export_call_seq": 276,
+      "export_result_seq": 282
+    }
+  ],
+  "final_analysis": null
+}

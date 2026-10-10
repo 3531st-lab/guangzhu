@@ -1,0 +1,552 @@
+{
+  "schema": "guangzhu.timeline/1",
+  "nodes": [
+    {
+      "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+      "seq": 18,
+      "ts": "2026-10-08T13:17:37.171Z",
+      "kind": "tool",
+      "name": "gz_project_summary",
+      "tool_use_id": "t0-58a57e5d89ed6ad569147587d2bc3118",
+      "args": "{\"project_id\":\"changzhou-demo-1008-2113\"}",
+      "result": "{\"ok\":true,\"project_id\":\"changzhou-demo-1008-2113\",\"name\":\"常州某厂 1 号厂房\",\"site\":{\"lat\":31.81,\"lon\":119.97,\"timezone\":\"Asia/Shanghai\",\"albedo\":0.2,\"design_temp_min_c\":null,\"design_temp_max_c\":null},\"roof_area_m2\":2160.0,\"roof_bounds_m\":[0.0,0.0,60.0,36.0],\"obstacles\":[{\"id\":\"stair-1\",\"label\":\"楼梯间\"},{\"id\":\"tank-1\",\"label\":\"水箱\"}],\"edge_azimuth_deg\":180.0,\"keepouts\":[{\"id\":\"sky-1\",\"label\":\"天窗\"}],\"obstacle_count\":2,\"keepout_count\":1,\"versions\":[\"v1\",\"v2\",\"v3\",\"v4\",\"v5\",\"v6\",\"v7\",\"v8\",\"v9\",\"v10\",\"v11\",\"v12\",\"v13\",\"v14\",\"v15\",\"v16\"],\"version\":16,\"modules\":568,\"exported_versions\":[14],\"dc_kw\":343.64,\"requirements\":{\"payback_years_max\":6.0,\"walkway_m_min\":1.0,\"keep_clear_ids\":[\"sky-1\"]},\"wind\":{\"version\":16,\"note\":\"示意，不能代替结构计算，施工前要由结构工程师按规范复核\",\"source_status\":\"示意；仅GB55001分项系数已核验\",\"worst_zone\":\"边部\",\"W01\":\"na\",\"anchors\":{\"count\":1136,\"modules\":568,\"why\":\"压块超屋面承重，改锚栓固定（示意）\"}},\"latest_analysis\":{\"version\":16,\"total\":28,\"passed\":20,\"hard_failed\":1,\"failed\":[{\"id\":\"E07\",\"level\":\"hard\",\"name_zh\":\"容配比在示意范围内\",\"value\":1.2273,\"limit\":[1.0,1.3],\"hint_zh\":\"容配比超过上限，请更换型号或减少每台连接的组件\"}],\"met\":[{\"id\":\"G03\",\"name_zh\":\"检修通道宽度达到要求\",\"value\":0.9997,\"limit\":1.0,\"unit\":\"m\"},{\"id\":\"G03\",\"name_zh\":\"检修通道宽度达到要求\",\"value\":0.9997,\"limit\":1.0,\"unit\":\"m\"},{\"id\":\"G04\",\"name_zh\":\"要求留空的区域没有组件\",\"value\":0,\"limit\":0,\"unit\":\"区域\"},{\"id\":\"U04\",\"name_zh\":\"静态回本不超要求\",\"value\":5.242,\"limit\":6.0,\"unit\":\"年\"}]}}",
+      "args_json": {
+        "project_id": "changzhou-demo-1008-2113"
+      },
+      "result_json": {
+        "ok": true,
+        "project_id": "changzhou-demo-1008-2113",
+        "name": "常州某厂 1 号厂房",
+        "site": {
+          "lat": 31.81,
+          "lon": 119.97,
+          "timezone": "Asia/Shanghai",
+          "albedo": 0.2,
+          "design_temp_min_c": null,
+          "design_temp_max_c": null
+        },
+        "roof_area_m2": 2160.0,
+        "roof_bounds_m": [
+          0.0,
+          0.0,
+          60.0,
+          36.0
+        ],
+        "obstacles": [
+          {
+            "id": "stair-1",
+            "label": "楼梯间"
+          },
+          {
+            "id": "tank-1",
+            "label": "水箱"
+          }
+        ],
+        "edge_azimuth_deg": 180.0,
+        "keepouts": [
+          {
+            "id": "sky-1",
+            "label": "天窗"
+          }
+        ],
+        "obstacle_count": 2,
+        "keepout_count": 1,
+        "versions": [
+          "v1",
+          "v2",
+          "v3",
+          "v4",
+          "v5",
+          "v6",
+          "v7",
+          "v8",
+          "v9",
+          "v10",
+          "v11",
+          "v12",
+          "v13",
+          "v14",
+          "v15",
+          "v16"
+        ],
+        "version": 16,
+        "modules": 568,
+        "exported_versions": [
+          14
+        ],
+        "dc_kw": 343.64,
+        "requirements": {
+          "payback_years_max": 6.0,
+          "walkway_m_min": 1.0,
+          "keep_clear_ids": [
+            "sky-1"
+          ]
+        },
+        "wind": {
+          "version": 16,
+          "note": "示意，不能代替结构计算，施工前要由结构工程师按规范复核",
+          "source_status": "示意；仅GB55001分项系数已核验",
+          "worst_zone": "边部",
+          "W01": "na",
+          "anchors": {
+            "count": 1136,
+            "modules": 568,
+            "why": "压块超屋面承重，改锚栓固定（示意）"
+          }
+        },
+        "latest_analysis": {
+          "version": 16,
+          "total": 28,
+          "passed": 20,
+          "hard_failed": 1,
+          "failed": [
+            {
+              "id": "E07",
+              "level": "hard",
+              "name_zh": "容配比在示意范围内",
+              "value": 1.2273,
+              "limit": [
+                1.0,
+                1.3
+              ],
+              "hint_zh": "容配比超过上限，请更换型号或减少每台连接的组件"
+            }
+          ],
+          "met": [
+            {
+              "id": "G03",
+              "name_zh": "检修通道宽度达到要求",
+              "value": 0.9997,
+              "limit": 1.0,
+              "unit": "m"
+            },
+            {
+              "id": "G03",
+              "name_zh": "检修通道宽度达到要求",
+              "value": 0.9997,
+              "limit": 1.0,
+              "unit": "m"
+            },
+            {
+              "id": "G04",
+              "name_zh": "要求留空的区域没有组件",
+              "value": 0,
+              "limit": 0,
+              "unit": "区域"
+            },
+            {
+              "id": "U04",
+              "name_zh": "静态回本不超要求",
+              "value": 5.242,
+              "limit": 6.0,
+              "unit": "年"
+            }
+          ]
+        }
+      },
+      "isError": false,
+      "result_code": null,
+      "started_at": "2026-10-08T13:17:37.171Z",
+      "ended_at": "2026-10-08T13:17:37.337Z",
+      "result_seq": 22,
+      "status": "completed"
+    },
+    {
+      "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+      "seq": 35,
+      "ts": "2026-10-08T13:17:40.293Z",
+      "kind": "tool",
+      "name": "gz_analyze",
+      "tool_use_id": "t1-c6563e977275b9533d1afc7ecbf39e72",
+      "args": "{\"project_id\":\"changzhou-demo-1008-2113\",\"version\":14}",
+      "result": "{\"ok\":true,\"version\":14,\"modules\":461,\"dc_kw\":278.905,\"yield_kwh\":{\"p50\":317239.3537,\"low\":303457.494,\"high\":369899.9519,\"per_kw\":1137.4459,\"omitted\":{}},\"shading\":{\"avg_loss_pct\":0.757,\"modules_over_threshold\":0,\"threshold_pct\":8.0},\"electrical\":{\"modules_per_string\":20,\"voc_cold_v\":1063.8807,\"vmp_hot_v\":597.0335,\"dc_ac_ratio\":1.2126,\"dc_drop_pct_max\":1.5782,\"ac_drop_pct_max\":1.3669,\"voc_limit_v\":1100.0,\"mppt_min_v\":200.0,\"rated_ac_kw\":230.0,\"modules_per_string_short\":17},\"load\":{\"added_kn_m2\":0.1474,\"capacity_kn_m2\":0.5},\"wind\":{\"version\":14,\"note\":\"示意，不能代替结构计算，施工前要由结构工程师按规范复核\",\"source_status\":\"示意；仅GB55001分项系数已核验\",\"worst_zone\":\"中部\",\"W01\":\"na\",\"anchors\":{\"count\":922,\"modules\":461,\"why\":\"压块超屋面承重，改锚栓固定（示意）\"}},\"economics\":{\"capex_cny\":707967.6605,\"payback_years\":4.8738,\"irr_pct\":19.8298,\"lcoe_cny_kwh\":0.2454,\"co2_t_per_year\":184.8554},\"rules\":{\"total\":25,\"passed\":19,\"hard_failed\":0,\"failed\":[],\"met\":[{\"id\":\"G03\",\"name_zh\":\"检修通道宽度达到要求\",\"value\":1.0,\"limit\":1.0,\"unit\":\"m\"},{\"id\":\"G04\",\"name_zh\":\"要求留空的区域没有组件\",\"value\":0,\"limit\":0,\"unit\":\"区域\"},{\"id\":\"U04\",\"name_zh\":\"静态回本不超要求\",\"value\":4.8738,\"limit\":6.0,\"unit\":\"年\"}]},\"suggestions\":[]}",
+      "args_json": {
+        "project_id": "changzhou-demo-1008-2113",
+        "version": 14
+      },
+      "result_json": {
+        "ok": true,
+        "version": 14,
+        "modules": 461,
+        "dc_kw": 278.905,
+        "yield_kwh": {
+          "p50": 317239.3537,
+          "low": 303457.494,
+          "high": 369899.9519,
+          "per_kw": 1137.4459,
+          "omitted": {}
+        },
+        "shading": {
+          "avg_loss_pct": 0.757,
+          "modules_over_threshold": 0,
+          "threshold_pct": 8.0
+        },
+        "electrical": {
+          "modules_per_string": 20,
+          "voc_cold_v": 1063.8807,
+          "vmp_hot_v": 597.0335,
+          "dc_ac_ratio": 1.2126,
+          "dc_drop_pct_max": 1.5782,
+          "ac_drop_pct_max": 1.3669,
+          "voc_limit_v": 1100.0,
+          "mppt_min_v": 200.0,
+          "rated_ac_kw": 230.0,
+          "modules_per_string_short": 17
+        },
+        "load": {
+          "added_kn_m2": 0.1474,
+          "capacity_kn_m2": 0.5
+        },
+        "wind": {
+          "version": 14,
+          "note": "示意，不能代替结构计算，施工前要由结构工程师按规范复核",
+          "source_status": "示意；仅GB55001分项系数已核验",
+          "worst_zone": "中部",
+          "W01": "na",
+          "anchors": {
+            "count": 922,
+            "modules": 461,
+            "why": "压块超屋面承重，改锚栓固定（示意）"
+          }
+        },
+        "economics": {
+          "capex_cny": 707967.6605,
+          "payback_years": 4.8738,
+          "irr_pct": 19.8298,
+          "lcoe_cny_kwh": 0.2454,
+          "co2_t_per_year": 184.8554
+        },
+        "rules": {
+          "total": 25,
+          "passed": 19,
+          "hard_failed": 0,
+          "failed": [],
+          "met": [
+            {
+              "id": "G03",
+              "name_zh": "检修通道宽度达到要求",
+              "value": 1.0,
+              "limit": 1.0,
+              "unit": "m"
+            },
+            {
+              "id": "G04",
+              "name_zh": "要求留空的区域没有组件",
+              "value": 0,
+              "limit": 0,
+              "unit": "区域"
+            },
+            {
+              "id": "U04",
+              "name_zh": "静态回本不超要求",
+              "value": 4.8738,
+              "limit": 6.0,
+              "unit": "年"
+            }
+          ]
+        },
+        "suggestions": []
+      },
+      "isError": false,
+      "result_code": null,
+      "started_at": "2026-10-08T13:17:40.293Z",
+      "ended_at": "2026-10-08T13:17:40.341Z",
+      "result_seq": 39,
+      "status": "completed"
+    },
+    {
+      "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+      "seq": 52,
+      "ts": "2026-10-08T13:17:47.940Z",
+      "kind": "tool",
+      "name": "gz_crosscheck_yield",
+      "tool_use_id": "t2-9637814a7706e59de098f62f2065eff2",
+      "args": "{\"project_id\":\"changzhou-demo-1008-2113\",\"version\":14}",
+      "result": "{\"ok\":true,\"version\":14,\"specific_yield_kwh_kwp\":{\"a\":1096.3306,\"b\":1146.1217,\"c\":1104.4258,\"b_tmy\":1336.3738,\"d\":1261.36},\"differences\":[{\"left\":\"a\",\"right\":\"b\",\"difference_kwh_kwp\":-49.7911},{\"left\":\"a\",\"right\":\"c\",\"difference_kwh_kwp\":-8.0952},{\"left\":\"a\",\"right\":\"b_tmy\",\"difference_kwh_kwp\":-240.0432},{\"left\":\"a\",\"right\":\"d\",\"difference_kwh_kwp\":-165.0294},{\"left\":\"b\",\"right\":\"c\",\"difference_kwh_kwp\":41.6959},{\"left\":\"b\",\"right\":\"b_tmy\",\"difference_kwh_kwp\":-190.2521},{\"left\":\"b\",\"right\":\"d\",\"difference_kwh_kwp\":-115.2383},{\"left\":\"c\",\"right\":\"b_tmy\",\"difference_kwh_kwp\":-231.948},{\"left\":\"c\",\"right\":\"d\",\"difference_kwh_kwp\":-156.9342},{\"left\":\"b_tmy\",\"right\":\"d\",\"difference_kwh_kwp\":75.0138}],\"omitted\":{},\"note\":\"a/b/c使用同一NASA天气；b与b_tmy比较天气差异，b_tmy与d也有模型及天气产品差异。\"}",
+      "args_json": {
+        "project_id": "changzhou-demo-1008-2113",
+        "version": 14
+      },
+      "result_json": {
+        "ok": true,
+        "version": 14,
+        "specific_yield_kwh_kwp": {
+          "a": 1096.3306,
+          "b": 1146.1217,
+          "c": 1104.4258,
+          "b_tmy": 1336.3738,
+          "d": 1261.36
+        },
+        "differences": [
+          {
+            "left": "a",
+            "right": "b",
+            "difference_kwh_kwp": -49.7911
+          },
+          {
+            "left": "a",
+            "right": "c",
+            "difference_kwh_kwp": -8.0952
+          },
+          {
+            "left": "a",
+            "right": "b_tmy",
+            "difference_kwh_kwp": -240.0432
+          },
+          {
+            "left": "a",
+            "right": "d",
+            "difference_kwh_kwp": -165.0294
+          },
+          {
+            "left": "b",
+            "right": "c",
+            "difference_kwh_kwp": 41.6959
+          },
+          {
+            "left": "b",
+            "right": "b_tmy",
+            "difference_kwh_kwp": -190.2521
+          },
+          {
+            "left": "b",
+            "right": "d",
+            "difference_kwh_kwp": -115.2383
+          },
+          {
+            "left": "c",
+            "right": "b_tmy",
+            "difference_kwh_kwp": -231.948
+          },
+          {
+            "left": "c",
+            "right": "d",
+            "difference_kwh_kwp": -156.9342
+          },
+          {
+            "left": "b_tmy",
+            "right": "d",
+            "difference_kwh_kwp": 75.0138
+          }
+        ],
+        "omitted": {},
+        "note": "a/b/c使用同一NASA天气；b与b_tmy比较天气差异，b_tmy与d也有模型及天气产品差异。"
+      },
+      "isError": false,
+      "result_code": null,
+      "started_at": "2026-10-08T13:17:47.940Z",
+      "ended_at": "2026-10-08T13:17:47.994Z",
+      "result_seq": 56,
+      "status": "completed"
+    },
+    {
+      "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+      "seq": 69,
+      "ts": "2026-10-08T13:18:02.720Z",
+      "kind": "tool",
+      "name": "gz_record_review",
+      "tool_use_id": "t3-2a0a37fc30ab8bd940a5e03719494f68",
+      "args": "{\"project_id\":\"changzhou-demo-1008-2113\",\"version\":14,\"reviewer_model\":\"agnes-3.0-flash\",\"verdict\":\"approve\",\"findings\":[{\"severity\":\"low\",\"item\":\"版本一致性\",\"evidence\":\"指定审核的已导出版本14有461块组件，装机278.905千瓦；项目最新方案已演进到版本16、568块组件，审核只覆盖版本14本身，不涉及后续候选。\",\"suggestion\":\"版本14可作为已导出设计保留；后续版本16有另行记录，不影响本版本结论。\"},{\"severity\":\"low\",\"item\":\"硬性规则\",\"evidence\":\"版本14共25条规则、通过19条、硬性失败0条，无未通过硬性项；满足检修通道宽度1.0米、要求留空区域没有组件、静态回本4.8738年不超过6年。\",\"suggestion\":\"按已核对结果，版本14没有需要立即整改的硬性规则项。\"},{\"severity\":\"low\",\"item\":\"发电复核\",\"evidence\":\"版本14基准年发电估算317239.3537千瓦时，区间为303457.494至369899.9519千瓦时，每千瓦1137.4459千瓦时；复核中a、b、c使用同一NASA",
+      "result": "{\"ok\":true,\"version\":14,\"file\":\"projects/changzhou-demo-1008-2113/reviews/v14-20261008T131804116144-cc122429.json\"}",
+      "args_json": {
+        "project_id": "changzhou-demo-1008-2113",
+        "version": 14,
+        "reviewer_model": "agnes-3.0-flash",
+        "verdict": "approve",
+        "findings": [
+          {
+            "severity": "low",
+            "item": "版本一致性",
+            "evidence": "指定审核的已导出版本14有461块组件，装机278.905千瓦；项目最新方案已演进到版本16、568块组件，审核只覆盖版本14本身，不涉及后续候选。",
+            "suggestion": "版本14可作为已导出设计保留；后续版本16有另行记录，不影响本版本结论。"
+          },
+          {
+            "severity": "low",
+            "item": "硬性规则",
+            "evidence": "版本14共25条规则、通过19条、硬性失败0条，无未通过硬性项；满足检修通道宽度1.0米、要求留空区域没有组件、静态回本4.8738年不超过6年。",
+            "suggestion": "按已核对结果，版本14没有需要立即整改的硬性规则项。"
+          },
+          {
+            "severity": "low",
+            "item": "发电复核",
+            "evidence": "版本14基准年发电估算317239.3537千瓦时，区间为303457.494至369899.9519千瓦时，每千瓦1137.4459千瓦时；复核中a、b、c使用同一NASA天气，b与b_tmy、b_tmy与d涉及不同天气来源，差异不写成同天气误差。",
+            "suggestion": "采用各工具给出的数值作为发电复核结论，不另行计算；如需不同天气口径对比，按工具说明区分来源。"
+          },
+          {
+            "severity": "low",
+            "item": "经济假设与回本",
+            "evidence": "版本14静态回本4.8738年，不超过业主要求的6年；IRR为19.8298%，LCOE为0.2454元每千瓦时，年减碳184.8554吨，CAPEX为707967.6605元。",
+            "suggestion": "回本和经济指标满足已记录要求；后续若业主调整电价、资本成本或自用比例，需重新核对。"
+          },
+          {
+            "severity": "low",
+            "item": "留空区域与检修通道",
+            "evidence": "工具结果显示要求留空的区域没有组件，检修通道宽度达到1.0米要求。",
+            "suggestion": "施工和变更时继续保持留空区域与检修通道不被组件占用。"
+          },
+          {
+            "severity": "low",
+            "item": "电气与阴影",
+            "evidence": "版本14每串20块组件，容配比1.2126；最大直流压降1.5782%，最大交流压降1.3669%；平均阴影损失0.757%，超阈组件0块。",
+            "suggestion": "电气与阴影指标在工具给出的范围内，按现有设计保留；如更换逆变器或组件型号需重新复核。"
+          },
+          {
+            "severity": "low",
+            "item": "结构与承重",
+            "evidence": "工具说明版本14屋面示意荷载增加0.1474千牛每平方米，承重0.5千牛每平方米；风为示意，不能代替结构计算，锚栓922个为示意。",
+            "suggestion": "施工前由结构工程师按规范复核屋面承重与抗风设计。"
+          }
+        ]
+      },
+      "result_json": {
+        "ok": true,
+        "version": 14,
+        "file": "projects/changzhou-demo-1008-2113/reviews/v14-20261008T131804116144-cc122429.json"
+      },
+      "isError": false,
+      "result_code": null,
+      "started_at": "2026-10-08T13:18:02.720Z",
+      "ended_at": "2026-10-08T13:18:04.190Z",
+      "result_seq": 75,
+      "status": "completed"
+    },
+    {
+      "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+      "seq": 72,
+      "ts": "2026-10-08T13:18:04.090Z",
+      "kind": "approval",
+      "tool": "gz_record_review",
+      "tool_use_id": "t3-2a0a37fc30ab8bd940a5e03719494f68",
+      "args_json": {
+        "project_id": "changzhou-demo-1008-2113",
+        "version": 14,
+        "reviewer_model": "agnes-3.0-flash",
+        "verdict": "approve",
+        "findings": [
+          {
+            "severity": "low",
+            "item": "版本一致性",
+            "evidence": "指定审核的已导出版本14有461块组件，装机278.905千瓦；项目最新方案已演进到版本16、568块组件，审核只覆盖版本14本身，不涉及后续候选。",
+            "suggestion": "版本14可作为已导出设计保留；后续版本16有另行记录，不影响本版本结论。"
+          },
+          {
+            "severity": "low",
+            "item": "硬性规则",
+            "evidence": "版本14共25条规则、通过19条、硬性失败0条，无未通过硬性项；满足检修通道宽度1.0米、要求留空区域没有组件、静态回本4.8738年不超过6年。",
+            "suggestion": "按已核对结果，版本14没有需要立即整改的硬性规则项。"
+          },
+          {
+            "severity": "low",
+            "item": "发电复核",
+            "evidence": "版本14基准年发电估算317239.3537千瓦时，区间为303457.494至369899.9519千瓦时，每千瓦1137.4459千瓦时；复核中a、b、c使用同一NASA天气，b与b_tmy、b_tmy与d涉及不同天气来源，差异不写成同天气误差。",
+            "suggestion": "采用各工具给出的数值作为发电复核结论，不另行计算；如需不同天气口径对比，按工具说明区分来源。"
+          },
+          {
+            "severity": "low",
+            "item": "经济假设与回本",
+            "evidence": "版本14静态回本4.8738年，不超过业主要求的6年；IRR为19.8298%，LCOE为0.2454元每千瓦时，年减碳184.8554吨，CAPEX为707967.6605元。",
+            "suggestion": "回本和经济指标满足已记录要求；后续若业主调整电价、资本成本或自用比例，需重新核对。"
+          },
+          {
+            "severity": "low",
+            "item": "留空区域与检修通道",
+            "evidence": "工具结果显示要求留空的区域没有组件，检修通道宽度达到1.0米要求。",
+            "suggestion": "施工和变更时继续保持留空区域与检修通道不被组件占用。"
+          },
+          {
+            "severity": "low",
+            "item": "电气与阴影",
+            "evidence": "版本14每串20块组件，容配比1.2126；最大直流压降1.5782%，最大交流压降1.3669%；平均阴影损失0.757%，超阈组件0块。",
+            "suggestion": "电气与阴影指标在工具给出的范围内，按现有设计保留；如更换逆变器或组件型号需重新复核。"
+          },
+          {
+            "severity": "low",
+            "item": "结构与承重",
+            "evidence": "工具说明版本14屋面示意荷载增加0.1474千牛每平方米，承重0.5千牛每平方米；风为示意，不能代替结构计算，锚栓922个为示意。",
+            "suggestion": "施工前由结构工程师按规范复核屋面承重与抗风设计。"
+          }
+        ]
+      },
+      "request_id": "r-7f242ff3e118142fbf407a71fd9d7e8b",
+      "pending": true,
+      "verdict": null,
+      "via": null,
+      "options": [
+        "allowed-once",
+        "allowed-session",
+        "allowed-permanent",
+        "rejected"
+      ]
+    },
+    {
+      "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+      "seq": 73,
+      "ts": "2026-10-08T13:18:04.091Z",
+      "kind": "approval",
+      "tool": "gz_record_review",
+      "tool_use_id": "t3-2a0a37fc30ab8bd940a5e03719494f68",
+      "args_json": {
+        "project_id": "changzhou-demo-1008-2113",
+        "version": 14,
+        "reviewer_model": "agnes-3.0-flash",
+        "verdict": "approve",
+        "findings": [
+          {
+            "severity": "low",
+            "item": "版本一致性",
+            "evidence": "指定审核的已导出版本14有461块组件，装机278.905千瓦；项目最新方案已演进到版本16、568块组件，审核只覆盖版本14本身，不涉及后续候选。",
+            "suggestion": "版本14可作为已导出设计保留；后续版本16有另行记录，不影响本版本结论。"
+          },
+          {
+            "severity": "low",
+            "item": "硬性规则",
+            "evidence": "版本14共25条规则、通过19条、硬性失败0条，无未通过硬性项；满足检修通道宽度1.0米、要求留空区域没有组件、静态回本4.8738年不超过6年。",
+            "suggestion": "按已核对结果，版本14没有需要立即整改的硬性规则项。"
+          },
+          {
+            "severity": "low",
+            "item": "发电复核",
+            "evidence": "版本14基准年发电估算317239.3537千瓦时，区间为303457.494至369899.9519千瓦时，每千瓦1137.4459千瓦时；复核中a、b、c使用同一NASA天气，b与b_tmy、b_tmy与d涉及不同天气来源，差异不写成同天气误差。",
+            "suggestion": "采用各工具给出的数值作为发电复核结论，不另行计算；如需不同天气口径对比，按工具说明区分来源。"
+          },
+          {
+            "severity": "low",
+            "item": "经济假设与回本",
+            "evidence": "版本14静态回本4.8738年，不超过业主要求的6年；IRR为19.8298%，LCOE为0.2454元每千瓦时，年减碳184.8554吨，CAPEX为707967.6605元。",
+            "suggestion": "回本和经济指标满足已记录要求；后续若业主调整电价、资本成本或自用比例，需重新核对。"
+          },
+          {
+            "severity": "low",
+            "item": "留空区域与检修通道",
+            "evidence": "工具结果显示要求留空的区域没有组件，检修通道宽度达到1.0米要求。",
+            "suggestion": "施工和变更时继续保持留空区域与检修通道不被组件占用。"
+          },
+          {
+            "severity": "low",
+            "item": "电气与阴影",
+            "evidence": "版本14每串20块组件，容配比1.2126；最大直流压降1.5782%，最大交流压降1.3669%；平均阴影损失0.757%，超阈组件0块。",
+            "suggestion": "电气与阴影指标在工具给出的范围内，按现有设计保留；如更换逆变器或组件型号需重新复核。"
+          },
+          {
+            "severity": "low",
+            "item": "结构与承重",
+            "evidence": "工具说明版本14屋面示意荷载增加0.1474千牛每平方米，承重0.5千牛每平方米；风为示意，不能代替结构计算，锚栓922个为示意。",
+            "suggestion": "施工前由结构工程师按规范复核屋面承重与抗风设计。"
+          }
+        ]
+      },
+      "request_id": "r-7f242ff3e118142fbf407a71fd9d7e8b",
+      "pending": false,
+      "verdict": "allowed-session",
+      "via": "sync",
+      "options": []
+    },
+    {
+      "session": "06f97d9c-bb12-4c72-88e7-fb8843d9a331",
+      "seq": 88,
+      "ts": "2026-10-08T13:18:09.640Z",
+      "kind": "text",
+      "text": "已完成对 changzhou-demo-1008-2113 版本14的独立审核，并按要求调用四个业务工具、逐个等待返回，未修改方案、未导出。\n\n**结论：approve（批准）**  \n已生成独立审核记录：`projects/changzhou-demo-1008-2113/reviews/v14-20261008T131804116144-cc122429.json`\n\n**依据（数字均照抄工具结果）：**\n\n1. 项目摘要：版本14为已导出版本；最新版本为16。\n2. 版本14分析：组件461块，装机278.905kW；基准年发电估算317239.3537kWh（区间303457.494～369899.9519kWh），每千瓦1137.4459kWh/kW。\n3. 规则结果：共25条，通过19条，硬性失败0条，满足检修通道、留空区域、回本等要求。\n4. 发电复核：a/b/c 使用同一NASA天气；b_tmy 与 d 使用不同天气，未将不同天气差异混作同天气误差。\n5. 经济假设：回本4.8738年，满足不超过6年的要求；IRR 19.8298%，LCOE 0.2454元/kWh。"
+    }
+  ]
+}

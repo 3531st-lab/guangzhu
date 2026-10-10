@@ -1,0 +1,100 @@
+{
+  "schema": "guangzhu.weather/1",
+  "source": "pvgis",
+  "source_description": "PVGIS 5.3 ERA5 typical meteorological year",
+  "latitude": 31.81,
+  "longitude": 119.97,
+  "year": 1990,
+  "request_url": "https://re.jrc.ec.europa.eu/api/v5_3/tmy?lat=31.81&lon=119.97&outputformat=json&raddatabase=PVGIS-ERA5",
+  "download_time": "2026-10-01T12:31:08.817975+00:00",
+  "used": "download",
+  "timezone": "UTC",
+  "interval_minutes": 60,
+  "hour_midpoint_offset_minutes": 30.0,
+  "units": {
+    "ghi": "W/m2",
+    "dni": "W/m2",
+    "dhi": "W/m2",
+    "temp_air": "degC",
+    "wind_speed": "m/s"
+  },
+  "missing_counts": {
+    "ghi": 0,
+    "dni": 0,
+    "dhi": 0,
+    "temp_air": 0,
+    "wind_speed": 0
+  },
+  "timestamp_semantics": "TMY HH:00 label; ERA5 irradiance at HH:30",
+  "timestamp_source": "https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/using-pvgis-5/pvgis-5-user-manual_en",
+  "normalization_year": 1990,
+  "months_selected": [
+    {
+      "month": 1,
+      "year": 2007
+    },
+    {
+      "month": 2,
+      "year": 2010
+    },
+    {
+      "month": 3,
+      "year": 2019
+    },
+    {
+      "month": 4,
+      "year": 2011
+    },
+    {
+      "month": 5,
+      "year": 2018
+    },
+    {
+      "month": 6,
+      "year": 2017
+    },
+    {
+      "month": 7,
+      "year": 2008
+    },
+    {
+      "month": 8,
+      "year": 2017
+    },
+    {
+      "month": 9,
+      "year": 2015
+    },
+    {
+      "month": 10,
+      "year": 2006
+    },
+    {
+      "month": 11,
+      "year": 2017
+    },
+    {
+      "month": 12,
+      "year": 2015
+    }
+  ],
+  "pvgis_inputs": {
+    "location": {
+      "latitude": 31.81,
+      "longitude": 119.97,
+      "elevation": 7.0,
+      "irradiance_time_offset": 0.5
+    },
+    "meteo_data": {
+      "radiation_db": "PVGIS-ERA5",
+      "meteo_db": "ERA5",
+      "year_min": 2005,
+      "year_max": 2023,
+      "use_horizon": true,
+      "horizon_db": "DEM-calculated"
+    }
+  },
+  "irradiance_time_offset": 0.5,
+  "data_file": "pvgis_31.8100_119.9700_1990.csv.gz",
+  "data_file_sha256": "c3deb026c2229e3f3d2846894657f51eec4367f30b186937fa339e1f572c5eb2"
+}

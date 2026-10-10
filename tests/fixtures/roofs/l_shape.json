@@ -1,0 +1,18 @@
+{
+  "schema": "guangzhu.project/1", "id": "l-shape", "name": "L形厂房测试屋顶",
+  "site": {"lat": 31.81, "lon": 119.97, "timezone": "Asia/Shanghai", "albedo": 0.2},
+  "roof": {
+    "type": "flat", "outline": [[0, 0], [60, 0], [60, 20], [35, 20], [35, 36], [0, 36]],
+    "height_m": 9, "parapet_height_m": 1, "load_capacity_kn_m2": 0.5,
+    "obstacles": [
+      {"id": "stair", "label": "楼梯间", "kind": "prism", "footprint": [[4, 26], [10, 26], [10, 31], [4, 31]], "height_m": 3},
+      {"id": "vent", "label": "通风机", "kind": "prism", "footprint": [[19, 8], [22, 8], [22, 11], [19, 11]], "height_m": 1.5},
+      {"id": "duct", "label": "管道箱", "kind": "prism", "footprint": [[43, 12], [48, 12], [48, 15], [43, 15]], "height_m": 1},
+      {"id": "tank", "label": "圆柱水箱", "kind": "cylinder", "center": [51, 6], "radius_m": 1.5, "height_m": 2.6}
+    ],
+    "keepouts": [{"id": "sky", "label": "天窗", "polygon": [[25, 23], [28, 23], [28, 31], [25, 31]]}]
+  },
+  "requirements": {"text": "几何验收用", "structured": {}},
+  "equipment": {"module_id": "trina-tsm-550de19", "inverter_id": null, "racking": "ballast_tilt"},
+  "economics": {"capex_cny_per_w": 2.6, "self_use_ratio": 0.8, "price_self_cny_kwh": 0.65, "price_export_cny_kwh": null, "om_cny_per_w_year": 0.04, "lifetime_years": 25, "discount_rate": 0.06, "assumptions_note": "示意值"}, "designs": []
+}
