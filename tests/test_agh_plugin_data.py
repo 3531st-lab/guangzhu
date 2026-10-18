@@ -63,4 +63,6 @@ def test_release_is_repeatable_runtime_only_and_keeps_both_font_licenses(tmp_pat
     assert metadata['agnes'] == json.loads((builder.PLUGIN / 'package.json').read_text(encoding='utf-8'))['agnes']
     for source in (builder.PLUGIN / 'extensions').rglob('*'):
         if source.is_file(): assert (release / source.relative_to(builder.PLUGIN)).read_bytes() == source.read_bytes()
-    assert len(list((release / 'licenses').glob('*.txt'))) == 2
+    for notice in ('LICENSE-IBM-Plex.txt', 'LICENSE-Noto-Serif-SC.txt', 'LICENSE-guangzhu.txt'):
+        assert (release / 'licenses' / notice).read_bytes() == (builder.PLUGIN / 'licenses' / notice).read_bytes()
+    assert (release / 'licenses/LICENSE-guangzhu.txt').read_bytes() == (ROOT / 'LICENSE').read_bytes()

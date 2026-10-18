@@ -123,6 +123,9 @@ foreach ($relative in @('backend/guangzhu','desktop','data/catalog','data/demo',
     New-Item -ItemType Directory -Force -Path (Split-Path $destination) | Out-Null
     Copy-Item -LiteralPath (Join-Path $root $relative) -Destination $destination -Recurse
 }
+foreach ($notice in @('LICENSE', 'THIRD_PARTY_NOTICES.md')) {
+    Copy-Item -LiteralPath (Join-Path $root $notice) -Destination (Join-Path $stage $notice)
+}
 New-Item -ItemType Directory -Path (Join-Path $stage 'scripts'),(Join-Path $stage 'projects'),(Join-Path $stage 'runs'),(Join-Path $stage 'data/showcase') | Out-Null
 # Codex review E1: one real, fully verified run ships with the app so it can be looked through before any key is set
 Copy-Item -LiteralPath (Join-Path $root 'runs/gz-changzhou-demo-1008-2113') -Destination (Join-Path $stage 'data/showcase/gz-changzhou-demo-1008-2113') -Recurse

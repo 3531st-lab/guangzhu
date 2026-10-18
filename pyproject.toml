@@ -7,6 +7,13 @@ name = "guangzhu"
 version = "0.1.0"
 description = "光筑：屋顶光伏设计与验证计算"
 requires-python = ">=3.12,<3.13"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+
+[project.urls]
+Repository = "https://github.com/3531st-lab/guangzhu"
+Issues = "https://github.com/3531st-lab/guangzhu/issues"
 
 [tool.setuptools.packages.find]
 where = ["backend"]

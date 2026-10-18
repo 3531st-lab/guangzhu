@@ -9,6 +9,24 @@ projects/*
 !projects/.gitkeep
 data/my-roofs/
 .env
+.env.*
+!.env.example
+!.env.*.example
+desktop/settings.json
+*.local.json
+*.pem
+*.key
+*.p12
+*.pfx
+.guangzhu-agh/
+.chart-data-*/
+.superpowers/
+tmp/
+runtime/
+# New sessions can contain user input; explicitly review before adding an archive.
+runs/*
+!runs/.gitkeep
+# Existing published archives remain tracked by Git.
 *.log
 dist/
 build/

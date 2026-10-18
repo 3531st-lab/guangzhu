@@ -4,6 +4,8 @@
 
 光筑是工厂屋顶光伏设计智能体，可自动排布、测算发电与收益，经独立审核输出方案书、图纸和材料清单。
 
+原创代码采用 [MIT 许可证](LICENSE)。从源码安装及离线复现见 [复现指南](docs/REPRODUCING.md)，配置示例见 [settings.example.json](desktop/settings.example.json)，第三方许可见 [第三方声明](THIRD_PARTY_NOTICES.md)。按比赛“获奖代码库开源”条款的逐项核对见 [开源检查记录](docs/OPEN_SOURCE_CHECKLIST.md)。
+
 作品内容、实现方案、核心功能与技术亮点见[作品详情](docs/project-description.md)；[提交表文本](docs/materials/submission-form.txt)提供 50 字以内简介和 5000 字以内详情。
 
 选一栋厂房屋顶（也可以导入它的图纸，或者在软件里画出来；彩钢瓦、斜屋面、空地、车棚、养殖棚也行），写一句"6 年内回本，留 1 米检修通道"，光筑就在 **AGH（Agnes Harness）** 里让 DeepSeek 一次做完排板、阴影、发电、电气和串联布线、风荷载、经济和规范核对，再由 Agnes 在另一个会话里独立审核，最后给出方案书 PDF、CAD 排布图（DXF）和材料清单（XLSX）。要求做不到时，它会停下来说清楚为什么、可以怎么放宽。
@@ -90,30 +92,40 @@
 
 ### 从源码运行
 
-Windows、Python 3.12，在仓库根目录：
+Windows 10/11 x64、Python 3.12，先克隆仓库并安装锁定依赖：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/setup.ps1
-.\start.cmd
+git clone https://github.com/3531st-lab/guangzhu.git
+cd guangzhu
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup.ps1
 ```
 
 开发版用本机 `127.0.0.1:8765`（光筑）和 `127.0.0.1:4177`（AGH），安装版用 8766 和 4178，两者可以同时开。
+
+离线计算和已归档运行核验不需要模型 key，准确命令及成功标准见 [复现指南](docs/REPRODUCING.md)。发起新的自动设计前，复制 [配置模板](desktop/settings.example.json) 为 `desktop/settings.json`、填写本机路径，并按 [AGH 接入说明](docs/AGH_SETUP.md) 配置运行包、MCP、插件与模型，然后运行 `start.cmd`。Python 安装路径不是默认值时，给安装脚本传入 `-Python`。
 
 ### 测试
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv\Scripts\python.exe -m pytest
+node --test agh-plugin/guangzhu-studio/test/*.test.js
+node --test tests/embed_harness/*.test.mjs
+node --test tests/desktop/*.test.mjs
 .\.venv\Scripts\python.exe scripts/check_secrets.py
 ```
+
+公共仓库不含全部历史过程归档，相关历史测试会明确跳过；通过、跳过、失败应分别统计，详见 [复现指南](docs/REPRODUCING.md)。
 
 ### 安装包
 
 ```powershell
-powershell -NoProfile -File scripts/build_installer.ps1
+powershell -NoProfile -File scripts/build_installer.ps1 -AghArchive 'C:/inputs/agnes-win32-x64-5da4073.zip' -AghSource 'C:/src/agnes-harness'
 ```
 
 需要 Python 3.12 和官方 AGH 运行包（脚本参数 `-AghArchive`、`-AghSource`）。脚本下载官方 Python 嵌入包、Inno Setup 和锁定的依赖（`requirements.lock.txt`），核对签名和摘要，跑安装树检查和离线计算自检，输出 `dist/guangzhu-setup.exe`。
+
+原始 AGH ZIP 的获取渠道、固定摘要和缺失时的替代复现路径见 [外部依赖说明](docs/DEPENDENCIES.md)；仅凭源码克隆不能声称已重建同一安装包。
 
 ## 第三方来源
 
@@ -123,3 +135,7 @@ powershell -NoProfile -File scripts/build_installer.ps1
 - 逐项的来源、版本、许可和用途见 [`docs/sources.md`](docs/sources.md)；随仓库的许可证文件在 `data/catalog/`、`data/roofs/`、`desktop/web/vendor/`、`agh-plugin/guangzhu-studio/licenses/`。
 
 不要把任何 key 写进文件；key 只在光筑首页或 AGH 设置里填。
+
+## 许可证与公开范围
+
+[LICENSE](LICENSE) 适用于团队原创部分；第三方代码、字体和数据继续遵循 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 列明的许可。用户图纸、真实个人项目、模型凭据、AGH 实例目录和未经复核的执行记录不属于公开内容。提交前运行密钥扫描，并人工检查图像、PDF、账本和 Git 历史；忽略规则不能清除已提交的信息。
