@@ -1,141 +1,228 @@
-# 光筑 · 工厂屋顶光伏方案自动设计 Agent
+# Guangzhu · Rooftop Solar PV Design Agent
 
-2026 江苏省高校 AI+科学与工程创新实践黑客松 · 本科生组 · U058「验形工坊」
+**English** | [简体中文](README.zh-CN.md)
 
-光筑是工厂屋顶光伏设计智能体，可自动排布、测算发电与收益，经独立审核输出方案书、图纸和材料清单。
+Turn a rooftop and a plain-language brief into a checked solar PV proposal, drawings, and bill of materials.
 
-原创代码采用 [MIT 许可证](LICENSE)。从源码安装及离线复现见 [复现指南](docs/REPRODUCING.md)，配置示例见 [settings.example.json](desktop/settings.example.json)，第三方许可见 [第三方声明](THIRD_PARTY_NOTICES.md)。按比赛“获奖代码库开源”条款的逐项核对见 [开源检查记录](docs/OPEN_SOURCE_CHECKLIST.md)。
+2026 Jiangsu AI + Science & Engineering Hackathon · Undergraduate division · U058「验形工坊」
 
-作品内容、实现方案、核心功能与技术亮点见[作品详情](docs/project-description.md)；[提交表文本](docs/materials/submission-form.txt)提供 50 字以内简介和 5000 字以内详情。
+[Project Overview](#project-overview) · [Demo Video](#demo-video) · [Architecture](#architecture) · [Integration Standards](#integration-standards) · [Getting Started](#getting-started) · [Verification](#verification)
 
-选一栋厂房屋顶（也可以导入它的图纸，或者在软件里画出来；彩钢瓦、斜屋面、空地、车棚、养殖棚也行），写一句"6 年内回本，留 1 米检修通道"，光筑就在 **AGH（Agnes Harness）** 里让 DeepSeek 一次做完排板、阴影、发电、电气和串联布线、风荷载、经济和规范核对，再由 Agnes 在另一个会话里独立审核，最后给出方案书 PDF、CAD 排布图（DXF）和材料清单（XLSX）。要求做不到时，它会停下来说清楚为什么、可以怎么放宽。
+![Guangzhu workbench showing a 3D rooftop PV layout, shading, and design results](docs/assets/workbench-result.png)
 
-## 三步用起来
+*An archived Changzhou example, recorded on October 8, 2026: 278.9 kWp with an estimated 4.87-year simple payback. Roof equipment, structural capacity, and some economic inputs are illustrative.*
 
-1. **安装**：从 [Releases](https://github.com/3531st-lab/guangzhu/releases/latest) 下载 `guangzhu-setup.exe`（约 149 MB，Windows 10/11 64 位，不需要管理员权限），双击安装。安装程序会配好光筑自带的 AGH、设计工具和插件，并做一次离线计算自检。安装包没有数字签名，Windows 提示"已保护你的电脑"时选"更多信息 → 仍要运行"。SHA256：`19E7BE68A43B512839A6CFFDED1C2BA470820F5F778B52935E7BB2E791EEF146`。
-2. **填 key**：打开桌面上的"光筑"，在首页最上面填一家模型的 key：DeepSeek、Agnes，或 AGH 支持的其他服务商。key 经插件交给 AGH 官方接口验证和保存，光筑的后台、文件和日志都不经手 key。不填 key 也能打开随包的真实案例，看 3D 结果和执行记录回放。
-3. **设计**：选屋顶（演示屋顶、12 栋真实厂房轮廓，或「＋ 新建屋顶」自己画、导入图纸，示例图纸在 [`samples/sample-drawing/`](samples/sample-drawing/)）→ 填一句要求 → 开始自动设计。右边是 AGH 原生会话；设计工具第一次审批选「本会话允许」，导出选「仅允许这次」。2026 年 10 月 11 日苏州示意屋顶案例中，设计约 5 分 03 秒，Agnes 独立审核约 1 分 48 秒；实际耗时随模型、缓存和网络变化。完成后在结果页看 3D 方案、三方案对比和规则核对，打开方案书。
+## Project Overview
 
-## 怎么工作
+Factory owners and PV designers need to answer several connected questions: how much capacity fits, how shading affects generation, whether the electrical and roof-load checks pass, and when the investment might pay back. Changing a walkway, budget, or tilt can require another round of calculations.
 
+Guangzhu brings these steps into a Windows desktop workbench built on [Agnes Harness (AGH)](https://github.com/AgnesAI-Labs/agnes-harness). Select a roof, draw one, or import a drawing, then enter a brief such as “Pay back within six years, keep a one-metre maintenance walkway, and avoid the skylights.” The design agent plans the work, calls engineering tools, revises failed checks, and compares three options. A separate AGH session performs an independent review. The selected design can be exported after the user approves it.
+
+### Core features
+
+| Capability | What it does |
+| --- | --- |
+| Roof modelling and drawing import | Draw by dimensions or vertices; import images, PDF, and DXF. Supports flat and metal roofs, pitched roof planes, ground sites, carports, and agricultural structures. |
+| Layout and shading | South-facing, roof-aligned, and east–west layouts; weather-based tilt selection; per-module shading from equipment, parapets, neighbouring buildings, and trees. |
+| Generation and engineering checks | Hourly energy estimates, multiple calculation chains, string and inverter checks, cable routing and voltage drop, wind zones, fixing requirements, and roof-load checks. |
+| Owner constraints and option comparison | Apply capacity, budget, payback, walkway, height, transformer, export, and phased-construction requirements; compare maximum-capacity, fastest-payback, and balanced options. |
+| Economics and industrial parks | Itemised costs and 25-year cash flows; self-investment, energy management contracts, and roof leasing; multi-building layouts and queued park designs. |
+| Review, delivery, and replay | Independent review; 3D results; PDF proposal, DXF layout, and XLSX bill of materials; SHA256 digests and native AGH execution records. |
+
+### What is distinctive
+
+- **Reasoning backed by calculations.** The model selects tools and handles feedback; geometry, energy, electrical, structural, and economic numbers come from the local calculation engine.
+- **A complete AGH workflow.** Planning, tool calls, revisions, verification, approvals, and the independent review retain their session records. The desktop and Python backend make no direct model API calls.
+- **Revisions with evidence.** Design changes create new versions with parent versions and reasons. Failed checks guide revisions, with up to six revision rounds; infeasible requirements are reported with possible relaxations.
+- **Deliverables tied to the selected version.** Review findings, calculations, drawings, and material lists can be traced to the exported design rather than to an unselected comparison candidate.
+
+The project supports preliminary design and discussion. Real installations require site measurements and professional review of structural, electrical, grid-connection, and financial assumptions. See the [project description](docs/project-description.md) and [submission text](docs/materials/submission-form.txt) for additional context in Chinese.
+
+## Demo Video
+
+**[Watch or download the demo video](https://github.com/3531st-lab/guangzhu/releases/download/v0.2.0/guangzhu-demo.mp4)** · [Release page](https://github.com/3531st-lab/guangzhu/releases/tag/v0.2.0)
+
+The video runs for **4 minutes 54.8 seconds**, at **1920 × 1080 / 30 fps**, with Chinese narration and on-screen subtitles. It demonstrates roof input and drawing import, a natural-language brief, AGH planning and tool calls, approval and independent review, 3D shading and wiring views, option comparison, proposal export, infeasible requirements, and industrial-park designs.
+
+This is the Changzhou demonstration video supplied in the team's submission archive. Computation sequences are edited and accelerated; the video length does not measure a complete design run. Roof and economic assumptions are identified as illustrative. An independently archived Changzhou run is available at [`runs/gz-changzhou-demo-1008-2113/`](runs/gz-changzhou-demo-1008-2113/).
+
+Video SHA256:
+
+```text
+1a2d9cc953d4a287a622c9065c42b3223e3b307d22d43002f5b05d88b116d114
 ```
-光筑生成任务书 ──(光筑插件，AGH 插件 SDK)──→ AGH 会话（DeepSeek V4 Pro）
-  ① 任务规划：读设计 Skill（.agh/skills/pv-rooftop-design），先写计划
-  ② 能力调用：通过 MCP（stdio）调用 12 个 gz_ 工具：建项目 → 存需求 → 取天气 → 排板 → 分析
-  ③ 反馈处理：按不通过的规则修改方案 → 重新分析，最多迭代 6 轮；无法满足时说明原因
-  ④ 结果验证：三方案选定 → 最终分析 → 发电五链复核 → 人在审批卡上批准导出
-  ⑤ 独立审核：另开一个 AGH 会话，模型换成 Agnes（agnes-3.0-flash），只读复算并保存审核意见
-  ⑥ 核对：导出两个会话的 AGH 原生执行记录，按记录逐条检查四步和审核
+
+## Architecture
+
+```mermaid
+flowchart TD
+    UI["Windows workbench: pywebview, WebView2, three.js"]
+    API["FastAPI loopback API"]
+    subgraph AGH["Agnes Harness: sessions, models, approvals, native records"]
+        PLUGIN["Guangzhu plugin and design Skill"]
+        DESIGN["Design session: DeepSeek by default"]
+        REVIEW["Independent review session: Agnes by default"]
+        MCP["12 MCP tools over stdio"]
+        PLUGIN --> DESIGN
+        PLUGIN --> REVIEW
+        DESIGN --> MCP
+        REVIEW --> MCP
+    end
+    ENGINE["Shared engineering calculation engine"]
+    STORE["Versioned projects, analysis, reviews, and run archives"]
+    OUTPUT["PDF proposal, DXF layout, XLSX bill of materials"]
+    UI <-->|"postMessage v1"| PLUGIN
+    UI <-->|"HTTP / JSON"| API
+    API --> ENGINE
+    MCP --> ENGINE
+    ENGINE --> STORE
+    AGH -->|"native session exports"| STORE
+    STORE --> OUTPUT
+    STORE --> API
 ```
 
-所有模型调用都只在 AGH 会话里；光筑后台只生成任务书、显示进度和结果、生成方案书，不调用模型。
-
-## 苏州演示案例
-
-2026 年 10 月 11 日的苏州自建示意屋顶案例中，用户要求“6 年内回本，留 1 米检修通道，避开天窗”。系统识别初稿遮挡问题，删除 26 块遮挡超限组件后重新计算，最终批准导出 v2：
-
-| 指标 | 结果 |
+| Module | Implementation and responsibility |
 | --- | --- |
-| 组件与装机 | 725 块，438.625 kWp |
-| 预计年发电量 | 约 52.02 万 kWh |
-| 估算投资与静态回本 | 约 111.90 万元，约 4.70 年 |
-| 规则与审核 | 25 条检查中 19 条通过、6 条不适用，0 条硬性失败；Agnes 独立审核通过 |
-| 交付 | 同版 PDF 方案书、DXF 排布图、XLSX 材料清单及原生运行记录已归档于参赛提交包 |
+| Desktop workbench | [`desktop/`](desktop/): pywebview + WebView2; native HTML/JavaScript and locally bundled three.js r128 render roofs, shading, strings, and cables. The run view embeds the official AGH web interface. |
+| AGH integration | [`agh-plugin/guangzhu-studio/`](agh-plugin/guangzhu-studio/) provides brief submission, result cards, approval guidance, progress messages, and a skin. [The design Skill](.agh/skills/pv-rooftop-design/) defines the task procedure. |
+| Engineering engine | [`backend/guangzhu/`](backend/guangzhu/): Shapely geometry and layout; NumPy and pvlib shading/solar/energy calculations; NREL PySAM cross-checks; electrical, structural, rule, and economic modules. MCP and HTTP reuse these functions. |
+| Interfaces | [`mcp_server.py`](backend/guangzhu/mcp_server.py) exposes tools; [`api.py`](backend/guangzhu/api.py) serves the local workbench API; [`models.py`](backend/guangzhu/models.py) validates project and design records. |
+| Storage and evidence | `projects/<id>/` stores project inputs, design versions, analyses, reviews, and exports. `runs/<id>/` stores AGH session captures, native ledgers, verification, and replay data. User projects are local; only selected reviewed examples are public. |
+| Reports and data | [`backend/guangzhu/report/`](backend/guangzhu/report/) creates reports and exchange files. [`data/`](data/) holds roof examples, weather snapshots, equipment catalogues, and validation data with recorded sources. |
 
-以上是给定图纸、天气与示意参数下的初步测算。屋面设备、承重和部分经济参数为示意输入，实际项目需结合现场勘测、用电曲线及结构和并网条件复核。仓库中的常州执行记录见下文，苏州案例的完整成果与记录随参赛提交包提供。
+The workflow is **brief → plan → create project → fetch weather → layout → analyse → revise → compare → verify → user-approved export → independent review → execution-record verification**. The backend then assembles the proposal using the selected export and saved review. Design and review models are configurable through AGH.
 
-## 能做什么
+## Integration Standards
 
-| 功能 | 说明 |
+### Compatibility and setup
+
+The documented integration was validated with AGH commit **`5da40731214976ad8aff982cd5626d3a676fdd88`**. AGH's plugin and management interfaces evolve; the integration instructions refer to that fixed version. See [external dependencies](docs/DEPENDENCIES.md), [local configuration](docs/CONFIGURATION.md), and the [AGH setup guide](docs/AGH_SETUP.md) for the runtime, separate instance directory, MCP registration, plugin installation, Skill, and model configuration.
+
+### MCP tool interface
+
+Start the official MCP Python SDK server with the Python environment installed for this repository:
+
+```powershell
+.\.venv\Scripts\python.exe -m guangzhu.mcp_server
+```
+
+Transport is **MCP over stdio**, using JSON-RPC. `tools/list` advertises each tool's input JSON Schema and annotations. Inputs are checked with JSON Schema Draft 2020-12; undeclared fields are rejected. Tool definitions and validation are maintained in [`mcp_server.py`](backend/guangzhu/mcp_server.py).
+
+| Tool | Purpose | Access |
+| --- | --- | --- |
+| `gz_project_summary` | Read project, current design, and exported-version summary | Read / cache |
+| `gz_new_project` | Create a project from a roof template | Write |
+| `gz_set_requirements` | Save the original brief and structured constraints | Write |
+| `gz_fetch_weather` | Fetch or load weather and return quality checks | Read / cache |
+| `gz_generate_layout` | Generate a new layout version | Write |
+| `gz_analyze` | Calculate engineering, rule, and economic results; support what-if analysis | Read / cache |
+| `gz_edit_design` | Revise a design with a recorded reason | Write |
+| `gz_compare_options` | Generate and compare three saved design options | Write |
+| `gz_crosscheck_yield` | Cross-check generation through five calculation chains | Read / cache |
+| `gz_record_review` | Save the independent review verdict and findings | Write |
+| `gz_export` | Reanalyse, check hard rules, and export the selected version | Approval required |
+| `gz_wait` | Retrieve the result of an existing background job | Read |
+
+“Read / cache” tools advertise `readOnlyHint=true` and may write recalculable analysis or cache files. Mutating tools retain AGH approval handling. **`gz_export` requires the user's “Allow once” approval**; a session-wide approval does not satisfy the project's export-verification rule.
+
+Example `tools/call` parameters, after MCP initialization and with an existing project:
+
+```json
+{
+  "name": "gz_project_summary",
+  "arguments": {"project_id": "changzhou-demo"}
+}
+```
+
+- The first MCP text content item contains a JSON object. Successful business results use `ok: true`. Errors use `ok: false`, `error_code`, `message_zh`, and `fix_hint`, with MCP `isError=true`; the message fields currently contain Chinese guidance.
+- Business summaries are limited to **2,048 UTF-8 bytes**; complete data remains in project files. A completed `gz_wait` reply adds small job/tool identity fields.
+- A call that remains unfinished after the server's approximately 40-second wait returns `pending: true`, `job_id`, and the original `tool`. Continue with `gz_wait({"job_id": "..."})` until a final result arrives, matching the job and tool. A pending response is not a completed calculation.
+- New project IDs are 1–64 characters, beginning with an ASCII letter or digit and followed by letters, digits, `_`, or `-`. Existing IDs cannot be overwritten by `gz_new_project`.
+
+### Local HTTP and desktop bridge
+
+The source workbench uses **`http://127.0.0.1:8765`** for Guangzhu and **`http://127.0.0.1:4177`** for AGH. Installed builds use ports **8766 / 4178**. These are local desktop interfaces. Keep the backend bound to loopback.
+
+| HTTP endpoint | Purpose |
 | --- | --- |
-| 一键设计 | DeepSeek 在 AGH 会话里调用光筑的设计工具：建项目、取天气、排板、综合分析、修改方案、三方案对比、发电复核、导出；不满足要求就自己改 |
-| 独立审核 | 另开一个 AGH 会话，由 Agnes（或任何已配置的模型）复算并给结论，审核意见原样写进方案书 |
-| 屋顶输入 | 混凝土平屋顶、彩钢瓦、整栋斜屋面、空地、车棚、养殖棚和牧光互补；软件里按尺寸画、点角画，或导入图片、PDF、DXF 图纸 |
-| 排法和倾角 | 按所在地全年天气算最佳倾角；正南、顺屋边、东西向人字形三种排法 |
-| 躲开阴影 | 屋面设备、女儿墙、前后排以及屋顶外的楼和树，全年逐块组件光线追踪 |
-| 三方案 | 多装、最快回本、折中三套，生成时就满足硬性要求；点方案名，3D 换成那一套 |
-| 电气和布线 | 组串电压电流校核；每串按实际走线算电缆长度、截面和压降 |
-| 风荷载与固定 | 按基本风压分角区、边区、中区算压块，超过屋面承重改用锚栓 |
-| 规则 | 共 32 条，按屋面类型和工况适用（平屋顶用到 25 条）：冬至不遮挡、组串电压电流、荷载、电缆压降，以及检修通道、留空、装机、预算、回本等业主要求 |
-| 投资测算 | 分项造价（普通屋顶约 2.59 元/W）；江苏分时电价（苏发改价格发〔2025〕426 号）逐时算自用；税、贷款、运维；自投、合同能源管理、屋顶租赁三种方式的 25 年账 |
-| 园区 | 多栋厂房画在一张总图上，算楼间遮挡，排队批量设计，汇总装机、发电和回本 |
-| 交付件 | 方案书 PDF、DXF 排布图、XLSX 材料清单，都带 SHA256；每次运行的执行记录可以回放、重新核对 |
+| `GET /api/status` | Application status and AGH connectivity |
+| `GET /api/roofs` | Available roof templates |
+| `POST /api/brief` | Validate inputs and assemble a design brief |
+| `GET /api/projects/{project_id}/result?version={n}` | Read results for a selected design version |
+| `GET /api/runs` and `GET /api/runs/{run_id}` | Read saved runs and replay data |
+| `GET /openapi.json` | Generated OpenAPI document for the running backend |
 
-## 怎么证明算得对
+The embedded AGH page and desktop exchange versioned `window.postMessage` messages: `v: 1`, `type`, `id`, and, for replies, `re`. The bridge validates the peer window and exact origin. The `gz.hello` / `gz.ready` handshake precedes session commands; `gz.progress` and `gz.approval` carry progress and approval state. See the [desktop bridge](desktop/web/bridge.js) and [plugin bridge](agh-plugin/guangzhu-studio/src/bridge.js) for the implemented contract.
 
-- **太阳位置**：和美国海军天文台（USNO）官方数据比 29 个时刻，高度角最大差 0.0043°、方位角最大差 0.0025°（合格线 0.05°）；日出日落和 USNO 比最大差 0.50 分钟，和中国天气网江苏 13 个市比最大差 1.59 分钟。复算（离线，用仓库里存的官方原始响应 `data/field/sun-official/`）：`python scripts/check_official_sun.py`，对照表写在 [`reports/assets/T12/sun-official.md`](reports/assets/T12/sun-official.md)。
-- **真实电站**：和 NREL PVDAQ 公开数据里一座 893 kW 真实电站（2107 号，2022 全年）比，不调参数，用电站实测斜面辐照时月发电平均误差 5.1%。逐月结果在 [`data/field/plant/2107-monthly.csv`](data/field/plant/2107-monthly.csv)，清洗规则见 [`data/field/plant/README.md`](data/field/plant/README.md)；从 NREL 公开数据重新下载并复算：`python scripts/compare_plant.py --download`。
-- **发电计算链**：pvlib 计算链和 NREL PySAM（PVWatts v8）同参数相差约 0.5%；发电复核工具 `gz_crosscheck_yield` 对五条计算链进行交叉复核。
-- **历史评测（2026-10-03，DeepSeek Flash）**：当日冻结的 24 个屋顶任务包含 12 个正常、6 个边界和 6 个不可行任务。18 个可行任务各运行 3 次，完整 Agent 成功 51/54 次，约 94%；不用 AI 的默认排板成功 1/18 次。6 个不可行任务各运行 3 次，18/18 次识别不可行、0 次谎称完成，15/18 次放宽建议经复核有效。该成绩对应当时的模型、版本与评测口径，不作为当前版本成功率。当前用例见 `eval/cases.json`，真实厂房轮廓的取数和挑选规则见 [`data/roofs/README.md`](data/roofs/README.md)；驱动和打分为 `scripts/eval_run.py`、`scripts/eval_score.py`。
-- **执行记录**：[`runs/gz-changzhou-demo-1008-2113`](runs/gz-changzhou-demo-1008-2113) 是一次真实运行的完整存档（安装包里随包附带的真实案例）：AGH 原生执行记录 `ledger.agnes.jsonl`、核对结果、各版本、方案书。从原生记录重新核对：
+### Data, units, and engineering rules
 
-  ```powershell
-  .\.venv\Scripts\python.exe scripts\agh_verify_run.py runs\gz-changzhou-demo-1008-2113\captures\fff0c410d7ef366cd4d3 --review-run runs\gz-changzhou-demo-1008-2113\reviews\42cd14cf5d1c2743bc94
-  ```
-
-## 开发者
-
-### 目录
-
-| 位置 | 内容 |
+| Item | Convention |
 | --- | --- |
-| `backend/guangzhu/` | 计算和工具：排板、阴影、发电、电气、规则、经济、MCP 工具进程（`python -m guangzhu.mcp_server`）、本机后台 |
-| `desktop/` | 桌面窗口（pywebview + WebView2）和页面；`desktop/launcher/` 编译成"光筑.exe" |
-| `agh-plugin/guangzhu-studio/` | AGH 插件：任务书、工具结果卡片、和桌面页面传话 |
-| `.agh/skills/` | 给 Agent 的设计 Skill（一键模式的步骤和规矩） |
-| `data/` | 演示和评测屋顶、天气快照、设备目录、官方对照数据 |
-| `eval/` | 24 个评测屋顶的题目和标准答案 |
-| `scripts/` | 环境安装、核对器、评测、安装包构建、官方数据对照 |
-| `installer/` | 安装包脚本（Inno Setup） |
-| `tests/` | 自动测试 |
-| `docs/` | 作品详情、提交表文本和第三方数据来源 |
+| Project schema | `guangzhu.project/1`; Pydantic models reject extra fields and non-finite numbers. |
+| Units | Geometry in metres; capacity in kW / kWp; energy in kWh; money in CNY; roof load in kN/m². Field names identify other units explicitly. |
+| Coordinates | Calculation coordinates: x east, y north, z up. The three.js view maps these to x east, y up, z south. |
+| Angles and time | Azimuth clockwise from north; tilt from horizontal. Weather timestamps are timezone-aware; NASA data is read as UTC and the workbench displays Beijing time. |
+| Versioning | Design changes append `designs/vN.json` with parent and reason. Recalculable analysis is stored under `analysis/vN/`; exports refer to the selected version. |
+| Results | `yield_kwh.p50` names a baseline weather-year estimate; it is not a statistical probability-P50 guarantee. Rule applicability and illustrative assumptions remain visible in results. |
+| Exchange and traceability | PDF proposal, DXF layout, XLSX bill of materials, SHA256 file digests, and native AGH session exports. Engineering standards, manufacturer limits, data licences, and assumptions are recorded in [sources](docs/sources.md). |
 
-### 从源码运行
+## Getting Started
 
-Windows 10/11 x64、Python 3.12，先克隆仓库并安装锁定依赖：
+### Windows installer
+
+1. Download [`guangzhu-setup.exe` from v0.2.0](https://github.com/3531st-lab/guangzhu/releases/tag/v0.2.0) for Windows 10/11 x64, approximately 149 MB. Installation is per-user and includes the AGH runtime, plugin, tools, and an offline self-check. WebView2 is required.
+2. Open Guangzhu. The bundled example can be viewed without a model key. To start a new design, configure a supported provider through the homepage or AGH settings; credentials are handled by AGH's official configuration interface.
+3. Select or create a roof, enter requirements, and start the design. Use the native AGH approval cards for tool permissions and “Allow once” for export. Inspect the 3D result, option comparison, rules, review, and deliverables.
+
+The v0.2.0 installer is unsigned. Its published SHA256 is:
+
+```text
+19e7be68a43b512839a6cffded1c2ba470820f5f778b52935e7bb2e791eef146
+```
+
+### Run from source
+
+Use Windows 10/11 x64, Git, and Python 3.12. Node.js / npm is needed for plugin rebuilding and JavaScript tests.
 
 ```powershell
 git clone https://github.com/3531st-lab/guangzhu.git
 cd guangzhu
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup.ps1
+.\.venv\Scripts\python.exe -m guangzhu.selfcheck
 ```
 
-开发版用本机 `127.0.0.1:8765`（光筑）和 `127.0.0.1:4177`（AGH），安装版用 8766 和 4178，两者可以同时开。
+The setup script installs locked dependencies and performs a self-check. For a new agent design, copy [the settings template](desktop/settings.example.json) to `desktop/settings.json`, set local paths, complete [AGH setup](docs/AGH_SETUP.md), then run `start.cmd`. [Sample PDF and DXF drawings](https://github.com/3531st-lab/guangzhu/tree/main/samples/sample-drawing) are available for import.
 
-离线计算和已归档运行核验不需要模型 key，准确命令及成功标准见 [复现指南](docs/REPRODUCING.md)。发起新的自动设计前，复制 [配置模板](desktop/settings.example.json) 为 `desktop/settings.json`、填写本机路径，并按 [AGH 接入说明](docs/AGH_SETUP.md) 配置运行包、MCP、插件与模型，然后运行 `start.cmd`。Python 安装路径不是默认值时，给安装脚本传入 `-Python`。
+For offline calculations, archived-run verification, viewing saved results without AGH, and installer rebuilding, follow the [reproduction guide](docs/REPRODUCING.md). Rebuilding the installer requires the additional fixed AGH inputs documented in [DEPENDENCIES.md](docs/DEPENDENCIES.md). PySAM's native loader needs an ASCII cache path; the project handles this through its native runtime cache.
 
-### 测试
+## Verification
+
+| Evidence | Recorded result and scope | Inspect or reproduce |
+| --- | --- | --- |
+| Solar position | Against USNO official responses: maximum altitude difference 0.0043°, azimuth difference 0.0025° across 29 timestamps | [Recorded responses](data/field/sun-official/); `python scripts/check_official_sun.py` |
+| Real-plant energy comparison | NREL PVDAQ system 2107, 893 kW, 2022: mean monthly error about 5.1% with measured plane-of-array irradiance and no parameter tuning | [Monthly results](data/field/plant/2107-monthly.csv) and [method](data/field/plant/README.md) |
+| Historical agent evaluation | October 3, 2026, DeepSeek Flash: 51/54 feasible runs successful; 18/18 infeasible runs identified; default layout baseline 1/18 | [24 cases](eval/cases.json); `scripts/eval_run.py`, `scripts/eval_score.py` |
+| Native execution and independent review | A public Changzhou design archive contains the design, review, approvals, outputs, and verification | [Run archive](runs/gz-changzhou-demo-1008-2113/); [verification commands](docs/REPRODUCING.md) |
+
+Historical scores describe the recorded model, version, inputs, and success criteria. They are not a success-rate claim for the current version. Recomputing 51/54 requires the full historical evaluation archive; the public sample run alone is insufficient.
+
+### Development checks
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m pytest -q
 node --test agh-plugin/guangzhu-studio/test/*.test.js
 node --test tests/embed_harness/*.test.mjs
 node --test tests/desktop/*.test.mjs
 .\.venv\Scripts\python.exe scripts/check_secrets.py
 ```
 
-公共仓库不含全部历史过程归档，相关历史测试会明确跳过；通过、跳过、失败应分别统计，详见 [复现指南](docs/REPRODUCING.md)。
+Network-marked Python tests are excluded by default. Some historical tests require unpublished development archives and explicitly skip when those files are absent; report passes, skips, and failures separately. Browser tests use the system Microsoft Edge. See [reproduction](docs/REPRODUCING.md) for expected outputs and plugin build checks.
 
-### 安装包
+## Licence and Third-party Sources
 
-```powershell
-powershell -NoProfile -File scripts/build_installer.ps1 -AghArchive 'C:/inputs/agnes-win32-x64-5da4073.zip' -AghSource 'C:/src/agnes-harness'
-```
+Team-authored code is licensed under [MIT](LICENSE). AGH is Apache-2.0; its official runtime is redistributed unchanged with its notices. Other libraries, fonts, and datasets retain their own terms in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [docs/sources.md](docs/sources.md).
 
-需要 Python 3.12 和官方 AGH 运行包（脚本参数 `-AghArchive`、`-AghSource`）。脚本下载官方 Python 嵌入包、Inno Setup 和锁定的依赖（`requirements.lock.txt`），核对签名和摘要，跑安装树检查和离线计算自检，输出 `dist/guangzhu-setup.exe`。
+Sources include NASA POWER, JRC PVGIS, OpenStreetMap contributors, NREL equipment catalogues and PVDAQ, and USNO. Calculations use pvlib, PySAM, NumPy, pandas, SciPy, Shapely, and related open-source components; the desktop uses pywebview, WebView2, and three.js. See the [open-source checklist](docs/OPEN_SOURCE_CHECKLIST.md) for the published scope and reproduction evidence.
 
-原始 AGH ZIP 的获取渠道、固定摘要和缺失时的替代复现路径见 [外部依赖说明](docs/DEPENDENCIES.md)；仅凭源码克隆不能声称已重建同一安装包。
-
-## 第三方来源
-
-- 运行底座 [Agnes Harness](https://github.com/AgnesAI-Labs/agnes-harness)（Apache-2.0），官方运行包原样随安装包分发。
-- 开源库：pvlib、NREL PySAM、pandas、NumPy、SciPy、Shapely、FastAPI、Uvicorn、Pydantic、Requests、MCP Python SDK、ezdxf、pypdfium2、openpyxl、Matplotlib、Jinja2、pywebview、three.js（r128）；字体 IBM Plex Mono、Noto Serif SC（OFL-1.1）。
-- 数据：NASA POWER（CC BY 4.0）、JRC PVGIS、OpenStreetMap（© OpenStreetMap 贡献者，ODbL 1.0）、NREL SAM CEC 库（BSD-3）、NREL PVDAQ（CC BY 4.0）、美国海军天文台。
-- 逐项的来源、版本、许可和用途见 [`docs/sources.md`](docs/sources.md)；随仓库的许可证文件在 `data/catalog/`、`data/roofs/`、`desktop/web/vendor/`、`agh-plugin/guangzhu-studio/licenses/`。
-
-不要把任何 key 写进文件；key 只在光筑首页或 AGH 设置里填。
-
-## 许可证与公开范围
-
-[LICENSE](LICENSE) 适用于团队原创部分；第三方代码、字体和数据继续遵循 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 列明的许可。用户图纸、真实个人项目、模型凭据、AGH 实例目录和未经复核的执行记录不属于公开内容。提交前运行密钥扫描，并人工检查图像、PDF、账本和 Git 历史；忽略规则不能清除已提交的信息。
+Keep model credentials, AGH instance directories, private drawings, and unreviewed personal projects outside the public repository. Configure credentials only through Guangzhu's homepage or AGH settings.
