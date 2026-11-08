@@ -14,7 +14,7 @@ SOURCE_SUFFIXES = {
     ".sh", ".bash", ".sql",
 }
 EXCLUDED_DIRECTORIES = {
-    "docs", "data", "reports", "reviews",
+    "docs", "data", "reports", "reviews", "output", "tmp", "runtime",
     ".git", ".venv", "venv", "node_modules", "__pycache__", ".pytest_cache",
     ".mypy_cache", ".ruff_cache", ".tox", ".cache", "cache", "dist", "build",
     "coverage", "htmlcov", "tests", "test", "__tests__", "generated",

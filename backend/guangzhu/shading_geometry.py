@@ -12,7 +12,7 @@ from shapely.strtree import STRtree
 
 from .models import Design, GzError, obstacle_polygon, validate_project, validated
 from .solar import sun_position
-from .roofplane import elevation, minimum, path3d
+from .roofplane import elevation, minimum, parapet_faces
 
 EPS = 1e-8
 
@@ -44,15 +44,17 @@ def build_scene(project, design):
         identifiers.append(identifier)
 
     if project.roof.type in ('pitched', 'carport'):
-        from .roofplane import plane_elevation
+        from .roofplane import plane_elevation, step_walls
         for plane in project.roof.planes:
             add([[*p, plane_elevation(plane, p)] for p in plane.outline], -1, 'roof', f'P{plane.id}')
+        for index, wall in enumerate(step_walls(project.roof)):
+            add(wall, -1, 'roof', f'roof-step-{index + 1}')
 
     for obstacle in [*project.roof.obstacles, *project.roof.surroundings]:
         xy = np.asarray(obstacle_polygon(obstacle).exterior.coords[:-1])
         z = [elevation(project.roof, p) if obstacle in project.roof.obstacles and project.roof.type != 'carport' else 0 for p in xy]
         if project.roof.type == 'pitched' and obstacle in project.roof.obstacles:
-            z = [minimum(project.roof, Polygon(xy))] * len(xy)
+            z = [minimum(project.roof, Polygon(xy), obstacle.plane_id)] * len(xy)
         base = np.c_[xy, z]
         top = np.c_[xy, np.asarray(z) + obstacle.height_m]
         bases[obstacle.id] = Polygon(xy)
@@ -60,19 +62,8 @@ def build_scene(project, design):
         for i in range(len(xy)):
             j = (i + 1) % len(xy)
             add([base[i], base[j], top[j], top[i]], -1, obstacle.id, obstacle.id)
-    if project.roof.parapet_height_m > 0:
-        outline = np.asarray(project.roof.outline)
-        for i, a in enumerate(outline):
-            b = outline[(i + 1) % len(outline)]
-            height = project.roof.parapet_height_m
-            za, zb = elevation(project.roof, a), elevation(project.roof, b)
-            if project.roof.type == 'pitched':
-                points = path3d(project.roof, [a, b])
-                for first, last in zip(points, points[1:]):
-                    top = [[*p[:2], p[2] + height] for p in (last, first)]
-                    add([first, last, *top], -1, 'parapet', 'parapet')
-                continue
-            add([[*a, za], [*b, zb], [*b, zb + height], [*a, za + height]], -1, "parapet", "parapet")
+    for face in parapet_faces(project.roof):
+        add(face, -1, 'parapet', 'parapet')
     for owner, module in enumerate(design.modules):
         corners = np.asarray(module.corners)
         # Stored millimetre-rounded corners can be slightly noncoplanar.

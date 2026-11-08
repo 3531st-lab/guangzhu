@@ -12,8 +12,8 @@ using System.Windows.Forms;
 [assembly: AssemblyProduct("光筑")]
 [assembly: AssemblyDescription("光筑：工厂屋顶光伏方案设计")]
 [assembly: AssemblyCompany("验形工坊")]
-[assembly: AssemblyVersion("0.2.0.0")]
-[assembly: AssemblyFileVersion("0.2.0.0")]
+[assembly: AssemblyVersion("0.3.0.0")]
+[assembly: AssemblyFileVersion("0.3.0.0")]
 
 static class Launcher
 {

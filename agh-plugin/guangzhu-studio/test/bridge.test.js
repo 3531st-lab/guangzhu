@@ -593,6 +593,19 @@ test('saveKey keeps DeepSeek as the default account and Agnes as an extra accoun
   assert.equal(f.saved.at(-1).makeDefault,false);
 });
 
+test('saveKey supports custom baseUrl endpoints and picks matching prefixed models',async t => {
+  const f=keyFixture(t);
+  f.state.testResult={verified:true,models:[{id:'glm-5.3-flash',name:'glm-5.3-flash'},{id:'qwen/deepseek-v4-pro',name:'qwen/deepseek-v4-pro'}]};
+  await f.hello();
+  await f.send('gz.saveKey',{provider:'deepseek',key:'placeholder-custom-key',baseUrl:' https://zhenze-huhehaote.cmecloud.cn/tokenplan/v1/ '});
+  assert.deepEqual(f.tested,[{providerId:'deepseek',apiKey:'placeholder-custom-key',baseUrl:'https://zhenze-huhehaote.cmecloud.cn/tokenplan/v1'}]);
+  assert.equal(f.saved.at(-1).baseUrl,'https://zhenze-huhehaote.cmecloud.cn/tokenplan/v1');
+  assert.equal(f.saved.at(-1).model,'qwen/deepseek-v4-pro');
+  await f.send('gz.saveKey',{provider:'deepseek',key:'placeholder-custom-key',baseUrl:'ftp://bad.example/v1'},
+    {data:{v:1,type:'gz.saveKey',id:'bad-url',provider:'deepseek',key:'placeholder-custom-key',baseUrl:'ftp://bad.example/v1'}});
+  assert.equal(f.messages.findLast(row => row.data.re==='bad-url').data.code,'KEY_FORMAT');
+});
+
 test('saveKey refuses malformed keys, unverified keys and SDK failures with fixed messages',async t => {
   const f=keyFixture(t);
   await f.hello();
@@ -653,4 +666,29 @@ test('an upgrade (new build, so a new installation id) keeps the park binding of
   }
   assert.match(bindings[0], /^[a-f0-9]{64}$/);
   assert.equal(bindings[1], bindings[0]);  // a park batch running before the upgrade can still be resumed or skipped
+});
+
+test('embedded session recovers if workspace picker clears snapshot and blocks composer-workspace clicks', async () => {
+  let clickHandler = null;
+  const f = fixture(undefined, 'session-active');
+  f.win.document.addEventListener = (type, fn, capture) => {
+    if (type === 'click' && capture) clickHandler = fn;
+  };
+  f.win.document.removeEventListener = (type, fn, capture) => {
+    if (type === 'click' && capture && clickHandler === fn) clickHandler = null;
+  };
+  await f.hello();
+  assert.equal(typeof clickHandler, 'function');
+  let prevented = false, stopped = false;
+  clickHandler({
+    target: {closest: sel => sel.includes('#composer-workspace') ? {} : null},
+    preventDefault: () => { prevented = true; },
+    stopPropagation: () => { stopped = true; },
+  });
+  assert.equal(prevented, true);
+  assert.equal(stopped, true);
+  f.switchTo(undefined);
+  assert.ok(f.calls.some(row => row[0] === 'navigate' && row[1].includes('session=session-active')));
+  f.bridge.dispose();
+  assert.equal(clickHandler, null);
 });

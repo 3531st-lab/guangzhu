@@ -26,7 +26,8 @@ FORM_FIELDS = set(('text keep notes maxRounds compare review exportOn prefer mod
                    'payback budget capMin capMax walkway obstacle edge curtail transformer transformerShare maxHeight phaseKw phaseBudget '
                    'noExport parapetCap priceSelf selfUse capex priceExport fRoof fAge fCore fSky fOwned fKva fKwh fShifts fExport '
                    'loanRatio loanRate loanYears tariffClass posttaxPayback cleaningTimes refurbish '
-                   'taxHoliday mechanismShare mechanismPrice mechanismYears greenSoldShare publicSubsidy subsidyYear').split())
+                   'taxHoliday mechanismShare mechanismPrice mechanismYears greenSoldShare publicSubsidy subsidyYear '
+                   'layoutAlgo dcCableFamily acCableFamily presetKey').split())
 
 
 @contextmanager
@@ -254,7 +255,10 @@ def save(payload, root=ROOT):
                                                 x_m=building.x_m, y_m=building.y_m, rotation_deg=building.rotation_deg)
                 for other in park.buildings:
                     neighbour = projects[other.template].roof
-                    height = neighbour.height_m + neighbour.parapet_height_m - original.roof.height_m
+                    # Neighbouring roofs remain conservative prisms, not exact wall-gap scenes.
+                    parapet = neighbour.parapet_height_m if neighbour.parapet_segments is None else max(
+                        (segment.height_m for segment in neighbour.parapet_segments), default=0)
+                    height = neighbour.height_m + parapet - original.roof.height_m
                     if neighbour.type in ('pitched', 'carport') and neighbour.planes:
                         from .roofplane import plane_elevation
                         height += max(plane_elevation(p, xy) for p in neighbour.planes for xy in p.outline)
@@ -302,7 +306,38 @@ def delete(identifier, root=ROOT):
         shutil.rmtree(path)
 
 
+def clear_park_designs(identifier, root=ROOT):
+    projects_dir = Path(root) / 'projects'
+    if projects_dir.is_dir():
+        for p in projects_dir.glob(f'{identifier}--*'):
+            if p.is_dir():
+                shutil.rmtree(p, ignore_errors=True)
+    reports_dir = folder(identifier, root) / 'reports'
+    if reports_dir.is_dir():
+        shutil.rmtree(reports_dir, ignore_errors=True)
+
+
 def demo(root=ROOT):
+    clear_park_designs('wujin-demo', root)
     park = Park(id='wujin-demo', name='武进某厂区（示意）',
                 buildings=[Building(template='t12-real-' + n) for n in ('07', '09', '10', '11')])
     return save(place(park, root).model_dump(), root)
+
+
+def taizhou_demo(root=ROOT):
+    clear_park_designs('taizhou-cmc-demo', root)
+    park = Park(
+        id='taizhou-cmc-demo',
+        name='泰州产业场景组合园区',
+        transformer_kva=1600.0,
+        grid_kw=1200.0,
+        budget_cny=3200000.0,
+        origin=[119.92, 32.46],
+        buildings=[
+            Building(template='taizhou-cmc-pharma', x_m=0.0, y_m=0.0, rotation_deg=0.0),
+            Building(template='taizhou-shipbuilding-workshop', x_m=98.0, y_m=0.0, rotation_deg=0.0),
+            Building(template='taizhou-watertown-pavilion', x_m=0.0, y_m=52.0, rotation_deg=0.0),
+            Building(template='taizhou-lixiahe-coldchain', x_m=98.0, y_m=52.0, rotation_deg=0.0),
+        ],
+    )
+    return save(park.model_dump(), root)

@@ -196,6 +196,8 @@ def test_dxf_outline_is_picked_and_scaled_from_millimetres(editor, tmp_path):
     page.wait_for_function("document.getElementById('notice').textContent.includes('屋顶外轮廓')")
     page.click('[data-cand="0"]')
     assert page.text_content("#re-size").startswith("2,160 m²")
+    page.click('[data-re-act="dxf-role-keepout"]')
+    assert page.locator('[data-re-act="dxf-role-keepout"]').evaluate("button => button.classList.contains('primary')")
     page.click('[data-cand="1"]')  # the 4 x 3 m equipment base becomes a keep-out zone
     page.click('[data-re-act="dxf-done"]')
     assert page.locator(".re-item").count() == 1 and page.locator("[data-cand]").count() == 0

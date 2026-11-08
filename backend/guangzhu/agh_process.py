@@ -3,6 +3,7 @@ import contextlib
 import csv
 import ctypes
 from ctypes import wintypes
+from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
@@ -19,7 +20,7 @@ HIDDEN = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 def reachable(origin=AGH_ORIGIN):
     try:
-        with urlopen(origin, timeout=.25) as response:
+        with urlopen(origin, timeout=1.5) as response:
             return response.status == 200
     except OSError:
         return False
@@ -96,6 +97,23 @@ class OwnedAgh:
                 raise RuntimeError('光筑已关闭，请重新打开。')
             self._start(executable, home, profile, cwd)
 
+    def startup_record(self, home, event, started, http_ready, socket_ready, exit_code):
+        """Keep only probe outcomes; never persist command arguments or daemon identity payloads."""
+        record = dict(event=event, time_utc=datetime.now(timezone.utc).isoformat(),
+                      elapsed_seconds=round(time.monotonic() - started, 3), http_ready=bool(http_ready),
+                      daemon_socket_ready=bool(socket_ready), serve_exit_code=exit_code)
+        self.startup_diagnostics = record
+        # A diagnostics write must not turn a healthy launch into a failed launch.
+        with contextlib.suppress(OSError, ValueError):
+            folder = Path(home).parent / 'setup'
+            folder.mkdir(exist_ok=True)
+            regular(folder)
+            destination = folder / 'agh-startup.jsonl'
+            if destination.exists() or destination.is_symlink():
+                regular(destination)
+            with destination.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(record, ensure_ascii=False) + '\n')
+
     def _start(self, executable, home, profile, cwd):
         private_home(home)
         self.command = [executable, 'daemon']
@@ -107,12 +125,27 @@ class OwnedAgh:
                                          '--port', str(AGH_PORT)], cwd=cwd, env=environment,
                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=HIDDEN)
         parent = process_identity(self.process.pid, self.process._handle)
-        deadline = time.monotonic() + 120  # the first start after installing can be slow while antivirus scans the new runtime
-        while not reachable() and self.process.poll() is None and time.monotonic() < deadline:
-            time.sleep(.1)
-        after = self.daemon('status')
+        started = time.monotonic()
+        deadline = started + 120  # antivirus and cold filesystem reads can delay the first start
+        after, ready, http_ready, socket_ready, previous = {}, False, False, False, None
+        while self.process.poll() is None and time.monotonic() < deadline:
+            http_ready = reachable()
+            after = self.daemon('status')
+            socket_ready = after.get('running') is True and after.get('socketReachable') is True
+            exit_code = self.process.poll()
+            snapshot = http_ready, socket_ready, exit_code
+            if snapshot != previous:
+                self.startup_record(home, 'probe', started, http_ready, socket_ready, exit_code)
+                previous = snapshot
+            remaining = deadline - time.monotonic()
+            if http_ready and socket_ready and exit_code is None and remaining >= 0:
+                ready = True
+                break
+            if remaining <= 0 or exit_code is not None:
+                break
+            time.sleep(min(.1, remaining))
         owner = after.get('owner', {})
-        if before['running'] is False and after.get('socketReachable') is True and owner:
+        if ready and before['running'] is False and owner:
             child = process_identity(owner['pid'])
             start_id = f"win32:{owner['pid']}:{child['start']}"
             if (self.process.poll() is None and child['parent'] == self.process.pid and child['start'] >= parent['start'] and
@@ -120,13 +153,16 @@ class OwnedAgh:
                     owner.get('processStartId') == start_id and
                     all(isinstance(owner.get(key), str) and owner[key] for key in ('generation', 'startedAt', 'socketPath'))):
                 self.owner = {key: owner[key] for key in ('pid', 'processStartId', 'generation')}
-        if not reachable() or self.process.poll() is not None or after.get('socketReachable') is not True:
+        exit_code = self.process.poll()
+        if not ready or exit_code is not None:
+            self.startup_record(home, 'failed', started, http_ready, socket_ready, exit_code)
             if before['running'] is False:  # giving up must not leave the daemon we started running unseen, locking install files
                 with contextlib.suppress(Exception):
                     if self.process.poll() is None:
                         self.process.terminate()
                     self.daemon('stop')
             raise RuntimeError('光筑自带的 AGH 未能启动。')
+        self.startup_record(home, 'ready', started, http_ready, socket_ready, exit_code)
 
     def close(self):
         self.closed = True

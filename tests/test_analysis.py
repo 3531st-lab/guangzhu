@@ -97,7 +97,11 @@ def test_offline_complete_analysis_recalculates_shading_under_ten_seconds(demo):
                                        'mppt_min_v','dc_ac_ratio','dc_drop_pct_max','ac_drop_pct_max','rated_ac_kw'}
     assert len(analysis.serialized(summary).encode('utf-8'))<=2048
     directory=storage._path(project.id,'analysis/v3')
-    assert {p.name for p in directory.glob('*.json')}=={'shading.json','electrical.json','structure.json','economics.json','rules.json','summary.json'}
+    assert {p.name for p in directory.glob('*.json')}=={'shading.json','electrical.json','structure.json','economics.json','rules.json','summary.json','completion.json'}
+    completion=json.loads((directory/'completion.json').read_text(encoding='utf-8'))
+    assert completion['version']==3 and completion['design_sha256']==original
+    assert completion['files']=={name:hashlib.sha256((directory/name).read_bytes()).hexdigest()
+                                 for name in ('shading.json','electrical.json','structure.json','economics.json','rules.json','summary.json')}
     assert json.loads((directory/'summary.json').read_text(encoding='utf-8'))==summary
     assert [(row['id'],row['value'],row['limit']) for row in summary['rules']['met']]==[('G03',summary['rules']['met'][0]['value'],1),('G04',0,0),
                                                                                        ('U04',summary['economics']['payback_years'],6)]

@@ -1,0 +1,19 @@
+{
+  "id": "taizhou-lixiahe-coldchain",
+  "name": "泰州产业演示·农业冷链仓",
+  "synthetic": true,
+  "focus": "分段女儿墙与连续用电",
+  "demonstration": "保留女儿墙吊装缺口、冷机与管桥；切换允许上网条件，核对逐月自用与限发。",
+  "geometry_source": "由示意尺寸构建，非航测/测绘/客户CAD",
+  "weather_basis": "区域坐标32.46N/119.92E；快照来源见data/demo/weather元数据",
+  "monthly_load_kwh": 100000.0,
+  "shifts": 3,
+  "unresolved": [
+    "屋面承载力",
+    "实际用电曲线",
+    "接网容量和价格",
+    "设备与施工报价",
+    "客户授权及落地成效"
+  ],
+  "expected": "可重新计算并检查结果；失败和未核实项必须保留，规则通过不等于工程批准"
+}

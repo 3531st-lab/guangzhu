@@ -9,6 +9,10 @@ import {ParkQueue} from '../../desktop/web/park-queue.js';
 import {ParkView, queueMarkup} from '../../desktop/web/park-view.js';
 import {financialForm, financialResult, livestockResult} from '../../desktop/web/economic-ui.js';
 import {wiringPanel, wiringDetails} from '../../desktop/web/wiring-ui.js';
+import {parapetInfo} from '../../desktop/web/roof-parapets.js';
+import {diagnosticsMarkup,diagnosticAction} from '../../desktop/web/design-diagnostics.js';
+import {evidenceMarkup,evidenceDownload} from '../../desktop/web/design-evidence.js';
+import {lossMetricsMarkup,monthlyYieldMarkup} from '../../desktop/web/engineering-charts.js';
 
 // The archived runs these fixtures came from are not part of the public repository; plain stand-ins keep the
 // session tests that do not depend on their details, the others are skipped.
@@ -22,9 +26,9 @@ const checkpoint = read('runs/t10-impossible-004/timeline.json', {nodes:[]}).nod
 const exported = {kind:'tool',name:'gz_export',status:'completed',result:'{"ok":true,"version":3}'};
 const certificate = passed => ({run_id:'archive',verification:{passed,checks:[],review:{requested:false}},result:{selected_version:3},selected_version:3});
 
-async function app({search='',preference=null,fileProgress=null,runsResponse=null,existsResponse=null,setupResponse=null,hash='#run'}={}) {
+async function app({search='',preference=null,fileProgress=null,runsResponse=null,existsResponse=null,setupResponse=null,transport=null,hash='#run'}={}) {
   const events = {}, elements = new Map(), requests = [], archives = [], selected = new Map();
-  const intervals = [];
+  const intervals = [], timers = [];
   let respond = async () => certificate(false);
   // Transport and DOM are inert; execute the actual application handlers without a browser/server.
   class Bridge {
@@ -40,6 +44,8 @@ async function app({search='',preference=null,fileProgress=null,runsResponse=nul
     getElementById(id) {if (!elements.has(id)) elements.set(id,element()); return elements.get(id);},addEventListener:(type,fn) => {events[type]=fn;}};
   const fetch = async (path,options) => {
     const body = options.body ? JSON.parse(options.body) : null; requests.push({path,body});
+    const override = transport?.(path,options);
+    if (override !== undefined) return await override;
     const value = path === '/api/runs/finish' || path.endsWith('/report') ? await respond(body) :
       path === '/api/setup/status' ? await (setupResponse?.() ?? {installation:{installed:false,id:'development'},required:false,ready:true,steps:[]}) :
       path === '/api/runs' ? await (runsResponse?.() ?? {runs:archives}) : path.startsWith('/api/roofs') ? {roofs:[]} :
@@ -47,27 +53,61 @@ async function app({search='',preference=null,fileProgress=null,runsResponse=nul
     return {ok:true,json:async () => value};
   };
   const globals = {...data,HEAT_COLORS:['red','orange','green'],ParkQueue,ParkView,queueMarkup,
-    Bridge,setAghOrigin(){},Setup,computeSteps,resolvedTools,financialForm,financialResult,livestockResult,wiringPanel,wiringDetails,document,fetch,
+    Bridge,setAghOrigin(){},Setup,computeSteps,resolvedTools,financialForm,financialResult,livestockResult,wiringPanel,wiringDetails,parapetInfo,diagnosticsMarkup,diagnosticAction,evidenceMarkup,evidenceDownload,lossMetricsMarkup,monthlyYieldMarkup,document,fetch,
     location:{hash,search},localStorage:{getItem:key => key==='gz-design-model' ? preference : null,setItem(){}},
     window:{addEventListener(){}},
     matchMedia:() => ({matches:false,addEventListener(){}}),setInterval:fn => intervals.push(fn),clearInterval(){},
-    setTimeout(){},clearTimeout(){},requestAnimationFrame:fn => fn()};
+    setTimeout(fn,delay){const timer={fn,delay,cleared:false};timers.push(timer);return timer;},
+    clearTimeout(timer){if(timer)timer.cleared=true;},requestAnimationFrame:fn => fn()};
   const source = readFileSync(new URL('../../desktop/web/app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'');
   const execute = Object.getPrototypeOf(async function(){}).constructor;
   const exposed = 'state,bridge,setup,checkConnection,start,finishSession,render,formPage,activeComputed,startReview,resumeSession,resultPage,resultTitle,'+
     'runPage,replayUsage,stepsMarkup,resultPanel,settings,theme,recordsPage,filesMarkup,openTarget,newPage,selectRoof,guarded,'+
-    'parkQueue,requireParkWorkspace';
+    'parkQueue,requireParkWorkspace,api';
   const instance = await new execute(...Object.keys(globals),source+'\nreturn {'+exposed+'};')(...Object.values(globals));
   const s = {id:'same-native-session',project:'same-project',nodes:structuredClone(failedNodes),approvals:[{tool:'gz_set_requirements',verdict:'allowed-session'}],op:'idle',run:{review:{enabled:false}},verification:structuredClone(failed)};
   instance.state.sessions.set(s.id,s); instance.state.active=s.id; instance.state.design=s.id; instance.state.final={verification:s.verification}; instance.state.records=archives;
   archives.push({run_id:'earlier-failed-attempt',verification:structuredClone(failed)});
-  return {...instance,s,archives,requests,elements,selected,location:globals.location,setResponse:fn => {respond=fn;},
+  return {...instance,s,archives,requests,timers,elements,selected,location:globals.location,setResponse:fn => {respond=fn;},
     poll:() => intervals[0](),
     progress:(op,nodes=s.nodes,usage) => instance.bridge.onMessage({type:'gz.progress',session_id:s.id,op,nodes,usage}),
     click:dataset => events.click({target:{closest:() => ({dataset})}}),
     input:(field,value) => events.input({target:{dataset:{field},value}}),
     suggest:() => events.click({target:{closest:() => ({dataset:{suggestion:'0'}})}})};
 }
+
+test('long engineering requests survive two minutes while normal saves and reads retain bounded timeouts',async()=>{
+  let pendingSignal;
+  const a=await app({transport:(path,options)=>{
+    if (!path.startsWith('/api/timeout-case') && !/\/(?:auto-run|copilot)$/.test(path)) return undefined;
+    pendingSignal=options.signal;
+    return new Promise((resolve,reject)=>options.signal.addEventListener('abort',()=>reject(new DOMException('aborted','AbortError'))));
+  }});
+  for (const [path,body,limit] of [['projects/auto-run',{},900000],['projects/qa/copilot',{},900000],
+    ['parks/qa/auto-run',{},900000],['timeout-case/save',{},120000],['timeout-case/read',undefined,30000]]) {
+    const promise=a.api(path,body), signal=pendingSignal;
+    const rejection=assert.rejects(promise,/本地服务响应较慢/);
+    const timer=a.timers.findLast(timer=>!timer.cleared && timer.delay===limit);
+    assert.ok(timer);
+    if (limit>120000) {
+      for(const early of a.timers.filter(timer=>!timer.cleared && timer.delay<=120000))early.fn();
+      assert.equal(signal.aborted,false);
+    }
+    timer.fn();
+    await rejection;
+    assert.equal(signal.aborted,true);
+    assert.equal(timer.cleared,true);
+  }
+});
+
+test('a newer candidate is not mislabeled as the exported or historical version',async()=>{
+  const a=await app(), result={project_id:'qa-version',selected_version:2};
+  assert.match(a.resultTitle({...result,version:1}),/历史版本/);
+  assert.match(a.resultTitle({...result,version:2}),/已导出版本/);
+  const candidate=a.resultTitle({...result,version:4});
+  assert.match(candidate,/v4.*候选版本，尚未导出/);
+  assert.doesNotMatch(candidate,/历史版本|已导出版本/);
+});
 
 test('queued native workspace conflict holds the persisted item instead of failing into another start', async () => {
   const f = await app();
@@ -243,7 +283,7 @@ test('home groups demos and real roofs while excluding boundary and impossible t
   a.selectRoof('roof-demo');
   const markup = a.newPage();
   assert.match(markup,/>演示<\/h3>/);
-  assert.match(markup,/>真实园区<\/h3>/);
+  assert.match(markup,/>公开地图屋顶<\/h3>/);
   assert.match(markup,/data-roof="roof-demo" aria-pressed="true"/);
   assert.match(markup,/data-roof="roof-real" aria-pressed="false"/);
   assert.doesNotMatch(markup,/roof-boundary|roof-impossible/);

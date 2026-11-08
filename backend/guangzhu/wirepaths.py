@@ -3,6 +3,7 @@ from functools import lru_cache
 import heapq
 import math
 
+import shapely
 from shapely.geometry import LineString, Point, Polygon, box
 from shapely.ops import nearest_points, unary_union
 
@@ -13,6 +14,7 @@ NOTE = ('场地内横竖走线，绕开屋面设备；设备净距0.05m为示意
         '固定串成员及MPPT，比较原顺序与最近邻加2-opt候选，取可达且线长较短者；不保证全局最优。'
         '实际桥架、穿管、防火、支撑和施工净距须现场核定。')
 CROSSING = 4  # a metre over a keepout, skylight or glass face costs as much as this many metres of detour
+_GEOMETRY_CACHE = {}
 
 
 def compact(points):
@@ -28,31 +30,48 @@ def distance(points):
     return math.fsum(math.dist(a, b) for a, b in zip(points, points[1:]))
 
 
+def _planner_geometry(roof, added_keepouts):
+    key = (
+        roof.model_dump_json() if hasattr(roof, 'model_dump_json') else str(roof),
+        tuple((k.id, tuple(map(tuple, k.polygon))) for k in (added_keepouts or ())),
+    )
+    cached = _GEOMETRY_CACHE.get(key)
+    if cached is not None:
+        return cached
+    boundary = Polygon(roof.outline)
+    blocks = []
+    for item in roof.obstacles:
+        if item.kind == 'cylinder':
+            x, y = item.center
+            r = item.radius_m
+            shape = box(x - r, y - r, x + r, y + r)
+        else:
+            shape = Polygon(item.footprint)
+        blocks.append(shape.buffer(.05, join_style=2))
+    zones = [*roof.keepouts, *(added_keepouts or ())]
+    soft_polys = [Polygon(zone.polygon) for zone in zones] + [Polygon(plane.outline) for plane in roof.planes if plane.material == 'glass']
+    domain = boundary.difference(unary_union(blocks))
+    allowed = domain.buffer(1e-8, join_style=2)
+    soft = unary_union(soft_polys).intersection(domain) if soft_polys else Polygon()
+    inner = soft.buffer(-1e-7, join_style=2) if not soft.is_empty else soft
+    shapely.prepare(allowed)
+    if not inner.is_empty:
+        shapely.prepare(inner)
+    points = vertices(domain) + vertices(soft)
+    xs = sorted({p[0] for p in points})
+    ys = sorted({p[1] for p in points})
+    result = (boundary, domain, allowed, soft, inner, xs, ys)
+    if len(_GEOMETRY_CACHE) >= 64:
+        _GEOMETRY_CACHE.clear()
+    _GEOMETRY_CACHE[key] = result
+    return result
+
+
 class Planner:
     def __init__(self, roof, design):
         self.roof = roof
         self.modules = {m.id: m for m in design.modules}
-        self.boundary = Polygon(roof.outline)
-        blocks = []
-        for item in roof.obstacles:
-            if item.kind == 'cylinder':
-                x, y = item.center
-                r = item.radius_m
-                shape = box(x - r, y - r, x + r, y + r)
-            else:
-                shape = Polygon(item.footprint)
-            blocks.append(shape.buffer(.05, join_style=2))
-        # Equipment is a wall for cables. Keepouts, skylight bands and glass faces only cost extra: a band that runs from
-        # eave to ridge would otherwise cut the roof into islands that no string could leave.
-        zones = [*roof.keepouts, *design.added_keepouts]
-        soft = [Polygon(zone.polygon) for zone in zones] + [Polygon(plane.outline) for plane in roof.planes if plane.material == 'glass']
-        self.domain = self.boundary.difference(unary_union(blocks))
-        self.allowed = self.domain.buffer(1e-8, join_style=2)
-        self.soft = unary_union(soft).intersection(self.domain) if soft else Polygon()
-        self.inner = self.soft.buffer(-1e-7, join_style=2) if not self.soft.is_empty else self.soft
-        points = vertices(self.domain) + vertices(self.soft)
-        self.xs = sorted({p[0] for p in points})
-        self.ys = sorted({p[1] for p in points})
+        self.boundary, self.domain, self.allowed, self.soft, self.inner, self.xs, self.ys = _planner_geometry(roof, design.added_keepouts)
         self.visible = lru_cache(maxsize=32768)(self.visible)
         self.over = lru_cache(maxsize=32768)(self.over)
         self.xy = lru_cache(maxsize=8192)(self.xy)

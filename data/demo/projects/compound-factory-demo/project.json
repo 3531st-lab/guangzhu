@@ -1,0 +1,415 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "compound-factory-demo",
+  "name": "高低跨组合厂房（示意）",
+  "collection": null,
+  "site": {
+    "lat": 31.81,
+    "lon": 119.97,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2,
+    "design_temp_min_c": null,
+    "design_temp_max_c": null
+  },
+  "roof": {
+    "planes": [
+      {
+        "id": 1,
+        "outline": [
+          [
+            60.0,
+            12.0
+          ],
+          [
+            0.0,
+            12.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            60.0,
+            0.0
+          ]
+        ],
+        "slope_deg": 8.0,
+        "slope_azimuth_deg": 180.0,
+        "offset_m": 4.0,
+        "material": "metal",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "part_id": "main"
+      },
+      {
+        "id": 2,
+        "outline": [
+          [
+            0.0,
+            12.0
+          ],
+          [
+            60.0,
+            12.0
+          ],
+          [
+            60.0,
+            24.0
+          ],
+          [
+            0.0,
+            24.0
+          ]
+        ],
+        "slope_deg": 8.0,
+        "slope_azimuth_deg": 0.0,
+        "offset_m": 4.0,
+        "material": "metal",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "part_id": "main"
+      },
+      {
+        "id": 3,
+        "outline": [
+          [
+            60.0,
+            0.0
+          ],
+          [
+            80.0,
+            0.0
+          ],
+          [
+            80.0,
+            12.0
+          ],
+          [
+            60.0,
+            12.0
+          ]
+        ],
+        "slope_deg": 0.0,
+        "slope_azimuth_deg": 180.0,
+        "offset_m": 0.0,
+        "material": "concrete",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "part_id": "annex"
+      }
+    ],
+    "parts": [
+      {
+        "id": "main",
+        "label": "双坡主厂房",
+        "outline": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            60.0,
+            0.0
+          ],
+          [
+            60.0,
+            24.0
+          ],
+          [
+            0.0,
+            24.0
+          ]
+        ],
+        "kind": "gable",
+        "eave_height_m": 9.0,
+        "slope_deg": 8.0,
+        "material": "metal",
+        "ridge_mode": "long",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "plane_ids": [
+          1,
+          2
+        ]
+      },
+      {
+        "id": "annex",
+        "label": "低跨平顶附楼",
+        "outline": [
+          [
+            60.0,
+            0.0
+          ],
+          [
+            80.0,
+            0.0
+          ],
+          [
+            80.0,
+            12.0
+          ],
+          [
+            60.0,
+            12.0
+          ]
+        ],
+        "kind": "flat",
+        "eave_height_m": 5.0,
+        "slope_deg": 5.0,
+        "material": "concrete",
+        "ridge_mode": "long",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "plane_ids": [
+          3
+        ]
+      }
+    ],
+    "pitched": null,
+    "seam_setback_m": 0.5,
+    "type": "pitched",
+    "outline": [
+      [
+        80.0,
+        12.0
+      ],
+      [
+        60.0,
+        12.0
+      ],
+      [
+        60.0,
+        24.0
+      ],
+      [
+        0.0,
+        24.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        60.0,
+        0.0
+      ],
+      [
+        80.0,
+        0.0
+      ]
+    ],
+    "height_m": 5.0,
+    "parapet_height_m": 0.0,
+    "load_capacity_kn_m2": 0.45,
+    "obstacles": [
+      {
+        "id": "annex-hvac",
+        "label": "附楼机房（示意）",
+        "kind": "prism",
+        "height_m": 2.0,
+        "footprint": [
+          [
+            65.0,
+            4.0
+          ],
+          [
+            69.0,
+            4.0
+          ],
+          [
+            69.0,
+            7.0
+          ],
+          [
+            65.0,
+            7.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null,
+        "plane_id": 3,
+        "part_id": "annex"
+      }
+    ],
+    "keepouts": [
+      {
+        "id": "skylight-1",
+        "label": "采光带1",
+        "polygon": [
+          [
+            4.0,
+            5.0
+          ],
+          [
+            6.0,
+            5.0
+          ],
+          [
+            6.0,
+            6.0
+          ],
+          [
+            4.0,
+            6.0
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      },
+      {
+        "id": "skylight-2",
+        "label": "采光带2",
+        "polygon": [
+          [
+            12.0,
+            5.0
+          ],
+          [
+            14.0,
+            5.0
+          ],
+          [
+            14.0,
+            6.0
+          ],
+          [
+            12.0,
+            6.0
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      },
+      {
+        "id": "skylight-3",
+        "label": "采光带3",
+        "polygon": [
+          [
+            20.0,
+            5.0
+          ],
+          [
+            22.0,
+            5.0
+          ],
+          [
+            22.0,
+            6.0
+          ],
+          [
+            20.0,
+            6.0
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      },
+      {
+        "id": "skylight-4",
+        "label": "采光带4",
+        "polygon": [
+          [
+            28.0,
+            5.0
+          ],
+          [
+            30.0,
+            5.0
+          ],
+          [
+            30.0,
+            6.0
+          ],
+          [
+            28.0,
+            6.0
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      },
+      {
+        "id": "skylight-5",
+        "label": "采光带5",
+        "polygon": [
+          [
+            36.0,
+            5.0
+          ],
+          [
+            38.0,
+            5.0
+          ],
+          [
+            38.0,
+            6.0
+          ],
+          [
+            36.0,
+            6.0
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      },
+      {
+        "id": "skylight-6",
+        "label": "采光带6",
+        "polygon": [
+          [
+            44.0,
+            5.0
+          ],
+          [
+            46.0,
+            5.0
+          ],
+          [
+            46.0,
+            6.0
+          ],
+          [
+            44.0,
+            6.0
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      }
+    ],
+    "underlay": null
+  },
+  "requirements": {
+    "text": "组合屋面和人工锁定演示；尺寸、承重与经济参数均为示意输入。",
+    "structured": {
+      "budget_cny_max": null,
+      "payback_years_max": null,
+      "capacity_kw_min": null,
+      "capacity_kw_max": null,
+      "walkway_m_min": null,
+      "obstacle_clearance_m_min": null,
+      "edge_setback_m_min": null,
+      "keep_clear_ids": [],
+      "tilt_deg_range": null,
+      "notes": null
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "plane_flush"
+  },
+  "economics": {
+    "capex_cny_per_w": null,
+    "self_use_ratio": 0.8,
+    "price_self_cny_kwh": 0.65,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "用户示意覆盖：自用比例0.8、自用电价0.65元/kWh、折现率0.06；计算期25年对应天合DE19功率质保。造价和运维填null，采用data/catalog/assumptions.csv已查证默认2.59元/W、0.046元/(W·年)；其他null或缺失经济参数取表默认：年衰减0.55%、江苏排放因子0.5827。余电单价0.391元/kWh仍为江苏燃煤基准价示意占位，不能视为2026年新建项目实际上网价。演示206.25kW按一般工商业假设，公共电网连接点电压和省级自用要求尚待接网核实。首年模拟已含1.5%初始光衰；逆变器更换视为运维已含的简化示意；不含税费、补贴、贷款、储能或电价上涨。逐项来源、限制见data/catalog/ASSUMPTIONS.md"
+  },
+  "designs": []
+}

@@ -1,0 +1,38 @@
+{
+  "id": "taizhou-cmc-demo",
+  "name": "泰州产业场景组合园区",
+  "buildings": [
+    {
+      "template": "taizhou-cmc-pharma",
+      "x_m": 0.0,
+      "y_m": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "template": "taizhou-shipbuilding-workshop",
+      "x_m": 98.0,
+      "y_m": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "template": "taizhou-watertown-pavilion",
+      "x_m": 0.0,
+      "y_m": 52.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "template": "taizhou-lixiahe-coldchain",
+      "x_m": 98.0,
+      "y_m": 52.0,
+      "rotation_deg": 0.0
+    }
+  ],
+  "transformer_kva": 1600.0,
+  "grid_kw": 1200.0,
+  "budget_cny": 3200000.0,
+  "origin": [
+    119.92,
+    32.46
+  ],
+  "settings": {}
+}

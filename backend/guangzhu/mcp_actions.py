@@ -87,9 +87,9 @@ def _project_summary(project_id):
     from .wind import facts as wind_facts
     load_path = storage._path(project_id, f"analysis/v{latest['version']}/structure.json") if latest else None
     archived_wind = json.loads(load_path.read_text(encoding='utf-8')).get('wind') if load_path and load_path.is_file() else None
-    wind = wind_facts(archived_wind, latest['version'] if latest else None)
+    wind = wind_facts(archived_wind, latest.get('version') if latest else None)
     zones = lambda values: [dict(id=z.id, label=z.label) for z in values]
-    return dict(ok=True, project_id=project_id, name=project.name, site=project.site.model_dump(),
+    result = dict(ok=True, project_id=project_id, name=project.name, site=project.site.model_dump(),
                 **(dict(use=project.roof.use) if project.roof.use else {}),
                 **(dict(roof_type="metal", slope_deg=project.roof.slope_deg, slope_azimuth_deg=project.roof.slope_azimuth_deg)
                    if project.roof.type == "metal" else {}),
@@ -107,6 +107,21 @@ def _project_summary(project_id):
                 requirements=project.requirements.structured.model_dump(exclude_none=True),
                 wind=wind,
                 latest_analysis=None if latest is None else dict(version=latest["version"], **latest["rules"]))
+    from .design_locks import locked_ids
+    planes = sorted(design.locked_plane_ids) if design else []
+    regions = [region.id for region in design.locked_regions] if design else []
+    result['locks'] = dict(module_count=len(locked_ids(design)) if design else 0,
+                           plane_count=len(planes), region_count=len(regions),
+                           plane_ids=[], region_ids=[], truncated=False)
+    # Never replace a long identifier with a misleading partial ID. Keep exact totals and
+    # explicitly flag a bounded list, leaving space for the waiter's queue metadata.
+    for field, values in (('plane_ids', planes), ('region_ids', regions)):
+        for value in values:
+            result['locks'][field].append(value)
+            if len(json.dumps(result, ensure_ascii=False, separators=(',', ':')).encode('utf-8')) > 1920:
+                result['locks'][field].pop()
+                result['locks']['truncated'] = True
+    return result
 
 
 def _capacity_ceiling(project, base, offline=False):
@@ -194,8 +209,17 @@ def _fetch_weather(project_id, source, year=2023, offline=False):
 
 def _generate_layout(project_id, params, offline=False):
     project = storage.load(project_id)
-    design = layout.generate_layout(project, params)
-    design.version, design.parent_version = storage.next_version(project_id), None
+    from .design_locks import has_locks, reflow
+    latest = storage.next_version(project_id) - 1
+    previous = storage.load_design(project_id, latest) if latest else None
+    if previous is not None and has_locks(previous):
+        from .installation import effective
+        active = effective(project, previous).model_copy(deep=True)
+        active.roof.keepouts += previous.added_keepouts
+        design = reflow(active, previous, previous.params.model_dump() | params)
+    else:
+        design = layout.generate_layout(project, params)
+    design.version, design.parent_version = storage.next_version(project_id), latest if previous is not None and has_locks(previous) else None
     design.author, design.reason = "agent", "按参数排板"
     storage.save_design(project_id, design, offline=offline)
     keys = ("dc_kw", "rows", "row_spacing_m", "obstacle_area_m2", "keepout_area_m2")
@@ -274,9 +298,17 @@ def _analyze(project_id, version, what_if=None, offline=False):
             else analysis.analyze(project_id, version, offline=offline))
 
 
-def _edit_design(project_id, version, reason, ops, offline=False):
+def _edit_design(project_id, version, reason, ops, offline=False, preview=False, expected_fingerprint=None):
+    if preview:
+        result = storage.preview_edit(project_id, version, ops, reason, 'agent', offline=offline)
+        changes = result['changes']
+        return dict(ok=True, preview=True, fingerprint=result['fingerprint'], summary=result['summary'][:300],
+                    before_count=changes['before_count'], after_count=changes['after_count'], dc_kw=changes['dc_kw'],
+                    changes={key: len(changes[key]) for key in ('added', 'removed', 'moved', 'retained', 'locked')},
+                    analysis_status=changes['analysis_status'], analysis_note=changes['analysis_note'])
     before = storage.load_design(project_id, version).statistics.get('dc_kw')
-    result = storage.edit_design(project_id, version, ops, reason, "agent", offline=offline)
+    result = storage.edit_design(project_id, version, ops, reason, "agent", offline=offline,
+                                 expected_fingerprint=expected_fingerprint)
     after = storage.load_design(project_id, result['version'])
     return dict(ok=True, **result, parent_version=after.parent_version, reason=after.reason,
                 dc_kw_change=dict(before=before, after=after.statistics.get('dc_kw')))
@@ -322,6 +354,10 @@ def _comparison_metric(label, design, summary, checked, tilt=None):
 
 def _compare_options(project_id, base_version, offline=False):
     project, base = storage.load(project_id), storage.load_design(project_id, base_version)
+    from .design_locks import has_locks
+    latest = storage.load_design(project_id, storage.next_version(project_id) - 1)
+    if has_locks(base) or has_locks(latest):
+        raise GzError('COMPARE_LOCKED_DESIGN', '当前三方案全屋搜索不支持锁定区域', '使用gz_edit_design的reflow_unlocked逐次比较未锁定部分')
     from .installation import effective
     project = effective(project, base)
     if project.roof.type == "metal":
@@ -361,9 +397,10 @@ def _compare_options(project_id, base_version, offline=False):
             if project.roof.type == 'carport':
                 plan['capacity'] = bounds[0]
             plans[align] = plan
+            trials = plan['trials'][:1] if len(base.modules) >= 260 and not constrained else plan['trials']
             configurations += [(label, dict(align=align, tilt_deg=tilt, layout='rows', fill_landscape=True,
                                              winter_window_hours=[10, 14] if label == '多装' else [9, 15]))
-                               for label, tilts in [('多装', [plan['capacity']]), ('最快回本', plan['trials']), ('折中', [plan['balanced']])]
+                               for label, tilts in [('多装', [plan['capacity']]), ('最快回本', trials), ('折中', [plan['balanced']])]
                                for tilt in tilts]
         low, high = bounds or (5, 15)
         if requirement.max_height_m is not None and project.roof.type != 'carport':
@@ -395,7 +432,7 @@ def _compare_options(project_id, base_version, offline=False):
             shadows = reuse.analyze(design)
         return original, shadows, reuse, corrections
     # Each candidate owns geometry/ray caches; version writes remain in stable order.
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=min(6, max(3, len(configurations)))) as executor:
         initial_results = list(executor.map(initial, configurations))
     candidates = []
     for (label, parameters), (original, shadows, reuse, corrections) in zip(configurations, initial_results):
@@ -411,11 +448,25 @@ def _compare_options(project_id, base_version, offline=False):
                        [operation], label + "：按 G03 重新排板", "agent", offline=offline)["version"])
         _cache_shadows(project_id, design, shadows)
         def repair(design, identifier):
+            if identifier == "U02" and requirement.capacity_kw_max is None:
+                return design
+            if identifier == "U03" and requirement.budget_cny_max is None:
+                return design
+            if identifier == "U05" and requirement.export_allowed is not False:
+                return design
+            if identifier == "U06" and requirement.transformer_kva is None and (project.facts or {}).get("transformer_kva") is None:
+                return design
             if not storage._path(project_id, f"analysis/v{design.version}/shading.json").exists():
                 with stage(f"compare.{phase}.shading-before-{identifier}"):
                     _cache_shadows(project_id, design, reuse.analyze(design))
             with stage(f"compare.{phase}.rule-{identifier}"):
-                checked = rules.check(project_id, design.version, offline=offline)
+                rules_file = storage._path(project_id, f"analysis/v{design.version}/rules.json")
+                elec_file = storage._path(project_id, f"analysis/v{design.version}/electrical.json")
+                struct_file = storage._path(project_id, f"analysis/v{design.version}/structure.json")
+                if rules_file.exists() and elec_file.exists() and struct_file.exists():
+                    checked = _read(project_id, f"analysis/v{design.version}/rules.json")
+                else:
+                    checked = rules.check(project_id, design.version, offline=offline)
             if identifier == 'U05':
                 analysis.analyze(project_id, design.version, offline=offline)
                 checked = _read(project_id, f'analysis/v{design.version}/rules.json')
@@ -477,6 +528,14 @@ def _compare_options(project_id, base_version, offline=False):
     if options[0]['align'] == 'ew' and result['recommended']['max_capacity']['version'] == options[0]['version']:
         result['recommended']['max_capacity']['why'] += '；东西向候选装机最多'
     if len(analysis.serialized(result).encode("utf-8")) > 1920:
+        for row in [result["current"], *result["options"]]:
+            for k in ("dc_kw", "annual_kwh", "capex_cny", "kwh_per_kw", "payback_years", "irr_pct", "avg_loss_pct"):
+                if isinstance(row.get(k), float):
+                    row[k] = round(row[k], 2)
+        for row in result.get("tilt_trials", []):
+            if isinstance(row.get("kwh_per_kw"), float):
+                row["kwh_per_kw"] = round(row["kwh_per_kw"], 1)
+    if len(analysis.serialized(result).encode("utf-8")) > 1920:
         raise GzError("RESULT_TOO_LARGE", "三方案完整结果超过2KB", "保留完整分析结果并核对未满足的要求")
     rules.save_result(project_id, base_version, "compare", result)
     return result
@@ -489,7 +548,7 @@ def _crosscheck_yield(project_id, version, offline=False, group_offset=0):
         raise GzError('GROUP_OFFSET_INVALID', '朝向组起点超出范围', '从0开始，按next_group_offset续取')
     if len(orientation.groups(design)) > 1:
         rows, totals = [], {}
-        power = electrical.equipment_catalog()['modules'][project.equipment.module_id]['pmax_w'] / 1000
+        power = electrical.resolve_catalog_for_project(project)['modules'][project.equipment.module_id]['pmax_w'] / 1000
         for identity, view, generated in orientation.simulations(project, design, offline=offline):
             values = {name: round(row['specific_yield_kwh_kwp'], 4) for name, row in generated['results'].items()}
             capacity = len(view.modules) * power
@@ -538,8 +597,16 @@ def _record_review(project_id, version, reviewer_model, verdict, findings):
     return dict(ok=True, version=version, file=f"projects/{project_id}/reviews/{filename}")
 
 
-def _export(project_id, version, offline=False):
-    analysis.analyze(project_id, version, offline=offline)
+def _export(project_id, version, offline=False, *, recalculate=True):
+    if recalculate:
+        analysis.analyze(project_id, version, offline=offline)
+    else:
+        from .design_evidence import capture
+        evidence = capture(storage._path(project_id), version)
+        if (evidence.get('analysis', {}).get('input_binding') != 'matched'
+                or evidence.get('analysis', {}).get('completion_status') != 'matched'
+                or evidence.get('rules', {}).get('status') != 'pass'):
+            raise GzError('EXPORT_BLOCKED', '此版本未完成当前输入的规则检查', '重新计算并预览导出')
     checked = _read(project_id, f"analysis/v{version}/rules.json")
     failed = [row["id"] for row in checked["items"] if row["status"] == "fail" and row["level"] == "hard"]
     if failed:
@@ -565,8 +632,9 @@ def _export(project_id, version, offline=False):
             storage._path(project_id, f"exports/v{version}/{name}.json").write_bytes(contents)
             files[name + ".json"] = hashlib.sha256(contents).hexdigest()
         _write(manifest_path, dict(version=version, files=files))
+    manifest_bytes = manifest_path.read_bytes()
     return dict(ok=True, version=version, directory=f"projects/{project_id}/exports/v{version}", files=files,
-                manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest())
+                manifest_sha256=hashlib.sha256(manifest_bytes).hexdigest())
 
 
 ACTIONS = {"gz_" + name: action for name, action in dict(project_summary=_project_summary,

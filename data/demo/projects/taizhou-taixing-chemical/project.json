@@ -1,0 +1,250 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "taizhou-taixing-chemical",
+  "name": "泰州产业演示·泰兴精细化工防腐车间",
+  "collection": null,
+  "site": {
+    "lat": 32.46,
+    "lon": 119.92,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2,
+    "design_temp_min_c": null,
+    "design_temp_max_c": null,
+    "wind_city": "泰州"
+  },
+  "roof": {
+    "type": "flat",
+    "outline": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        72.0,
+        0.0
+      ],
+      [
+        72.0,
+        24.0
+      ],
+      [
+        48.0,
+        24.0
+      ],
+      [
+        48.0,
+        42.0
+      ],
+      [
+        0.0,
+        42.0
+      ]
+    ],
+    "height_m": 14.0,
+    "parapet_height_m": 1.1,
+    "load_capacity_kn_m2": 0.65,
+    "obstacles": [
+      {
+        "id": "chem-scrubber-1",
+        "label": "酸雾洗涤排风塔1",
+        "kind": "cylinder",
+        "height_m": 3.2,
+        "footprint": null,
+        "center": [
+          14.0,
+          34.0
+        ],
+        "radius_m": 1.5
+      },
+      {
+        "id": "chem-scrubber-2",
+        "label": "酸雾洗涤排风塔2",
+        "kind": "cylinder",
+        "height_m": 3.2,
+        "footprint": null,
+        "center": [
+          32.0,
+          34.0
+        ],
+        "radius_m": 1.5
+      },
+      {
+        "id": "chem-ct-1",
+        "label": "玻璃钢逆流冷却塔",
+        "kind": "cylinder",
+        "height_m": 2.8,
+        "footprint": null,
+        "center": [
+          62.0,
+          17.5
+        ],
+        "radius_m": 1.8
+      },
+      {
+        "id": "chem-penthouse-1",
+        "label": "出屋面防爆消防电梯机房",
+        "kind": "prism",
+        "height_m": 3.4,
+        "footprint": [
+          [
+            4.0,
+            18.0
+          ],
+          [
+            9.5,
+            18.0
+          ],
+          [
+            9.5,
+            23.0
+          ],
+          [
+            4.0,
+            23.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      },
+      {
+        "id": "chem-hvac-1",
+        "label": "防爆洁净新风空调机组",
+        "kind": "prism",
+        "height_m": 2.1,
+        "footprint": [
+          [
+            52.0,
+            4.0
+          ],
+          [
+            58.0,
+            4.0
+          ],
+          [
+            58.0,
+            8.0
+          ],
+          [
+            52.0,
+            8.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      }
+    ],
+    "keepouts": [
+      {
+        "id": "chem-skylight-1",
+        "label": "反应釜防爆泄压采光天窗1",
+        "polygon": [
+          [
+            18.0,
+            12.0
+          ],
+          [
+            26.0,
+            12.0
+          ],
+          [
+            26.0,
+            14.5
+          ],
+          [
+            18.0,
+            14.5
+          ]
+        ]
+      },
+      {
+        "id": "chem-skylight-2",
+        "label": "反应釜防爆泄压采光天窗2",
+        "polygon": [
+          [
+            34.0,
+            12.0
+          ],
+          [
+            42.0,
+            12.0
+          ],
+          [
+            42.0,
+            14.5
+          ],
+          [
+            34.0,
+            14.5
+          ]
+        ]
+      }
+    ],
+    "underlay": null,
+    "surroundings": [
+      {
+        "id": "chem-pipe-rack",
+        "label": "南侧化工管廊与综合楼",
+        "kind": "prism",
+        "height_m": 16.5,
+        "footprint": [
+          [
+            8.0,
+            -14.0
+          ],
+          [
+            36.0,
+            -14.0
+          ],
+          [
+            36.0,
+            -5.0
+          ],
+          [
+            8.0,
+            -5.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      }
+    ]
+  },
+  "requirements": {
+    "text": "产业场景示例，非实测或客户工程。泰兴精细化工园L形钢筋混凝土防腐车间，避开酸雾洗涤塔、冷却塔及反应釜防爆泄压天窗，考虑南侧管廊综合楼遮挡。",
+    "structured": {
+      "budget_cny_max": null,
+      "payback_years_max": 6.0,
+      "capacity_kw_min": null,
+      "capacity_kw_max": null,
+      "walkway_m_min": 1.0,
+      "obstacle_clearance_m_min": null,
+      "edge_setback_m_min": null,
+      "keep_clear_ids": [
+        "chem-skylight-1",
+        "chem-skylight-2"
+      ],
+      "tilt_deg_range": null,
+      "notes": null
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "ballast_tilt"
+  },
+  "economics": {
+    "monthly_kwh": 180000.0,
+    "shifts": 3,
+    "capex_cny_per_w": null,
+    "self_use_ratio": null,
+    "price_self_cny_kwh": 0.68,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "本例全部屋面尺寸、障碍物、承载力、用电及经济条件为演示输入，不代表对应企业或实测工程。月用电量假设150000kWh、3班，自用比例由模拟逐时发电与示意负荷曲线计算，不预设高自用率。自用平段电价假设0.68元/kWh，计算期25年，折现率0.06。造价按实际工程量及当前目录的示意报价汇总；未填参数取data/catalog/assumptions.csv，并保留各自来源及限制。余电价格、峰谷电价、荷载能力和并网条件均待真实项目核实；不承诺回本。天气使用泰州区域坐标32.46N/119.92E的已标注来源数据，坐标用于区域气象，不是该建筑测绘坐标。所有输出为模型计算，不能替代现场测量和专业复核。"
+  },
+  "designs": []
+}

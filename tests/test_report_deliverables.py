@@ -176,7 +176,7 @@ def test_xlsx_source_text_cannot_become_a_formula(exported, tmp_path, monkeypatc
     _, project_id, _ = exported
     catalog = electrical.equipment_catalog()
     catalog["modules"]["trina-tsm-550de19"]["manufacturer"] = "=1+1"
-    monkeypatch.setattr(electrical, "equipment_catalog", lambda: catalog)
+    monkeypatch.setattr(electrical, "equipment_catalog", lambda **_kwargs: catalog)
     write_deliverables(project_id, 3, tmp_path)
     cell = openpyxl.load_workbook(tmp_path / "bom-v3.xlsx")["材料清单"]["B2"]
     assert cell.value == "=1+1" and cell.data_type == "s"

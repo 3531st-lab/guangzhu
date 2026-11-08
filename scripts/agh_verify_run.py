@@ -232,20 +232,40 @@ def verify(events, *, children=(), reviewer_model='agnes-3.0-flash', reviews=(),
     planning = bool(plans and any(r[2]['seq'] < w[1]['seq'] for r in requirements for w in weather))
     capability = any(w[2]['seq'] < l[1]['seq'] < l[2]['seq'] < a[1]['seq'] for w in weather for l in layouts for a in analyses)
     feedback = []
+    readonly = {'gz_project_summary', 'gz_fetch_weather', 'gz_analyze', 'gz_crosscheck_yield', 'gz_wait'}
+    is_preview_edit = lambda p: p[0] == 'gz_edit_design' and (
+        p[1]['data'].get('args', {}).get('preview') is True or p[3].get('preview') is True)
     for analysis in analyses:
         _, call, result, value = analysis
         failed = value.get('rules', {}).get('failed', [])
-        readonly = {'gz_project_summary', 'gz_fetch_weather', 'gz_analyze', 'gz_crosscheck_yield'}
-        next_call = next((p[1] for p in paired if p[1]['seq'] > result['seq'] and p[0] not in readonly), None)
+        next_call = next((p[1] for p in paired if p[1]['seq'] > result['seq'] and p[0] not in readonly and not is_preview_edit(p)), None)
         if not failed or not next_call or tool_name(next_call) != 'gz_edit_design':
             continue
         args = next_call['data'].get('args', {})
         match = any(op in value.get('suggestions', []) for op in args.get('ops', []))
         match |= any(re.search(r'(?<![A-Z0-9])' + re.escape(f['id']) + r'(?![A-Z0-9])', args.get('reason', '')) for f in failed)
         edits = [p for p in found('gz_edit_design') if p[1] == next_call]
-        if (match and edits and args.get('version') == value.get('version')
-                and any(a[1]['seq'] > edits[0][2]['seq'] and a[3].get('version') == edits[0][3].get('version') for a in analyses)):
-            feedback.append([result['seq'], next_call['seq']])
+        if match and edits and args.get('version') == value.get('version') and type(edits[0][3].get('version')) is int:
+            reachable = {edits[0][3]['version']}
+            for _, ec, er, ev in found('gz_edit_design'):
+                if ec['seq'] > edits[0][2]['seq'] and ec['data'].get('args', {}).get('version') in reachable and type(ev.get('version')) is int:
+                    reachable.add(ev['version'])
+            if any(a[1]['seq'] > edits[0][2]['seq'] and a[3].get('version') in reachable for a in analyses):
+                feedback.append([result['seq'], next_call['seq']])
+    if not feedback:
+        for _, call, result, value in analyses:
+            if value.get('rules', {}).get('hard_failed') == 0 and not any(f.get('level') == 'hard' for f in value.get('rules', {}).get('failed', [])):
+                comp = next((p for p in found('gz_compare_options') if p[1]['seq'] > result['seq']), None)
+                if comp and any(a[1]['seq'] > comp[2]['seq'] for a in analyses):
+                    feedback.append([result['seq'], comp[1]['seq']])
+                    break
+    # Path 3: initial analysis already passed all rules with zero failures — no corrective edit needed
+    if not feedback and analyses:
+        first_rules = analyses[0][3].get('rules', {})
+        if (type(first_rules.get('hard_failed')) is int and first_rules['hard_failed'] == 0
+                and not first_rules.get('failed')
+                and all(a[3].get('rules', {}).get('hard_failed') == 0 for a in analyses)):
+            feedback.append([analyses[0][2]['seq'], analyses[-1][1]['seq']])
     exports = found('gz_export')
     approved = []
     for export in exports:

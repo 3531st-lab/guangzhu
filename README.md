@@ -4,6 +4,18 @@
 
 Turn a rooftop and a plain-language brief into a checked solar PV proposal, drawings, and bill of materials.
 
+The November reliability update is version **0.3.0**, available as a local Windows build; it has not been published as a GitHub release. The new key-free flow uses deterministic design rules and command parsing. Users preview a specific version before confirming its export; this flow does not provide independent model review. The existing AGH model workflow remains separate and records its review provenance. See the [repair and installation record](docs/RELIABILITY_VALIDATION_2026-11.md) for test scope and results, and the [three-competition materials](docs/materials/three-competitions-2026/README.md) (Chinese). The four Taizhou examples are synthetic scenarios with stated assumptions, not surveyed sites or customer projects.
+
+The November source update adds compound flat/gable roofs, live 3D modeling, precise object arrays, and previewable partial layout changes that preserve manual locks. See the [upgrade and verification guide](docs/COMPETITION_UPGRADE_2026-11.md) (Chinese). Existing v0.2.0 binaries do not include this source update.
+
+Factory facade controls add wall finishes and colors, columns, plinths, window bands, doors, canopies, and loading docks. See the [facade editing guide](docs/FACTORY_FACADE_2026-11.md) (Chinese).
+
+The precision modeling workbench adds an object list, multi-selection, previewable move/rotate/mirror operations, standard and orthographic views, and segmented parapets shared by rendering and shading calculations. See the [modeling guide and software references](docs/MODELING_WORKBENCH_2026-11.md) (Chinese).
+
+PV modules can now be added, moved, and rotated manually with validated roof geometry, protected regions, shading comparisons, and versioned undo. See the [manual module editing guide](docs/MANUAL_MODULES_2026-11.md) (Chinese).
+
+The 3D workbench now supports dragging and rotation handles with grid, neighbouring-module, and angle snapping. Rule diagnostics locate affected objects and offer explicit repair previews; version evidence records input consistency, calculation-file hashes, reviews, exports, and available session usage. See the [3D editing guide](docs/THREE_DIMENSIONAL_EDITING_2026-11.md) and [verification record](docs/THREE_DIMENSIONAL_EDITING_VALIDATION_2026-11.md) (Chinese).
+
 2026 Jiangsu AI + Science & Engineering Hackathon · Undergraduate division · U058「验形工坊」
 
 [Project Overview](#project-overview) · [Demo Video](#demo-video) · [Architecture](#architecture) · [Integration Standards](#integration-standards) · [Getting Started](#getting-started) · [Verification](#verification)

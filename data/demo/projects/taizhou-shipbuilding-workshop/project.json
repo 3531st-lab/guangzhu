@@ -1,0 +1,258 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "taizhou-shipbuilding-workshop",
+  "name": "泰州产业演示·船舶海工车间",
+  "collection": null,
+  "site": {
+    "lat": 32.46,
+    "lon": 119.92,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2,
+    "design_temp_min_c": null,
+    "design_temp_max_c": null,
+    "wind_city": "泰州"
+  },
+  "roof": {
+    "facade": {
+      "enabled": true,
+      "wall_material": "metal",
+      "wall_color": "#cbd6e0",
+      "trim_color": "#1f4e78",
+      "base_color": "#4a5a68",
+      "door_color": "#284b6a",
+      "bay_width_m": 8.0,
+      "base_height_m": 0.9,
+      "columns": true,
+      "window_rows": 2,
+      "window_width_m": 3.6,
+      "window_height_m": 1.6,
+      "window_sill_m": 4.2,
+      "front_edge": 0,
+      "doors": 3,
+      "door_width_m": 6.0,
+      "door_height_m": 5.0,
+      "canopy_depth_m": 2.2,
+      "loading_docks": 1,
+      "dock_height_m": 1.2,
+      "personnel_door": true
+    },
+    "inverter_positions": [
+      [
+        4.0,
+        2.0
+      ],
+      [
+        68.0,
+        2.0
+      ]
+    ],
+    "grid_point": [
+      70.0,
+      1.0
+    ],
+    "type": "metal",
+    "slope_deg": 6.0,
+    "slope_azimuth_deg": 180.0,
+    "building": null,
+    "outline": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        72.0,
+        0.0
+      ],
+      [
+        72.0,
+        36.0
+      ],
+      [
+        0.0,
+        36.0
+      ]
+    ],
+    "height_m": 14.0,
+    "parapet_height_m": 0.4,
+    "load_capacity_kn_m2": 0.45,
+    "obstacles": [
+      {
+        "id": "weld-filter-1",
+        "label": "焊烟除尘净化塔",
+        "kind": "cylinder",
+        "height_m": 3.0,
+        "footprint": null,
+        "center": [
+          64.0,
+          7.0
+        ],
+        "radius_m": 1.6
+      },
+      {
+        "id": "crane-hoist-vent",
+        "label": "行车检修排风机房",
+        "kind": "prism",
+        "height_m": 2.4,
+        "footprint": [
+          [
+            6.0,
+            27.0
+          ],
+          [
+            11.0,
+            27.0
+          ],
+          [
+            11.0,
+            31.0
+          ],
+          [
+            6.0,
+            31.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      }
+    ],
+    "keepouts": [
+      {
+        "id": "ridge-vent-west",
+        "label": "屋脊通风气楼（西）",
+        "polygon": [
+          [
+            10.0,
+            17.0
+          ],
+          [
+            32.0,
+            17.0
+          ],
+          [
+            32.0,
+            19.0
+          ],
+          [
+            10.0,
+            19.0
+          ]
+        ],
+        "preset": "vent",
+        "clearance_m": 0.5
+      },
+      {
+        "id": "ridge-vent-east",
+        "label": "屋脊通风气楼（东）",
+        "polygon": [
+          [
+            40.0,
+            17.0
+          ],
+          [
+            62.0,
+            17.0
+          ],
+          [
+            62.0,
+            19.0
+          ],
+          [
+            40.0,
+            19.0
+          ]
+        ],
+        "preset": "vent",
+        "clearance_m": 0.5
+      },
+      {
+        "id": "ship-skylight-1",
+        "label": "总装跨FRP采光带1",
+        "polygon": [
+          [
+            20.0,
+            5.0
+          ],
+          [
+            22.0,
+            5.0
+          ],
+          [
+            22.0,
+            14.0
+          ],
+          [
+            20.0,
+            14.0
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      },
+      {
+        "id": "ship-skylight-2",
+        "label": "总装跨FRP采光带2",
+        "polygon": [
+          [
+            48.0,
+            5.0
+          ],
+          [
+            50.0,
+            5.0
+          ],
+          [
+            50.0,
+            14.0
+          ],
+          [
+            48.0,
+            14.0
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      }
+    ],
+    "underlay": null
+  },
+  "requirements": {
+    "text": "产业场景示例，非实测或客户工程。避开屋脊通风气楼、采光带与除尘塔；比较铜铝线缆并检查夹具荷载。 按下列结构化要求计算；不能满足时保留失败原因，不得伪报通过。",
+    "structured": {
+      "budget_cny_max": null,
+      "payback_years_max": 5.5,
+      "capacity_kw_min": null,
+      "capacity_kw_max": null,
+      "walkway_m_min": 1.0,
+      "obstacle_clearance_m_min": null,
+      "edge_setback_m_min": null,
+      "keep_clear_ids": [
+        "ridge-vent-west",
+        "ridge-vent-east",
+        "ship-skylight-1",
+        "ship-skylight-2"
+      ],
+      "tilt_deg_range": null,
+      "notes": null
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "clamp_flush"
+  },
+  "economics": {
+    "capex_cny_per_w": null,
+    "self_use_ratio": null,
+    "price_self_cny_kwh": 0.66,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "本例全部屋面尺寸、障碍物、承载力、用电及经济条件为演示输入，不代表对应企业或实测工程。月用电量假设100000kWh、2班，自用比例由模拟逐时发电与示意负荷曲线计算，不预设高自用率。自用平段电价假设0.66元/kWh，计算期25年，折现率0.06。造价按实际工程量及当前目录的示意报价汇总；未填参数取data/catalog/assumptions.csv，并保留各自来源及限制。余电价格、峰谷电价、荷载能力和并网条件均待真实项目核实；不承诺回本。天气使用泰州区域坐标32.46N/119.92E的已标注来源数据，坐标用于区域气象，不是该建筑测绘坐标。所有输出为模型计算，不能替代现场测量和专业复核。",
+    "monthly_kwh": 100000.0,
+    "shifts": 2
+  },
+  "designs": []
+}

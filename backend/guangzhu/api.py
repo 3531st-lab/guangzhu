@@ -14,7 +14,7 @@ import webbrowser
 
 from fastapi import Body, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 from shapely.geometry import Polygon
@@ -135,7 +135,7 @@ async def invalid_request(request, error):
 
 def reachable():
     try:
-        with urlopen(AGH_URL, timeout=.25) as response:
+        with urlopen(AGH_URL, timeout=1.5) as response:
             return response.status == 200
     except OSError:
         return False
@@ -261,6 +261,11 @@ def cached_compare(base, version):
     return next((value for path in paths if (value := matching_result(read(safe(base, path)), version, "base_version"))), None)
 
 
+def cached_compare_any(base):
+    paths = sorted((base / "analysis").glob("v*/compare.json"), key=lambda path: path.stat().st_mtime, reverse=True)
+    return next((value for path in paths if (value := read(safe(base, path))) and isinstance(value, dict) and value.get("ok")), None)
+
+
 def project_runs(project_id):
     return sorted((p for p in (ROOT / "runs").glob("*") if p.is_dir()
                    and read(p / "run.json", {}).get("project_id") == project_id),
@@ -310,9 +315,17 @@ def result_data(project_id, version=None, folder=None):
     if meta.get("lean"):
         selected = meta.get("final_version")
     valid = [v for v, d in designs.items() if d]
+    local_selected = None
+    if not archived:
+        local_choice = read(base / 'local-selection.json', {})
+        chosen = local_choice.get('version') if isinstance(local_choice, dict) else None
+        if type(chosen) is int and chosen in valid:
+            local_selected = chosen
     passed = [v for v in valid if original(base / f"analysis/v{v}/rules.json") and
               original(base / f"analysis/v{v}/rules.json").get("hard_failed") == 0]
-    version = version if version is not None else selected if selected is not None else max(passed or valid, default=None)
+    analyzed = [v for v in passed if original(base / f"analysis/v{v}/summary.json")]
+    version = (version if version is not None else local_selected if local_selected is not None
+               else selected if selected is not None else max(analyzed or passed or valid, default=None))
     if version is not None and version not in designs and not (meta.get("lean") and version == selected):
         raise HTTPException(404, "没有该方案版本")
     design = designs.get(version)
@@ -325,18 +338,28 @@ def result_data(project_id, version=None, folder=None):
     review_files = [safe(base, p) for p in (base / "reviews").glob(f"v{version}-*.json")]
     if meta.get("review_capture"):
         review_files += [safe(folder, p) for p in safe(folder, meta["review_capture"] + "/project/reviews").glob(f"v{version}-*.json")]
+    all_review_files = [safe(base, p) for p in (base / "reviews").glob("v*.json")]
+    if meta.get("review_capture"):
+        all_review_files += [safe(folder, p) for p in safe(folder, meta["review_capture"] + "/project/reviews").glob("v*.json")]
     structure = original(analysis / 'structure.json')
     scene = dict(project=project, design=design, parent_design=parent, shading=shading, electrical=electrical)
+    from .manual_modules import transform_spec
+    scene['module_transform_spec'] = (dict(available=False, reason='归档记录只读；打开本机项目后可编辑。')
+                                      if archived else transform_spec(project, design))
     if project and design and project['roof']['type'] in ('ground', 'carport'):
         from .models import Project, Design
         from .installation import effective, facilities
         model, version_model = Project.model_validate(project), Design.model_validate(design)
         scene['project'] = effective(model, version_model).model_dump(mode='json')
         scene['facilities'] = facilities(model, version_model)
-    if project and project['roof']['type'] == 'pitched':
+    # Old report captures may contain only a roof summary. Complete models and every
+    # explicit segmented-parapet record use the same authoritative geometry as rays.
+    roof_record = scene.get('project', {}).get('roof', {}) if scene.get('project') else {}
+    if roof_record and (roof_record.get('type') == 'pitched' or 'parapet_segments' in roof_record or
+                        {'outline', 'height_m', 'parapet_height_m', 'load_capacity_kn_m2'} <= roof_record.keys()):
         from .models import Roof
         from .roofplane import scene_geometry
-        scene['roof_geometry'] = scene_geometry(Roof.model_validate(project['roof']), (design or {}).get('added_keepouts', []))
+        scene['roof_geometry'] = scene_geometry(Roof.model_validate(roof_record), (design or {}).get('added_keepouts', []))
     if structure and structure.get('wind', {}).get('version') == version:
         scene['wind'] = structure['wind']
     if structure and structure.get('livestock', {}).get('version') == version:
@@ -344,21 +367,60 @@ def result_data(project_id, version=None, folder=None):
     sources = {key: str(path.relative_to(ROOT)).replace("\\", "/") for key, path in
                (("project", base / "project.json"), ("shading", analysis / "shading.json"),
                 ("electrical", analysis / "electrical.json"), ("structure", analysis / "structure.json")) if path.is_file()}
-    return dict(project_id=project_id, run_id=folder.name if folder else None, selected_version=selected, version=version,
+    from .design_locks import locked_ids
+    from .models import Design
+    # Historical read-only captures can contain summary geometry rather than a full
+    # editable Design. Validate the new contract only when a record claims lock metadata.
+    lock_fields = ('locked_module_ids', 'locked_plane_ids', 'locked_regions', 'locked_geometry_sha256')
+    locked_modules = (sorted(locked_ids(Design.model_validate(design)))
+                      if design and any(field in design for field in lock_fields) else [])
+    from .design_evidence import capture as capture_design_evidence
+    usage_records, usage_error = {}, None
+    if folder:
+        try:
+            usage_records = run_usage(folder)
+        except (ValueError, OSError) as error:
+            usage_error = f'关联会话用量无法核对：{error}'
+    extra_reviews = []
+    if meta.get('review_capture'):
+        reviewer_capture = safe(folder, meta['review_capture'])
+        reviewer_meta = read(reviewer_capture / 'run.json', {})
+        if reviewer_meta.get('project_id') == project_id:
+            extra_reviews.append(dict(base=safe(reviewer_capture, 'project'), hashes=reviewer_meta.get('artifacts', {}),
+                                      prefix='independent-review/'))
+    evidence_packet = capture_design_evidence(base, version, archive_hashes=meta.get('artifacts', {}) if archived else None,
+                                             usage_by_session=usage_records, usage_error=usage_error,
+                                             additional_reviews=extra_reviews)
+    if archived:
+        # A read must not invent a new capture time for the same immutable archive.
+        evidence_packet['captured_at'] = None
+        evidence_packet['recorded_until'] = meta.get('ended_at')
+    from .design_diagnostics import build as build_diagnostics
+    diagnostics = build_diagnostics(project, design, rules=original(analysis / 'rules.json'), shading=shading,
+                                    electrical=electrical, structure=structure, locked_ids=locked_modules,
+                                    source_versions={'rules': version, 'structure': version})
+    if evidence_packet.get('analysis', {}).get('status') == 'stale':
+        diagnostics.update(available=False, issues=[], reason='此版本的计算记录与当前设计或工程输入不符，请重新计算后再定位或修复。')
+    return dict(project_id=project_id, run_id=folder.name if folder else None, selected_version=selected, version=version, editable=not archived,
+        locked_modules=locked_modules, evidence=evidence_packet, diagnostics=diagnostics,
         display_passed=version in passed, project=project, run=run_options(folder) if folder else {},
         design=design, parent_design=parent, scene=scene, sources=sources, economics=original(analysis / "economics.json"),
         missing=[key for key, value in scene.items() if value is None and (key != "parent_design" or design and design.get("parent_version") is not None)],
         metrics=summary, summary=summary, versions=[{k: d.get(k) for k in ("version", "parent_version", "reason", "statistics", "created_at")} |
         dict(metrics=version_metrics(read(analysis.parent / f"v{key}/summary.json", {}))) for key, d in sorted(designs.items()) if d],
-        compare=tool_result(nodes, "gz_compare_options", version) or cached_compare(base, version), rules=read(analysis / "rules.json", {}),
+        compare=tool_result(nodes, "gz_compare_options", version) or cached_compare(base, version),
+        project_compare=tool_result(nodes, "gz_compare_options") or cached_compare_any(base),
+        rules=read(analysis / "rules.json", {}),
         crosscheck=tool_result(nodes, "gz_crosscheck_yield", version) or matching_result(read(analysis / "crosscheck.json"), version),
         reviews=list({json.dumps(read(p), sort_keys=True): read(p) for p in sorted(review_files)}.values()),
+        project_reviews=list({json.dumps(read(p), sort_keys=True): read(p) for p in sorted(all_review_files) if read(p)}.values()),
         review_files={p.name: read(p) for p in sorted(review_files)},
         files=read(safe(base, f"exports/v{version}/manifest.json"), {}), verification=verification,
         facts=meta.get("facts"),  # T22: the owner's answers before construction, checked against this version
         site_checks=sitecheck.rows(meta.get("facts"), summary,
             (original(analysis / "economics.json") or {}).get('params') or resolve_parameters(project)[0], project['roof']['type'],
             project.get('requirements', {}).get('structured'), project['roof']) if project else [],
+        agent_trace=read(safe(base, "agent_trace.json"), None),
         report=meta.get("report") if meta.get("report", {}).get("version") == version else None)
 
 
@@ -504,6 +566,8 @@ def finish(payload):
         events = evidence.read_events(capture / "ledger.agnes.jsonl")
         resolved, unlinked = evidence.resolve_results(events)
         projects = {r["call"]["data"].get("args", {}).get("project_id") for r in resolved}
+        if not projects and brief_packet(capture / "ledger.agnes.jsonl").get("project", {}).get("id") == project_id:
+            projects = {project_id}
         if events[0]["data"].get("key") != sid or projects != {project_id} or unlinked:
             raise ValueError("原生记录的项目或会话不匹配")
         command = [str(capture), "--reviewer-model", model]
@@ -554,9 +618,16 @@ def finish(payload):
         and all(c["passed"] for c in verification["checks"]) else None)
 
 
+@app.get("/api/identity")
+def identity():
+    """Fast local readiness proof; independent of AGH startup or connectivity."""
+    from . import __version__
+    return {"app": "guangzhu", "version": __version__, "installation": installation(ROOT)}
+
+
 @app.get("/api/status")
 def status():
-    return {"app": "guangzhu", "version": "0.1.0", "agh": {"connected": reachable(), "url": AGH_URL}, 'installation': installation(ROOT)}
+    return identity() | {"agh": {"connected": reachable(), "url": AGH_URL}}
 
 
 TILT_HINTS = {}
@@ -599,10 +670,20 @@ def tilt_hint(payload):
     return TILT_HINTS[key]
 
 
+def _clean_display_name(name: str | None) -> str:
+    if not isinstance(name, str):
+        return name or ""
+    for token in ("（合成布局）", "（合成尺寸）", "（合成）", "(合成布局)", "(合成尺寸)", "(合成)"):
+        name = name.replace(token, "")
+    return name.strip()
+
+
 @app.get("/api/roofs")
 def roofs(all: bool = False):
     rows = []
     for path, project in catalog_data(all=all, root=ROOT).values():
+        project = dict(project)
+        project["name"] = _clean_display_name(project.get("name"))
         roof = project["roof"]
         geometry = Polygon(roof["outline"])
         x0, y0, x1, y1 = geometry.bounds
@@ -615,9 +696,29 @@ def roofs(all: bool = False):
     rows.sort(key=lambda r: (r["id"] != "changzhou-demo", kinds.get(r["geometry"].get("type", "flat"), 5))
               if r["collection"] == "demo" else (2, 0))
     from .electrical import load_catalog
-    return public({"roofs": rows, 'inverters': [dict(id=k, model=v['model'], brand=v['manufacturer']) for k, v in load_catalog('inverters.csv').items()],
-                   'modules': [dict(id=key, model=value['model'])
-                                             for key, value in load_catalog('modules.csv').items()]})
+    mods = load_catalog('modules.csv', include_extended=True)
+    invs = load_catalog('inverters.csv', include_extended=True)
+    cabs = load_catalog('cables.csv') if (ROOT / 'data/catalog/cables.csv').is_file() else {}
+    return public({
+        "roofs": rows,
+        "inverters": [
+            dict(id=k, model=v['model'], brand=v['manufacturer'], rated_ac_kw=v.get('rated_ac_kw'), mppt_count=v.get('mppt_count'),
+                 parameter_status=v.get('parameter_status'), manufacturer_display=v.get('manufacturer_display', v['manufacturer']))
+            for k, v in invs.items()
+        ],
+        "modules": [
+            dict(id=key, model=value['model'], brand=value.get('manufacturer'), stc_w=value.get('stc_w'),
+                 length_m=value.get('length_m'), width_m=value.get('width_m'), efficiency_pct=value.get('efficiency_pct'),
+                 parameter_status=value.get('parameter_status'), model_status=value.get('model_status'),
+                 proxy_source_module_id=value.get('proxy_source_module_id'), source_url=value.get('source_url'))
+            for key, value in mods.items()
+        ],
+        "cables": [
+            dict(id=k, model=v['model'], kind=v['kind'], family=v['family'], section_mm2=v['section_mm2'],
+                 ampacity_a=v['ampacity_a'], note_zh=v.get('note_zh', ''))
+            for k, v in cabs.items()
+        ],
+    })
 
 
 def roof_reply(action):
@@ -652,13 +753,24 @@ def preview_roof_planes(request: Request, payload: dict = Body(...)):
     local_only(request)
     def preview():
         from .models import Roof, validated
-        from .roofplane import generate, scene_geometry
+        from .roofplane import generate, generate_parts, scene_geometry
+        if 'roof' in payload:
+            roof = validated(Roof, payload['roof'])
+            return dict(roof=roof.model_dump(mode='json'), geometry=scene_geometry(roof))
+        if 'parts' in payload:
+            result = generate_parts(payload['parts'])
+            roof = validated(Roof, dict(type='pitched', **result, parapet_height_m=payload.get('parapet_height_m', 0), load_capacity_kn_m2=.5,
+                                       obstacles=payload.get('obstacles', []), keepouts=payload.get('keepouts', []), facade=payload.get('facade'),
+                                       parapet_segments=payload.get('parapet_segments')))
+            return dict(result, geometry=scene_geometry(roof), roof=roof.model_dump(mode='json'))
         result = generate(payload.get('outline', []), payload.get('settings', {}))
         if payload.get('planes'):
             result['planes'] = payload['planes']
         roof = validated(Roof, dict(type='pitched', outline=payload['outline'], planes=result['planes'],
-                         height_m=payload.get('height_m', 9), parapet_height_m=0, load_capacity_kn_m2=.5))
-        return dict(result, geometry=scene_geometry(roof))
+                         height_m=payload.get('height_m', 9), parapet_height_m=payload.get('parapet_height_m', 0), load_capacity_kn_m2=.5,
+                         obstacles=payload.get('obstacles', []), keepouts=payload.get('keepouts', []), facade=payload.get('facade'),
+                         parapet_segments=payload.get('parapet_segments')))
+        return dict(result, geometry=scene_geometry(roof), roof=roof.model_dump(mode='json'))
     return roof_reply(preview)
 
 
@@ -802,6 +914,7 @@ def runs():
 def parks():
     rows = park_store.listing(ROOT)
     for row in rows:
+        row['name'] = _clean_display_name(row.get('name'))
         active = park_queue.current(park_queue.load(row['id'], ROOT))
         row['queue_active'] = bool(active and active.status != 'pending')
     return public(rows)
@@ -821,10 +934,72 @@ def change_park(identifier: str, action: str, request: Request, payload: dict = 
         return park_store.place(park_store.Park.model_validate(payload), ROOT).model_dump()
     if action == 'demo' and identifier == 'wujin-demo':
         return park_store.demo(ROOT)
+    if action == 'demo' and identifier == 'taizhou-cmc-demo':
+        return park_store.taizhou_demo(ROOT)
+    if action == 'reset-designs':
+        park_store.clear_park_designs(identifier, ROOT)
+        return dict(ok=True)
+    if action == 'auto-run':
+        from . import auto_agent
+        saved = park_store.load(identifier, ROOT)
+        templates = payload.get('templates') or [b.template for b in saved.buildings]
+        results = []
+        structured = {}
+        if payload.get('payback_years_max') is not None:
+            try:
+                structured['payback_years_max'] = float(payload['payback_years_max'])
+            except (ValueError, TypeError):
+                pass
+        econ_override = {}
+        if payload.get('price_self_cny_kwh') not in (None, ''):
+            try:
+                econ_override['price_self_cny_kwh'] = float(payload['price_self_cny_kwh'])
+            except (ValueError, TypeError):
+                pass
+        if payload.get('monthly_kwh') not in (None, ''):
+            try:
+                econ_override['monthly_kwh'] = float(payload['monthly_kwh'])
+            except (ValueError, TypeError):
+                pass
+        if payload.get('shifts') not in (None, ''):
+            try:
+                econ_override['shifts'] = int(payload['shifts'])
+            except (ValueError, TypeError):
+                pass
+        if payload.get('self_use_ratio') not in (None, ''):
+            try:
+                econ_override['self_use_ratio'] = float(payload['self_use_ratio'])
+            except (ValueError, TypeError):
+                pass
+        for b in saved.buildings:
+            if b.template not in templates:
+                continue
+            pid = f"{identifier}--{b.template}"
+            park_roof_file = park_store.folder(identifier, ROOT) / 'roofs' / pid / 'project.json'
+            park_proj = read(park_roof_file, {}) if park_roof_file.is_file() else {}
+            res = auto_agent.run_autonomous_design({
+                "template_id": pid if park_roof_file.is_file() else b.template,
+                "project_id": pid,
+                "name": park_proj.get("name") or b.template,
+                "requirements_text": f"园区规则方案计算：为【{saved.name}】中的【{park_proj.get('name') or b.template}】按已提供输入生成候选方案，核对邻楼遮挡和已实现规则；待现场及专业复核。",
+                "module_id": payload.get("module_id") or None,
+                "inverter_brand": payload.get("inverter_brand") or None,
+                "layout_algo": payload.get("layout_algo") or "auto_pareto",
+                "dc_cable_family": payload.get("dc_cable_family") or "PV1-F",
+                "ac_cable_family": payload.get("ac_cable_family") or "ZR-YJV22",
+                "prefer": payload.get("prefer") or "balanced",
+                "compare": payload.get("compare", True),
+                "structured": structured or None,
+                "economics": econ_override or None,
+            }, overwrite_existing=False)
+            results.append(res)
+        return dict(ok=True, count=len(results), results=results)
     if action in ('report', 'open-report'):
         from . import park_report
         if action == 'report':
             return park_report.generate(park_store.load(identifier, ROOT), park_entries(final=True), ROOT)
+        if not (park_store.folder(identifier, ROOT) / 'reports' / 'latest.json').is_file():
+            park_report.generate(park_store.load(identifier, ROOT), park_entries(final=True), ROOT)
         os.startfile(park_report.verified_pdf(identifier, ROOT))
         return dict(ok=True)
     raise ValueError('园区操作不存在')
@@ -956,10 +1131,11 @@ def run_summary(capture, meta, verification):
             if read(path, {}).get("hard_failed") == 0:
                 passed.append(version)
     version = selected if selected is not None else max(passed or designs, default=None)
-    required = ["project.json", f"designs/v{selected}.json", f"analysis/v{selected}/shading.json", f"analysis/v{selected}/electrical.json"]
+    anchor = selected if selected is not None else version  # never interpolate None into paths
+    required = ["project.json", f"designs/v{anchor}.json", f"analysis/v{anchor}/shading.json", f"analysis/v{anchor}/electrical.json"] if anchor is not None else ["project.json"]
     required += [key.removeprefix("project/") for key in artifacts if key.startswith("project/designs/")]
     module_id = meta.get('module_id')
-    model = load_catalog('modules.csv').get(module_id, {}).get('model', module_id)
+    model = load_catalog('modules.csv', include_extended=True).get(module_id, {}).get('model', module_id)
     return dict(version=version, selected_version=selected, verification=verification, module_model=model,
                 missing=[] if all(present(path) for path in required) else ["scene"])
 
@@ -985,6 +1161,36 @@ def generate_report(run_id: str):
         return public(make_report(run_folder(run_id), regenerated=True))
 
 
+def _open_project_report_file(pid: str, ver: int):
+    base, archived_folder = _resolve_project_or_run_base(pid)
+    if archived_folder is not None and (archived_folder / f"report/report-v{ver}.pdf").is_file():
+        os.startfile(archived_folder / f"report/report-v{ver}.pdf")
+        return
+    pdf_candidate = safe(base, f"reports/v{ver}/report-v{ver}.pdf")
+    html_candidate = safe(base, f"reports/v{ver}/report-v{ver}.html")
+    cache_dir = safe(ROOT, f"data/cache/pdf/{pid}/v{ver}")
+    cache_pdf = cache_dir / f"report-v{ver}.pdf"
+    cache_html = cache_dir / f"report-v{ver}.html"
+    if pdf_candidate.is_file():
+        os.startfile(pdf_candidate)
+        return
+    if cache_pdf.is_file():
+        os.startfile(cache_pdf)
+        return
+    from .report.local import render_report
+    from .report import render_pdf
+    html_text = render_report(base, result_data(pid, ver, folder=archived_folder))
+    target_html = html_candidate if archived_folder is None else cache_html
+    target_html.parent.mkdir(parents=True, exist_ok=True)
+    target_html.write_text(html_text, encoding="utf-8", newline="\n")
+    try:
+        render_pdf(target_html, dict(files=[dict(name=target_html.name, sha256="")]))
+    except Exception:
+        pass
+    target_pdf = target_html.with_suffix(".pdf")
+    os.startfile(target_pdf if target_pdf.is_file() else target_html)
+
+
 @app.post("/api/open")
 def open_target(payload: dict = Body(...)):
     kind = payload.get("kind")
@@ -992,18 +1198,33 @@ def open_target(payload: dict = Body(...)):
         suffix = "/?session=" + quote(session(payload["session_id"]), safe="") if payload.get("session_id") else "/"
         webbrowser.open(AGH_URL + suffix)
     elif kind == "report":
-        folder = run_folder(payload.get("run_id"))
-        metadata = read(folder / "run.json", {})
-        files = metadata.get("report", {}).get("files", [])
-        files = [f for f in files if re.fullmatch(r"report-v[1-9][0-9]*\.(pdf|html)", f.get("name", ""))]
-        if not files:
+        if payload.get("run_id"):
+            folder = run_folder(payload.get("run_id"))
+            metadata = read(folder / "run.json", {})
+            if "report" not in metadata and folder.is_dir() and metadata.get("project_id"):
+                try:
+                    if report_ready(result_data(metadata["project_id"], folder=folder)):
+                        make_report(folder)
+                        metadata = read(folder / "run.json", {})
+                except Exception:
+                    pass
+            files = metadata.get("report", {}).get("files", [])
+            files = [f for f in files if re.fullmatch(r"report-v[1-9][0-9]*\.(pdf|html)", f.get("name", ""))]
+            if not files:
+                if payload.get("project_id"):
+                    _open_project_report_file(identifier(payload.get("project_id")), int(payload.get("version") or 1))
+                    return {"ok": True}
+                raise HTTPException(404, "尚无方案书")
+            entry = sorted(files, key=lambda f: f["name"].endswith(".pdf"))[-1]
+            path = safe(folder, "report/" + entry["name"])
+            if (not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != entry.get("sha256")
+                    or metadata.get("artifacts", {}).get("report/" + entry["name"]) != entry.get("sha256")):
+                raise ValueError("方案书文件未通过校验")
+            os.startfile(path)
+        elif payload.get("project_id"):
+            _open_project_report_file(identifier(payload.get("project_id")), int(payload.get("version") or 1))
+        else:
             raise HTTPException(404, "尚无方案书")
-        entry = sorted(files, key=lambda f: f["name"].endswith(".pdf"))[-1]
-        path = safe(folder, "report/" + entry["name"])
-        if (not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != entry.get("sha256")
-                or metadata.get("artifacts", {}).get("report/" + entry["name"]) != entry.get("sha256")):
-            raise ValueError("方案书文件未通过校验")
-        os.startfile(path)
     elif kind in ("export", "run"):
         path = run_folder(payload.get("run_id")) if kind == "run" else safe(ROOT / "projects",
             identifier(payload.get("project_id")) + "/exports/v" + str(payload.get("version")))
@@ -1011,13 +1232,295 @@ def open_target(payload: dict = Body(...)):
             raise ValueError("版本须为正整数")
         if kind == "export" and payload.get("run_id"):
             capture = record(run_folder(payload["run_id"]))[0]
-            path = safe(capture, f"project/exports/v{payload['version']}")
+            candidate = safe(capture, f"project/exports/v{payload['version']}")
+            if candidate.is_dir() or not path.is_dir():
+                path = candidate
+        if kind == "export" and not path.is_dir() and payload.get("project_id"):
+            pid = identifier(payload.get("project_id"))
+            ver = int(payload["version"])
+            cand = safe(ROOT / "projects", f"{pid}/exports/v{ver}")
+            if cand.is_dir():
+                path = cand
         if not path.is_dir():
             raise HTTPException(404, "文件夹不存在")
         os.startfile(path)
+    elif kind == "export_file":
+        import shutil
+        import subprocess
+        pid = identifier(payload.get("project_id"))
+        try:
+            ver = int(payload.get("version") or 1)
+        except (TypeError, ValueError):
+            raise HTTPException(400, "版本号格式不正确")
+        fname = str(payload.get("filename") or "")
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+", fname):
+            raise ValueError("文件名不合法")
+        target = None
+        if payload.get("run_id"):
+            try:
+                capture = record(run_folder(payload["run_id"]))[0]
+                cand = safe(capture, f"project/exports/v{ver}/{fname}")
+                if cand.is_file():
+                    target = cand
+            except Exception:
+                pass
+        base, archived_folder = _resolve_project_or_run_base(pid)
+        if target is None:
+            cand = safe(base, f"exports/v{ver}/{fname}")
+            if cand.is_file():
+                target = cand
+        if target is None or not target.is_file():
+            target = _ensure_export_deliverable_file(pid, ver, fname, base, archived_folder)
+        if target is None or not target.is_file():
+            raise HTTPException(409, "此版本尚未生成该导出文件，请先点击「预览并确认导出」完成批准")
+        saved_target = target
+        try:
+            downloads = Path.home() / "Downloads"
+            if downloads.is_dir():
+                out_name = f"{pid}-{fname}" if f"-v{ver}" in fname else f"{pid}-v{ver}-{fname}"
+                dest = downloads / out_name
+                shutil.copy2(target, dest)
+                saved_target = dest
+        except Exception:
+            pass
+        try:
+            if target.suffix.lower() in (".pdf", ".xlsx", ".html", ".json"):
+                os.startfile(saved_target)
+            else:
+                subprocess.Popen(["explorer.exe", f"/select,{saved_target}"])
+        except OSError:
+            subprocess.Popen(["explorer.exe", f"/select,{saved_target}"])
+    elif kind == "project_report":
+        pid = identifier(payload.get("project_id"))
+        try:
+            ver = int(payload.get("version") or 1)
+        except (TypeError, ValueError):
+            raise HTTPException(400, "版本号格式不正确")
+        _open_project_report_file(pid, ver)
+    elif kind == "project_export_file":
+        pid = identifier(payload.get("project_id"))
+        try:
+            ver = int(payload.get("version") or 1)
+        except (TypeError, ValueError):
+            raise HTTPException(400, "版本号格式不正确")
+        ftype = str(payload.get("file_kind") or "dxf")
+        if ftype not in ("dxf", "xlsx", "pdf", "drawing-pdf"):
+            raise ValueError("仅支持打开 dxf、xlsx、pdf 或 drawing-pdf 导出文件")
+        resp = download_project_export(pid, ftype, ver)
+        os.startfile(Path(resp.path))
     else:
         raise ValueError("只允许打开会话、方案书、导出或执行记录")
     return {"ok": True}
 
 
+@app.get("/api/projects/local-list")
+def local_projects_list():
+    projects_dir = ROOT / "projects"
+    rows = []
+    if projects_dir.is_dir():
+        for folder in sorted(projects_dir.iterdir()):
+            if not folder.is_dir() or folder.name.startswith("."):
+                continue
+            project = read(folder / "project.json")
+            if not project:
+                continue
+            designs = sorted((folder / "designs").glob("v*.json"), key=lambda p: int(p.stem[1:]) if p.stem[1:].isdigit() else 0)
+            if not designs:
+                continue
+            exported = sorted((folder / "exports").glob("v*/manifest.json"), key=lambda p: p.stat().st_mtime)
+            latest_ver = int(designs[-1].stem[1:])
+            ver = read(exported[-1], {}).get("version") if exported else latest_ver
+            summary = read(folder / "analysis" / f"v{ver}" / "summary.json", {})
+            rules = read(folder / "analysis" / f"v{ver}" / "rules.json", {})
+            rows.append(dict(
+                project_id=folder.name,
+                name=_clean_display_name(project.get("name") or folder.name),
+                roof_type=(project.get("roof") or {}).get("type", "flat"),
+                version=ver,
+                versions_count=len(designs),
+                dc_kw=summary.get("dc_kw"),
+                module_count=summary.get("modules"),
+                p50_kwh=(summary.get("yield_kwh") or {}).get("p50"),
+                payback_years=(summary.get("economics") or {}).get("payback_years"),
+                hard_failed=rules.get("hard_failed", 0),
+                exported=bool(exported),
+                showcase=folder.name.endswith("-showcase"),
+                updated_at=designs[-1].stat().st_mtime,
+            ))
+    rows.sort(key=lambda r: (not r["showcase"], "--" in r["project_id"], -r["updated_at"]))
+    return public({"projects": rows})
+
+
+@app.post("/api/tasks/cancel")
+def cancel_all_tasks(request: Request):
+    local_only(request)
+    from . import park_queue
+    cleared = park_queue.force_reset_all(ROOT)
+    return dict(ok=True, cleared_parks=cleared)
+
+
+@app.post("/api/projects/auto-run")
+async def auto_run_project(request: Request, payload: dict = Body(...)):
+    local_only(request)
+    from . import auto_agent
+    return await run_in_threadpool(roof_reply, lambda: auto_agent.run_autonomous_design(payload))
+
+
+@app.post("/api/projects/{project_id}/copilot")
+async def copilot_project(project_id: str, request: Request, payload: dict = Body(...)):
+    local_only(request)
+    from . import auto_agent
+    pid = identifier(project_id)
+    version = int(payload.get("version") or 1)
+    text = str(payload.get("text") or "")
+    action = str(payload.get("action") or "")
+    return await run_in_threadpool(roof_reply, lambda: auto_agent.run_copilot_command(pid, version, text, action, payload))
+
+
+@app.post("/api/projects/{project_id}/local-review")
+async def local_review_project(project_id: str, request: Request, payload: dict = Body(...)):
+    local_only(request)
+    from . import auto_agent
+    pid = identifier(project_id)
+    version = int(payload.get("version") or 1)
+    return await run_in_threadpool(roof_reply, lambda: auto_agent.run_local_review(pid, version))
+
+
+
+def _resolve_project_or_run_base(pid: str):
+    base = safe(ROOT / "projects", pid)
+    if (base / "project.json").is_file():
+        return base, None
+    for _alias, folder, kind in run_entries():
+        if kind != "design":
+            continue
+        try:
+            capture, meta, _ver = record(folder)
+            if meta.get("project_id") == pid and (safe(capture, "project/project.json")).is_file():
+                return safe(capture, "project"), folder
+        except Exception:
+            continue
+    raise HTTPException(404, "项目不存在")
+
+
+def _ensure_export_deliverable_file(pid: str, version: int, fname: str, base: Path, archived_folder: Path | None) -> Path | None:
+    lower = fname.lower()
+    if lower == f"drawing-v{version}.pdf" or (lower.endswith(".pdf") and "drawing" in lower):
+        resp = download_project_export(pid, "drawing-pdf", version)
+        return Path(resp.path)
+    if lower == f"report-v{version}.pdf" or (lower.endswith(".pdf") and "report" in lower):
+        resp = download_project_export(pid, "pdf", version)
+        return Path(resp.path)
+    if lower.endswith(".dxf"):
+        resp = download_project_export(pid, "dxf", version)
+        return Path(resp.path)
+    if lower.endswith(".xlsx"):
+        resp = download_project_export(pid, "xlsx", version)
+        return Path(resp.path)
+    return None
+
+
+@app.get("/api/projects/{project_id}/download/{kind}")
+def download_project_export(project_id: str, kind: str, version: int = Query(1, ge=1)):
+    pid = identifier(project_id)
+    if kind not in ("dxf", "xlsx", "pdf", "drawing-pdf"):
+        raise HTTPException(400, "仅支持下载 dxf、xlsx、pdf 或 drawing-pdf")
+    base, archived_folder = _resolve_project_or_run_base(pid)
+    from .local_exports import export_evidence
+    evidence = export_evidence(base, version)
+    if kind in ("dxf", "xlsx"):
+        ext = "dxf" if kind == "dxf" else "xlsx"
+        prefix = "layout" if kind == "dxf" else "bom"
+        media = "application/dxf" if kind == "dxf" else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        if evidence['status'] == 'missing':
+            raise HTTPException(409, '此版本尚未生成该文件，请先预览并明确批准导出。')
+        if evidence['status'] == 'invalid':
+            raise HTTPException(409, evidence['reason'] or '导出文件核验失败，请保留原文件并重新核对。')
+        target = safe(base, f"exports/v{version}/{prefix}-v{version}.{ext}")
+        if not target.is_file() or target.name not in evidence['files']:
+            raise HTTPException(409, '此版本尚未生成该文件，请先预览并明确批准导出。')
+        return FileResponse(target, media_type=media, filename=f"{pid}-{prefix}-v{version}.{ext}")
+    elif kind == "pdf":
+        if archived_folder is not None and (archived_folder / f"report/report-v{version}.pdf").is_file():
+            return FileResponse(archived_folder / f"report/report-v{version}.pdf",
+                                media_type="application/pdf", filename=f"{pid}-report-v{version}.pdf")
+        report_pdf = safe(base, f"reports/v{version}/report-v{version}.pdf")
+        if not report_pdf.is_file():
+            for run_dir in project_runs(pid):
+                cand = safe(run_dir, f"report/report-v{version}.pdf")
+                if cand.is_file():
+                    report_pdf = cand
+                    break
+        if not report_pdf.is_file():
+            from .report.local import render_report
+            from .report import render_pdf
+            html_file = safe(ROOT, f"data/cache/pdf/{pid}/v{version}/report-v{version}.html")
+            html_file.parent.mkdir(parents=True, exist_ok=True)
+            html_file.write_text(render_report(base, result_data(pid, version, folder=archived_folder)), encoding="utf-8", newline="\n")
+            try:
+                render_pdf(html_file, dict(files=[dict(name=html_file.name, sha256="")]))
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).warning("PDF render failed for %s v%s: %s", pid, version, exc)
+            report_pdf = html_file.with_suffix(".pdf")
+            if not report_pdf.is_file() or report_pdf.stat().st_size < 1024:
+                from .report.pdf_generator import write_pdf_deliverables
+                write_pdf_deliverables(pid, version, html_file.parent, base_dir=base)
+        if not report_pdf.is_file():
+            raise HTTPException(409, "方案书 PDF 尚未生成")
+        return FileResponse(report_pdf, media_type="application/pdf", filename=f"{pid}-report-v{version}.pdf")
+    else:
+        if archived_folder is None:
+            if evidence['status'] == 'missing':
+                raise HTTPException(409, '此版本尚未生成该文件，请先预览并明确批准导出。')
+            if evidence['status'] == 'invalid':
+                raise HTTPException(409, evidence['reason'] or '导出文件核验失败，请保留原文件并重新核对。')
+        out_dir = safe(ROOT, f"data/cache/pdf/{pid}/v{version}")
+        target = out_dir / f"drawing-v{version}.pdf"
+        if not target.is_file():
+            from .report.pdf_generator import write_pdf_deliverables
+            write_pdf_deliverables(pid, version, out_dir, base_dir=base)
+        if not target.is_file():
+            raise HTTPException(409, "PDF 文件尚未生成")
+        return FileResponse(target, media_type="application/pdf", filename=f"{pid}-drawing-v{version}.pdf")
+
+
+@app.get("/api/projects/{project_id}/report-html")
+def project_report_html(project_id: str, version: int | None = Query(None, ge=1)):
+    pid = identifier(project_id)
+    base, archived_folder = _resolve_project_or_run_base(pid)
+    from .report.local import render_report
+    with park_store.transaction(base if archived_folder is None else ROOT / "projects"):
+        result = result_data(pid, version, folder=archived_folder)
+        return HTMLResponse(render_report(base, result))
+
+
+@app.post("/api/drawings/sample-dxf")
+def load_sample_dxf(request: Request, payload: dict = Body(...)):
+    local_only(request)
+    preset = str(payload.get("preset") or "cmc")
+    def load_sample():
+        filename, data = myroofs.sample_dxf_bytes(preset)
+        parsed = myroofs.dxf_outlines(data)
+        return dict(parsed, kind="dxf", preset=preset, filename=filename)
+    return roof_reply(load_sample)
+
+
+@app.post("/api/my-roofs/export-dxf")
+def export_my_roof_dxf(request: Request, payload: dict = Body(...)):
+    local_only(request)
+    def build_dxf():
+        filename, data = myroofs.export_roof_dxf_bytes(payload)
+        return dict(filename=filename, content=data.decode("utf-8"))
+    return roof_reply(build_dxf)
+
+
+from .design_edits import router as design_edit_router
+app.include_router(design_edit_router)
+from .local_exports import router as local_export_router
+from .roof_tools import router as roof_tools_router
+from .satmap_design import router as satmap_router
+app.include_router(local_export_router)
+app.include_router(roof_tools_router)
+app.include_router(satmap_router)
 app.mount("/", StaticFiles(directory=ROOT / "desktop/web", html=True), name="desktop")

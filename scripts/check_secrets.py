@@ -13,7 +13,7 @@ import re
 EXCLUDED_DIRECTORIES = {
     ".git", ".venv", "venv", "node_modules", "__pycache__", ".pytest_cache",
     ".mypy_cache", ".ruff_cache", ".tox", ".cache", "cache", "dist", "build",
-    "coverage", "htmlcov",
+    "coverage", "htmlcov", "output", "tmp", "runtime",
 }
 BINARY_SUFFIXES = {
     ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".pdf", ".zip",

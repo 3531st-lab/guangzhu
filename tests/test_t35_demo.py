@@ -126,7 +126,32 @@ def test_full_offline_presentation_and_recovery(tmp_path, monkeypatch):
         page.screenshot(path=str(assets / 'wiring-all-dark.png'))
         for width, height in ((1440, 900), (1366, 768), (390, 844)):
             page.set_viewport_size(dict(width=width, height=height))
-            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+            fits_width = page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+            overflow = None
+            if not fits_width:
+                overflow = page.evaluate('''() => {
+                    const elements = [...document.querySelectorAll('body *')].flatMap(el => {
+                        const rect = el.getBoundingClientRect(), css = getComputedStyle(el);
+                        if (!rect.width || !rect.height || css.display === 'none' || css.visibility === 'hidden' ||
+                            (rect.right <= innerWidth + 1 && rect.left >= -1)) return [];
+                        return [{tag: el.tagName.toLowerCase(), id: el.id, class: el.getAttribute('class'),
+                            rect: Object.fromEntries(['left', 'right', 'top', 'width', 'height'].map(key =>
+                                [key, Math.round(rect[key] * 100) / 100])),
+                            display: css.display, minWidth: css.minWidth, whiteSpace: css.whiteSpace,
+                            overflowX: css.overflowX}];
+                    }).sort((a, b) => b.rect.right - a.rect.right);
+                    return {innerWidth, innerHeight, scrollWidth: document.documentElement.scrollWidth,
+                        scrollHeight: document.documentElement.scrollHeight, overflowCount: elements.length,
+                        elements: elements.slice(0, 25)};
+                }''')
+                overflow.update(width=width, height=height)
+                try:
+                    page.screenshot(path=str(assets / f'overflow-{width}x{height}.png'), full_page=True)
+                except Exception as error:
+                    overflow['screenshot_error'] = str(error)
+                (assets / f'overflow-{width}x{height}.json').write_text(
+                    json.dumps(overflow, ensure_ascii=False, indent=2), encoding='utf-8')
+            assert fits_width, overflow
             if width > 1000:
                 assert page.evaluate('document.documentElement.scrollHeight <= innerHeight + 1')
         page.screenshot(path=str(assets / 'wiring-narrow.png'))

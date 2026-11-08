@@ -116,8 +116,14 @@ export async function configuredModels(ctx, preference, reviewPreference) {
 }
 export function createBridge(ctx, win = window) {
   let hello, peer, peerOrigin, serial = 0, timer, last = 0, reading = false, dirty = false, stopped = false, starting = false, pendingTool = '';
-  let currentNodes = [], installation = null, workspaceId = null;
+  let currentNodes = [], installation = null, workspaceId = null, activeSessionId = ctx.session.getSnapshot() ?? null;
   const listeners = new Set(), seen = new Set(), theme = createEmbeddedTheme(win);
+  const blockWorkspaceReset = event => {
+    if (event.target?.closest?.('#composer-workspace, .composer-workspace')) {
+      event.preventDefault?.();
+      event.stopPropagation?.();
+    }
+  };
   const emit = (type, fields, re = hello) => {
     if (!stopped && hello && peer !== win) peer.postMessage({v:1,type,id:`gz-${Date.now()}-${++serial}`,re,...fields},peerOrigin);
   };
@@ -188,7 +194,12 @@ export function createBridge(ctx, win = window) {
     catch {fail(record.re,'PROMPT');}
   };
   const navigate = session_id => {
+    activeSessionId = session_id;
     const url = new URL(win.location.href);
+    if (url.searchParams.get('session') === session_id && snapshot() === session_id) {
+      schedule();
+      return;
+    }
     url.searchParams.set('session',session_id);
     win.location.assign(url.href);
   };
@@ -205,6 +216,7 @@ export function createBridge(ctx, win = window) {
       peer = event.source;
       peerOrigin = event.origin;
       win.document.documentElement.setAttribute('data-gz-embedded','');
+      win.document.addEventListener?.('click',blockWorkspaceReset,true);
       theme.apply(win.document.documentElement.classList.contains('dark') ? 'dark' : 'light');
       try {
         const source = installation ? (await configuredModels(ctx).catch(() => ({models:[]})))
@@ -230,15 +242,28 @@ export function createBridge(ctx, win = window) {
     }
     if (m.type === 'gz.saveKey') {
       const provider = Object.hasOwn(PROVIDERS,m.provider) ? PROVIDERS[m.provider] : null, key = typeof m.key === 'string' ? m.key.trim() : '';
+      const rawUrl = typeof m.baseUrl === 'string' ? m.baseUrl.trim() : '';
+      let baseUrl = '';
+      if (rawUrl) {
+        try {
+          const parsedUrl = new URL(rawUrl);
+          if (!['http:','https:'].includes(parsedUrl.protocol) || !parsedUrl.hostname || parsedUrl.username ||
+              parsedUrl.password || parsedUrl.search || parsedUrl.hash || /\s/.test(rawUrl)) return fail(m.id,'KEY_FORMAT');
+          baseUrl = rawUrl.replace(/\/+$/,'');
+        } catch {return fail(m.id,'KEY_FORMAT');}
+      }
       if (!provider || !/^[!-~]{8,4096}$/.test(key)) return fail(m.id,'KEY_FORMAT');
       try {
-        const tested = await ctx.agnes.config.test({providerId:provider.id,apiKey:key});
+        const endpoint = baseUrl ? {baseUrl} : {};
+        const tested = await ctx.agnes.config.test({providerId:provider.id,apiKey:key,...endpoint});
         if (tested?.verified !== true || !tested.models?.length) return fail(m.id,'KEY_REJECTED');
-        const model = (tested.models.find(row => row.id === provider.model) ?? tested.models[0]).id;
+        const pick = target => target ? tested.models.find(row => row.id === target) ??
+          tested.models.find(row => row.id.toLowerCase().includes(target.toLowerCase())) : null;
+        const model = (pick(provider.model) ?? pick(m.provider) ?? tested.models[0]).id;
         const before = await ctx.agnes.config.get();
-        await ctx.agnes.config.save({providerId:provider.id,apiKey:key,model,accountId:'gz-' + m.provider,label:provider.label + '（光筑）',
+        await ctx.agnes.config.save({providerId:provider.id,apiKey:key,...endpoint,model,accountId:'gz-' + m.provider,label:provider.label + '（光筑）',
           enabled:true,makeDefault:m.provider === 'deepseek' || !before?.defaultAccountId});
-        return emit('gz.keySaved',{provider:m.provider,model},m.id);
+        return emit('gz.keySaved',{provider:m.provider,model,...endpoint},m.id);
       } catch {return fail(m.id,'KEY_SAVE');}
     }
     if (['gz.registerWorkspace','gz.models'].includes(m.type)) {
@@ -333,6 +358,12 @@ export function createBridge(ctx, win = window) {
   win.addEventListener('message',receive);
   const off = ctx.session.projection.subscribe(schedule);
   const switched = ctx.session.subscribe(() => {
+    const currentId = snapshot();
+    if (currentId) activeSessionId = currentId;
+    else if (hello && !starting && activeSessionId) {
+      navigate(activeSessionId);
+      return;
+    }
     resume();
     schedule();
   });
@@ -351,6 +382,7 @@ export function createBridge(ctx, win = window) {
       stopped = true;
       win.clearTimeout(timer);
       win.removeEventListener('message',receive);
+      win.document.removeEventListener?.('click',blockWorkspaceReset,true);
       off();
       switched();
       theme.dispose();

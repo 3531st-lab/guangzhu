@@ -1,0 +1,262 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "taizhou-lixiahe-coldchain",
+  "name": "泰州产业演示·农业冷链仓",
+  "collection": null,
+  "site": {
+    "lat": 32.46,
+    "lon": 119.92,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2,
+    "design_temp_min_c": null,
+    "design_temp_max_c": null,
+    "wind_city": "泰州"
+  },
+  "roof": {
+    "facade": {
+      "enabled": true,
+      "wall_material": "concrete",
+      "wall_color": "#e3e8df",
+      "trim_color": "#3b6e52",
+      "base_color": "#607365",
+      "door_color": "#2f5c44",
+      "bay_width_m": 6.0,
+      "base_height_m": 0.7,
+      "columns": true,
+      "window_rows": 1,
+      "window_width_m": 1.8,
+      "window_height_m": 0.8,
+      "window_sill_m": 4.2,
+      "front_edge": 0,
+      "doors": 2,
+      "door_width_m": 4.0,
+      "door_height_m": 4.0,
+      "canopy_depth_m": 2.8,
+      "loading_docks": 3,
+      "dock_height_m": 1.2,
+      "personnel_door": true
+    },
+    "inverter_positions": [
+      [
+        3.0,
+        3.0
+      ],
+      [
+        51.0,
+        3.0
+      ]
+    ],
+    "grid_point": [
+      52.5,
+      1.5
+    ],
+    "type": "flat",
+    "outline": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        54.0,
+        0.0
+      ],
+      [
+        54.0,
+        30.0
+      ],
+      [
+        0.0,
+        30.0
+      ]
+    ],
+    "height_m": 8.5,
+    "parapet_height_m": 1.0,
+    "parapet_segments": [
+      {
+        "edge_index": 0,
+        "start_ratio": 0.0,
+        "end_ratio": 0.25,
+        "height_m": 1.0
+      },
+      {
+        "edge_index": 0,
+        "start_ratio": 0.75,
+        "end_ratio": 1.0,
+        "height_m": 1.0
+      },
+      {
+        "edge_index": 1,
+        "start_ratio": 0.0,
+        "end_ratio": 1.0,
+        "height_m": 1.0
+      },
+      {
+        "edge_index": 2,
+        "start_ratio": 0.0,
+        "end_ratio": 1.0,
+        "height_m": 1.0
+      },
+      {
+        "edge_index": 3,
+        "start_ratio": 0.0,
+        "end_ratio": 1.0,
+        "height_m": 1.0
+      }
+    ],
+    "load_capacity_kn_m2": 0.6,
+    "obstacles": [
+      {
+        "id": "evap-condenser-1",
+        "label": "1号冷库蒸发冷机组",
+        "kind": "prism",
+        "height_m": 2.5,
+        "footprint": [
+          [
+            8.0,
+            22.0
+          ],
+          [
+            13.0,
+            22.0
+          ],
+          [
+            13.0,
+            26.0
+          ],
+          [
+            8.0,
+            26.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      },
+      {
+        "id": "evap-condenser-2",
+        "label": "2号冷库蒸发冷机组",
+        "kind": "prism",
+        "height_m": 2.5,
+        "footprint": [
+          [
+            16.0,
+            22.0
+          ],
+          [
+            21.0,
+            22.0
+          ],
+          [
+            21.0,
+            26.0
+          ],
+          [
+            16.0,
+            26.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      },
+      {
+        "id": "freight-lift-1",
+        "label": "冷链货运电梯机房",
+        "kind": "prism",
+        "height_m": 2.8,
+        "footprint": [
+          [
+            43.0,
+            21.0
+          ],
+          [
+            48.0,
+            21.0
+          ],
+          [
+            48.0,
+            26.0
+          ],
+          [
+            43.0,
+            26.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      },
+      {
+        "id": "defrost-tank-1",
+        "label": "融霜蓄水箱",
+        "kind": "cylinder",
+        "height_m": 2.2,
+        "footprint": null,
+        "center": [
+          46.0,
+          8.0
+        ],
+        "radius_m": 1.4
+      }
+    ],
+    "keepouts": [
+      {
+        "id": "refrigerant-pipe-bridge",
+        "label": "冷媒管桥检修通道",
+        "polygon": [
+          [
+            8.0,
+            19.5
+          ],
+          [
+            21.0,
+            19.5
+          ],
+          [
+            21.0,
+            21.2
+          ],
+          [
+            8.0,
+            21.2
+          ]
+        ]
+      }
+    ],
+    "underlay": null
+  },
+  "requirements": {
+    "text": "产业场景示例，非实测或客户工程。保留女儿墙吊装缺口、冷机与管桥；切换允许上网条件，核对逐月自用与限发。 按下列结构化要求计算；不能满足时保留失败原因，不得伪报通过。",
+    "structured": {
+      "budget_cny_max": null,
+      "payback_years_max": 5.5,
+      "capacity_kw_min": null,
+      "capacity_kw_max": null,
+      "walkway_m_min": 1.0,
+      "obstacle_clearance_m_min": null,
+      "edge_setback_m_min": null,
+      "keep_clear_ids": [
+        "refrigerant-pipe-bridge"
+      ],
+      "tilt_deg_range": null,
+      "notes": null
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "ballast_tilt"
+  },
+  "economics": {
+    "capex_cny_per_w": null,
+    "self_use_ratio": null,
+    "price_self_cny_kwh": 0.65,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "本例全部屋面尺寸、障碍物、承载力、用电及经济条件为演示输入，不代表对应企业或实测工程。月用电量假设100000kWh、3班，自用比例由模拟逐时发电与示意负荷曲线计算，不预设高自用率。自用平段电价假设0.65元/kWh，计算期25年，折现率0.06。造价按实际工程量及当前目录的示意报价汇总；未填参数取data/catalog/assumptions.csv，并保留各自来源及限制。余电价格、峰谷电价、荷载能力和并网条件均待真实项目核实；不承诺回本。天气使用泰州区域坐标32.46N/119.92E的已标注来源数据，坐标用于区域气象，不是该建筑测绘坐标。所有输出为模型计算，不能替代现场测量和专业复核。",
+    "monthly_kwh": 100000.0,
+    "shifts": 3
+  },
+  "designs": []
+}

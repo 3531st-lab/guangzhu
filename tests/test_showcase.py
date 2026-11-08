@@ -47,7 +47,10 @@ def test_codex_e1_without_a_key_the_home_page_offers_the_real_case_and_its_repla
     page.evaluate("location.hash = '#new'")
     page.reload(wait_until="commit")
     page.wait_for_selector('#kb-state a[href*="run="]')
-    assert "没有 key？先看一个真实案例" in page.text_content("#kb-state") and "真实案例" in page.text_content(".recent")
+    assert page.text_content('#kb-state a[href*="run="]') == "没有 key？先看一个演示记录 →"
+    assert "看一个演示记录（不用 key）" in page.text_content(".recent")
+    assert "真实案例" not in page.text_content("#kb-state")
+    assert "真实案例" not in page.text_content(".recent")
     page.click('#kb-state a[href*="run="]')
     page.wait_for_function(f"location.hash.includes('{RUN}') && document.querySelector('.why-row')")
     assert page.locator(f'.head a[href="#replay/{RUN}"]').count() == 1 and page.locator('[data-action="open-exports"]').count() == 0

@@ -8,30 +8,70 @@ from markupsafe import Markup
 from . import park, park_store as store
 from .report import render_pdf
 from .report.archive import evidence
+from .report.figures import bars
 from .report.view import fmt, render_pages
 
 
 def generate(saved, entries, root, browsers=None):
     with store.transaction(root):
         saved = store.load(saved.id, root)
-        data = park.named(saved, entries, root)
+        data = park.named(saved, entries, root, require_export=True)
         pages = []
-        def add(title, paragraphs=(), rows=(), headers=(), chart=None):
+        def add(title, paragraphs=(), rows=(), headers=(), chart=None, metrics=(), kind='park'):
             pages.append(dict(title=title, paragraphs=paragraphs, rows=rows, headers=headers,
-                              chart=chart, kind='park', newpage=True))
-        add(saved.name + ' · 园区方案书', ['光筑 · 按核验导出汇总，不调用 AI。',
-            f"厂房 {len(data['buildings'])} 栋，已核验 {data['all']['count']} 栋；缺少设计的厂房不计入合计。",
-            '本方案为初步设计，结构、消防、并网和报价须现场复核。'])
+                              chart=chart, metrics=metrics, kind=kind, newpage=True))
+        cover_metrics = [
+            ('全园区装机容量', fmt(data['all']['dc_kw'], 'kW')),
+            ('基准年发电估算', fmt(data['all']['annual_kwh'], 'kWh')),
+            ('整体投资回收期', fmt(data['all']['payback_years'], '年')),
+        ]
+        add(saved.name + ' · 园区方案书', [
+            f"园区多厂房分布式光伏初步设计 · 共 {len(data['buildings'])} 栋厂房（已纳入汇总 {data['all']['count']} 栋）",
+            Markup('配电专变容量：{} · 并网容量上限：{}').format(
+                fmt(saved.transformer_kva, 'kVA') if saved.transformer_kva else '未填',
+                fmt(saved.grid_kw, 'kW') if saved.grid_kw else '未填'),
+            '光筑 · 汇总已核对文件一致性的导出；本地用户批准与独立模型审核分别记录。',
+            '本方案为初步设计，结构、消防、并网和报价须现场复核。'],
+            chart=Markup(park.map_svg(data)), metrics=cover_metrics, kind='cover')
+        overview_metrics = [
+            ('全园区总装机', fmt(data['all']['dc_kw'], 'kW')),
+            ('园区一期装机', fmt(data['phase1']['dc_kw'], 'kW')),
+            ('全园区年发电', fmt(data['all']['annual_kwh'], 'kWh')),
+            ('全园区总造价', fmt(data['all']['capex_cny'], '元')),
+            ('整体静态回本', fmt(data['all']['payback_years'], '年')),
+            ('首年碳减排量', fmt(data['all']['co2_t'], 't')),
+        ]
+        roof_type_zh = {'flat': '混凝土平屋顶', 'metal': '彩钢瓦坡屋顶', 'pitched': '多坡屋顶', 'ground': '地面阵列', 'carport': '光伏车棚'}
+        spatial_rows = []
+        for b in data['buildings']:
+            res = b['result'] or {}
+            rtype = roof_type_zh.get(b['roof'].get('type'), b['roof'].get('type', '屋面'))
+            spatial_rows.append((
+                b['name'],
+                rtype,
+                fmt(b['roof'].get('height_m'), 'm'),
+                f"({b.get('x_m', 0):g}, {b.get('y_m', 0):g}) m",
+                f"{b.get('rotation_deg', 0):g}°",
+                f"第 {res['park_phase']} 期" if res.get('park_phase') else '待设计',
+                fmt(res.get('dc_kw'), 'kW'),
+            ))
         add('园区总图', ['北向上，x朝东、y朝北；蓝色为园区一期，棕色为二期。',
-            '组件按整栋分期显示；单屋顶内部的分期仍保留在单栋记录，不能重复相加。'], chart=Markup(park.map_svg(data)))
+            '组件按整栋分期显示；单屋顶内部的分期仍保留在单栋记录，不能重复相加。'],
+            spatial_rows, ['厂房', '屋面类型', '檐口高度', '园区坐标 (x, y)', '旋转角', '期次归属', '装机容量'],
+            chart=Markup(park.map_svg(data)), metrics=overview_metrics)
         rows = []
         for building in data['buildings']:
             result = building['result'] or {}
             rows.append((building['name'], fmt(result.get('dc_kw'), 'kW'), fmt(result.get('annual_kwh'), 'kWh'),
                          fmt(result.get('capex_cny'), '元'), fmt(result.get('payback_years'), '年'),
-                         str(result.get('park_phase', '—')), '四步通过' if result else '未纳入'))
-        add('每栋一行与分期', ['按回本从快到慢排序，预算与兼容AC容量均容得下的整栋进入一期。'], rows,
-            ['厂房', '装机', '年发电', '造价', '回本', '园区期次', '核对'])
+                         str(result.get('park_phase', '—')), result.get('status_label', '归档执行记录已核验') if result else '未纳入'))
+        cap_bars = [(b['name'], round(float((b['result'] or {}).get('dc_kw') or 0), 1)) for b in data['buildings']]
+        cap_chart = bars(cap_bars, '各厂房直流装机容量分布对比（kW）') if any(v > 0 for _, v in cap_bars) else None
+        add('每栋一行与分期', [
+            '按回本从快到慢排序，预算与兼容AC容量均容得下的整栋进入一期。',
+            Markup('当前园区一期共入选 {} 栋厂房，合计装机 {}，造价 {}。').format(
+                data['phase1']['count'], fmt(data['phase1']['dc_kw'], 'kW'), fmt(data['phase1']['capex_cny'], '元')),
+        ], rows, ['厂房', '装机', '年发电', '造价', '回本', '园区期次', '核对'], chart=cap_chart)
         metrics = [('装机', 'dc_kw', 'kW'), ('年发电', 'annual_kwh', 'kWh'), ('造价', 'capex_cny', '元'),
                    ('整体回本', 'payback_years', '年'), ('年减碳', 'co2_t', 't')]
         rows = [(label, fmt(data['all'][key], unit), fmt(data['phase1'][key], unit)) for label, key, unit in metrics]
@@ -43,17 +83,33 @@ def generate(saved, entries, root, browsers=None):
                              fmt(data['phase1'].get(key, {}).get('payback_years'), '年')))
             elif key + '_note' in data['all']:
                 rows.append((label, data['all'][key + '_note'], '不适用'))
-        add('合计与变压器对照', ['整体回本由逐年净现金流相加后过零插值，不平均每栋回本。'], rows, ['项目', '全园区已设计', '园区一期'])
+        yield_bars = [(b['name'], round(float((b['result'] or {}).get('annual_kwh') or 0) / 1000.0, 1)) for b in data['buildings']]
+        yield_chart = bars(yield_bars, '各厂房首年发电量贡献对比（MWh）') if any(v > 0 for _, v in yield_bars) else None
+        add('合计与变压器对照', [
+            '整体回本由逐年净现金流相加后过零插值，不平均每栋回本。',
+            '下表汇总全园区已设计厂房与园区一期优先建设厂房的核心技术经济指标对照。',
+        ], rows, ['项目', '全园区已设计', '园区一期'], chart=yield_chart, metrics=overview_metrics[:3])
         rows = [(r['label'], fmt(r['limit'], 'kW'), '无法核定' if r['excess'] is None else
                  Markup('有风险，超 {}').format(fmt(r['excess'], 'kW')) if r['excess'] > 1e-9 else '未超出') for r in data['risks']]
+        risk_metrics = [
+            ('配电专变容量', fmt(saved.transformer_kva, 'kVA') if saved.transformer_kva else '未填'),
+            ('并网容量上限', fmt(saved.grid_kw, 'kW') if saved.grid_kw else '未填'),
+            ('园区总投资预算', fmt(saved.budget_cny, '元') if saved.budget_cny else '未填'),
+        ]
         add('容量风险与主要假设', ['额定AC由归档电气文件每台直流容量及未舍入容配比还原；缺失或零值不补当前目录。',
             '分栋贪心保留T22的摘要容量/容配比兼容AC；容量风险另按实际设备还原值。变压器×0.8为示意。',
             '现金流是每栋完整方案的同基准年导出值；不再把一期/两期合计/二期增量相加，不另分摊园区负荷。',
             'OSM真实屋顶从冻结原始经纬度还原；无地理锚点的自画屋顶放空处供人工移动。',
-            '武进示意选real-07、09、10、11，因位置相邻且形状相近；不证明同一公司。10m屋面与1m女儿墙为示意。'],
-            rows, ['约束', '上限', '结论'])
-        add('设计记录与楼间遮挡', [], [(b['name'], (b['result'] or {}).get('run_id', '未设计'),
-            (b['result'] or {}).get('shading_note', '暂无核验设计')) for b in data['buildings']], ['厂房', '设计记录编号', '遮挡依据'])
+            '武进示意选real-07、09、10、11，不证明同一公司。泰州组合园区为多产业场景组合布局，不对应真实同一园区。屋面与负荷等假设见各单栋报告。'],
+            rows, ['约束', '上限', '结论'], metrics=risk_metrics)
+        height_bars = [(b['name'], float(b['roof'].get('height_m') or 0)) for b in data['buildings']]
+        height_chart = bars(height_bars, '园区各厂房檐口高度对照（m）') if any(v > 0 for _, v in height_bars) else None
+        add('设计记录与楼间遮挡', [
+            '园区各厂房按当前相对平面坐标与屋面檐口高差建立邻楼三维遮挡包络棱柱，纳入各单栋全年 8760 小时遮挡损益核算。',
+            '每栋厂房的设计记录编号、独立审核状态及邻楼遮挡核算依据如下表所示。',
+        ], [(b['name'], (b['result'] or {}).get('run_id', '未设计'),
+            (b['result'] or {}).get('shading_note', '暂无核验设计')) for b in data['buildings']],
+            ['厂房', '设计记录编号', '遮挡依据'], chart=height_chart)
         token = uuid.uuid4().hex[:12]
         context = dict(project=dict(name=saved.name), project_id='园区 ' + saved.id, version=token)
         document = render_pages(pages, context)

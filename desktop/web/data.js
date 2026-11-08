@@ -1,4 +1,5 @@
 import {resolvedTools, sameArguments, toolName} from './tool-results.js';
+import {parapetInfo} from './roof-parapets.js';
 
 export const esc = (value) => String(value ?? "").replace(/[&<>"']/g,
   (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -241,15 +242,30 @@ export function inferRequirements(text, form, roof) {
   const numerical = recognized.length;
   if (/不上网|只自用|装防逆流/.test(parsed)) fill('noExport', '只自用不上网', true);
   if (/不(?:能|许|准)?打孔|按压载|只用压载|压载支架安装|不(?:能)?破坏防水/.test(parsed)) fill('noDrill', '只用压载、不打孔', true);
-  if (/不(?:能)?高出女儿墙|不超过女儿墙/.test(parsed)) fill('maxHeight', '女儿墙限高m', (roof?.geometry ?? roof?.roof ?? roof)?.parapet_height_m);
+  if (/不(?:能)?高出女儿墙|不超过女儿墙/.test(parsed)) {
+    const wall = parapetInfo(roof?.geometry ?? roof?.roof ?? roof);
+    if (wall.cap != null) fill('maxHeight', '女儿墙限高m', wall.cap);
+    else recognized.push('女儿墙没有全周统一限高，请核对分段和缺口后填写“组件最高点”');
+  }
   const pickEquipment = (key, label, value) => {
     if (!next[key + 'Picked']) next[key] = value;
-    const shown = {Huawei:'华为', Sungrow:'阳光'}[next[key]] ?? next[key];
+    const shown = {Huawei:'华为', Sungrow:'阳光', Ginlong:'锦浪', GoodWe:'固德威'}[next[key]] ?? next[key];
     recognized.push(`${label}：${shown}${next[key + 'Picked'] ? '（已有值优先）' : ''}`);
   };
-  for (const [name, brand] of [['华为', 'Huawei'], ['阳光', 'Sungrow']])
+  for (const [name, brand] of [['华为', 'Huawei'], ['阳光', 'Sungrow'], ['锦浪', 'Ginlong'], ['固德威', 'GoodWe']])
     if (new RegExp(`${name}.*逆变器|逆变器.*${name}`).test(parsed)) pickEquipment('inverterBrand', '逆变器品牌', brand);
-  for (const [pattern, id] of [['天合.*N型', 'trina-tsm-605neg19rc20'], ['晶科.*N型', 'jinko-jkm605n-66hl4m-bdv']])
+  for (const [pattern, id] of [
+    ['天合.*720|720W.*天合|至尊.*720', 'trina-vertex-n-720m'],
+    ['天合.*N型', 'trina-tsm-605neg19rc20'],
+    ['晶科.*635|Tiger.*Neo.*635', 'jinko-tiger-neo-635m'],
+    ['晶科.*N型', 'jinko-jkm605n-66hl4m-bdv'],
+    ['Hi-?MO\\s*9|隆基.*660', 'longi-himo9-660m'],
+    ['Hi-?MO\\s*7|隆基.*620', 'longi-himo7-620m'],
+    ['古建|BIPV|仿古瓦', 'longi-bipv-ancient-450m'],
+    ['晶澳|DeepBlue', 'ja-deepblue4-610m'],
+    ['通威.*590', 'tongwei-tnc-590m'],
+    ['阿特斯.*700|HiKu7', 'canadian-hiku7-700m'],
+  ])
     if (new RegExp(pattern, 'i').test(parsed)) pickEquipment('moduleId', '组件型号', id);
   for (const [model, id] of Object.entries(form.inverterModels ?? {})) {
     if (parsed.toLowerCase().includes(model.toLowerCase())) {

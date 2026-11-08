@@ -170,8 +170,11 @@ class Audit:
         for row in self.electrical["cables"]["summary"]:
             name = {"dc": "直流电缆", "ac": "交流电缆"}[row["kind"]]
             section = ("" if row["kind"] == "dc" else "4×") + f"{row['section_mm2']} mm²"
-            expected.append((name, None, section, None, row["length_m"], "m", None))
-        actual = sorted((row[:7] for row in rows), key=repr)
+            model = row.get("cable_model") or section
+            expected.append((name, None, model, None, row["length_m"], "m", None, row.get("cable_id")))
+        # New exports preserve the archived catalog model and ID in columns C/L.
+        # Older calculated exports have only the section and no catalog ID column.
+        actual = sorted((row[:7] + (row[11] if len(row) > 11 else None,) for row in rows), key=repr)
         expected.sort(key=repr)
         self.check("XLSX cable rows equal archived quantities sections and units", len(actual) == len(expected)
                    and all(all(same(a, b) for a, b in zip(row, saved)) for row, saved in zip(actual, expected))

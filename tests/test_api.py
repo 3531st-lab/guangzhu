@@ -182,11 +182,15 @@ def test_status_roofs_brief_static_and_progress(local):
     assert client.get("/api/status").json()["agh"]["connected"] is False
     roofs = client.get("/api/roofs").json()["roofs"]
     legacy_ids = {"changzhou-demo", "l-shape", "metal-demo-n", "metal-demo-s", "rotated", "south-tower"}
-    pitched_ids = {"pitched-gable-demo", "pitched-saw-demo"}
+    pitched_ids = {"pitched-gable-demo", "pitched-saw-demo", "compound-factory-demo"}
     installation_ids = {'ground-demo', 'carport-demo'}
     livestock_ids = {'grazing-demo', 'barn-demo'}
-    assert {roof["id"] for roof in roofs} == legacy_ids | pitched_ids | installation_ids | livestock_ids
-    assert len(roofs) == 12 and all(r["area_m2"] > 0 and r["geometry"]["outline"] for r in roofs)
+    taizhou_ids = {
+        'taizhou-cmc-pharma', 'taizhou-shipbuilding-workshop', 'taizhou-watertown-pavilion', 'taizhou-lixiahe-coldchain',
+        'taizhou-sawtooth-textile', 'taizhou-taixing-chemical', 'taizhou-lixiahe-poultry', 'northwest-desert-sandcontrol',
+    }
+    assert {roof["id"] for roof in roofs} == legacy_ids | pitched_ids | installation_ids | livestock_ids | taizhou_ids
+    assert len(roofs) == 21 and all(r["area_m2"] > 0 and r["geometry"]["outline"] for r in roofs)
     response = client.post("/api/brief", json=dict(template="changzhou-demo", id="api-demo", text="预算20万元",
         structured=dict(budget_cny_max=200000), review_mode="independent"))
     assert response.status_code == 200 and "独立审核模式" in response.json()["brief"]
@@ -203,13 +207,38 @@ def test_status_roofs_brief_static_and_progress(local):
 
 def test_result_uses_exported_version_and_actual_parent(local):
     client, _, _, _, _ = local
-    result = client.get("/api/projects/changzhou-demo/result").json()
+    response = client.get("/api/projects/changzhou-demo/result")
+    assert response.status_code == 200, response.text
+    result = response.json()
     assert result["selected_version"] == result["version"] == 2
+    assert result['locked_modules'] == []  # Legacy summary geometry has no editable Design fields.
     assert result["scene"]["shading"]["modules"][0]["total_loss_pct"] == .25
     older = client.get("/api/projects/changzhou-demo/result?version=4").json()
     assert older["parent_design"]["version"] == 1 and older["selected_version"] == 2
     assert client.get("/api/projects/changzhou-demo/result?version=50").status_code == 404
     assert client.get("/api/projects/missing/result").status_code == 404
+
+
+@pytest.mark.parametrize('metadata', [dict(locked_module_ids=[]), dict(locked_plane_ids=[1]),
+                                      dict(locked_regions=[]), dict(locked_geometry_sha256='invalid')])
+def test_result_does_not_silently_ignore_invalid_lock_records(local, metadata):
+    client, _, project, _, _ = local
+    path = project / 'designs/v2.json'
+    summary = api.read(path)
+    api.evidence.write_json(path, summary | metadata)
+    response = client.get('/api/projects/changzhou-demo/result')
+    assert response.status_code == 400 and response.json()['errors']
+
+
+def test_result_reports_locks_from_valid_complete_design(local):
+    client, _, project, _, _ = local
+    design = json.loads((ROOT / 'data/demo/projects/changzhou-demo/designs/v2.json').read_text(encoding='utf-8'))
+    identifier = design['modules'][0]['id']
+    design['locked_module_ids'] = [identifier]
+    api.evidence.write_json(project / 'designs/v2.json', design)
+    response = client.get('/api/projects/changzhou-demo/result')
+    assert response.status_code == 200, response.text
+    assert response.json()['locked_modules'] == [identifier]
 
 
 def test_finish_captures_original_scene_and_is_idempotent(local):

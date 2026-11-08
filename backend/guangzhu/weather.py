@@ -102,7 +102,10 @@ def _parse_pvgis_payload(payload: dict) -> pd.DataFrame:
         df = hourly.loc[keep, list(PVGIS_PARAMETERS)].rename(columns=PVGIS_PARAMETERS)
         df.index = pd.DatetimeIndex([stamp.replace(year=TMY_YEAR) for stamp in times[keep]])
         offset = float(payload.get("inputs", {}).get("location", {}).get("irradiance_time_offset", 0.5))
-        return _normalize(df, offset * 60)
+        normalized = _normalize(df, offset * 60)
+        for col in ("ghi", "dni", "dhi", "wind_speed"):
+            normalized[col] = normalized[col].clip(lower=0.0)
+        return normalized
     except (KeyError, TypeError, ValueError) as error:
         raise WeatherDataError("Malformed PVGIS typical-year response.") from error
 

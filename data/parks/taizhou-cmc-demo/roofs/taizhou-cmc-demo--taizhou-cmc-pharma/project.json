@@ -1,0 +1,523 @@
+{
+  "park": {
+    "id": "taizhou-cmc-demo",
+    "template": "taizhou-cmc-pharma",
+    "snapshot": "a86a80e5acceefd337c3b7f806314a59ec5d97bca825a6d558f60aa91093a39f",
+    "x_m": 0.0,
+    "y_m": 0.0,
+    "rotation_deg": 0.0
+  },
+  "schema": "guangzhu.project/1",
+  "id": "taizhou-cmc-demo--taizhou-cmc-pharma",
+  "name": "泰州产业演示·医药洁净厂房",
+  "collection": null,
+  "site": {
+    "lat": 32.46,
+    "lon": 119.92,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2,
+    "design_temp_min_c": null,
+    "design_temp_max_c": null,
+    "wind_city": "泰州"
+  },
+  "roof": {
+    "planes": [
+      {
+        "id": 1,
+        "outline": [
+          [
+            56.0,
+            14.0
+          ],
+          [
+            0.0,
+            14.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            56.0,
+            0.0
+          ]
+        ],
+        "slope_deg": 6.0,
+        "slope_azimuth_deg": 180.0,
+        "offset_m": 4.5,
+        "material": "metal",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "part_id": "main"
+      },
+      {
+        "id": 2,
+        "outline": [
+          [
+            0.0,
+            14.0
+          ],
+          [
+            56.0,
+            14.0
+          ],
+          [
+            56.0,
+            28.0
+          ],
+          [
+            0.0,
+            28.0
+          ]
+        ],
+        "slope_deg": 6.0,
+        "slope_azimuth_deg": 0.0,
+        "offset_m": 4.5,
+        "material": "metal",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "part_id": "main"
+      },
+      {
+        "id": 3,
+        "outline": [
+          [
+            56.0,
+            0.0
+          ],
+          [
+            78.0,
+            0.0
+          ],
+          [
+            78.0,
+            18.0
+          ],
+          [
+            56.0,
+            18.0
+          ]
+        ],
+        "slope_deg": 0.0,
+        "slope_azimuth_deg": 180.0,
+        "offset_m": 0.0,
+        "material": "concrete",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "part_id": "annex"
+      }
+    ],
+    "parts": [
+      {
+        "id": "main",
+        "label": "GMP洁净制剂主车间",
+        "outline": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            56.0,
+            0.0
+          ],
+          [
+            56.0,
+            28.0
+          ],
+          [
+            0.0,
+            28.0
+          ]
+        ],
+        "kind": "gable",
+        "eave_height_m": 11.0,
+        "slope_deg": 6.0,
+        "material": "metal",
+        "ridge_mode": "long",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "plane_ids": [
+          1,
+          2
+        ]
+      },
+      {
+        "id": "annex",
+        "label": "GSP医药物流冷链附楼",
+        "outline": [
+          [
+            56.0,
+            0.0
+          ],
+          [
+            78.0,
+            0.0
+          ],
+          [
+            78.0,
+            18.0
+          ],
+          [
+            56.0,
+            18.0
+          ]
+        ],
+        "kind": "flat",
+        "eave_height_m": 6.5,
+        "slope_deg": 5.0,
+        "material": "concrete",
+        "ridge_mode": "long",
+        "load_capacity_kn_m2": null,
+        "load_verified": null,
+        "plane_ids": [
+          3
+        ]
+      }
+    ],
+    "facade": {
+      "enabled": true,
+      "wall_material": "metal",
+      "wall_color": "#eef3f7",
+      "trim_color": "#1e6b7b",
+      "base_color": "#5c7684",
+      "door_color": "#255f73",
+      "bay_width_m": 6.0,
+      "base_height_m": 0.8,
+      "columns": true,
+      "window_rows": 2,
+      "window_width_m": 2.8,
+      "window_height_m": 1.3,
+      "window_sill_m": 3.6,
+      "front_edge": null,
+      "doors": 2,
+      "door_width_m": 4.2,
+      "door_height_m": 4.2,
+      "canopy_depth_m": 2.4,
+      "loading_docks": 2,
+      "dock_height_m": 1.2,
+      "personnel_door": true
+    },
+    "pitched": null,
+    "seam_setback_m": 0.5,
+    "inverter_positions": [
+      [
+        54.5,
+        4.0
+      ],
+      [
+        54.5,
+        14.0
+      ]
+    ],
+    "grid_point": [
+      76.5,
+      2.0
+    ],
+    "type": "pitched",
+    "outline": [
+      [
+        78.0,
+        18.0
+      ],
+      [
+        56.0,
+        18.0
+      ],
+      [
+        56.0,
+        28.0
+      ],
+      [
+        0.0,
+        28.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        56.0,
+        0.0
+      ],
+      [
+        78.0,
+        0.0
+      ]
+    ],
+    "height_m": 6.5,
+    "parapet_height_m": 0.8,
+    "parapet_segments": [
+      {
+        "edge_index": 0,
+        "start_ratio": 0.0,
+        "end_ratio": 1.0,
+        "height_m": 1.1
+      },
+      {
+        "edge_index": 5,
+        "start_ratio": 0.0,
+        "end_ratio": 0.65,
+        "height_m": 1.1
+      },
+      {
+        "edge_index": 6,
+        "start_ratio": 0.15,
+        "end_ratio": 0.85,
+        "height_m": 1.1
+      }
+    ],
+    "load_capacity_kn_m2": 0.55,
+    "obstacles": [
+      {
+        "id": "ahu-clean-1",
+        "label": "洁净空调机组AHU",
+        "kind": "prism",
+        "height_m": 2.2,
+        "footprint": [
+          [
+            59.0,
+            11.5
+          ],
+          [
+            64.0,
+            11.5
+          ],
+          [
+            64.0,
+            15.0
+          ],
+          [
+            59.0,
+            15.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null,
+        "plane_id": 3,
+        "part_id": "annex"
+      },
+      {
+        "id": "scrubber-acid-1",
+        "label": "酸雾洗涤排风塔",
+        "kind": "cylinder",
+        "height_m": 2.8,
+        "footprint": null,
+        "center": [
+          72.0,
+          13.5
+        ],
+        "radius_m": 1.2,
+        "plane_id": 3,
+        "part_id": "annex"
+      },
+      {
+        "id": "purified-tank-1",
+        "label": "纯化水储罐",
+        "kind": "cylinder",
+        "height_m": 2.4,
+        "footprint": null,
+        "center": [
+          72.0,
+          5.0
+        ],
+        "radius_m": 1.4,
+        "plane_id": 3,
+        "part_id": "annex"
+      }
+    ],
+    "keepouts": [
+      {
+        "id": "cmc-skylight-1",
+        "label": "洁净走廊采光带1",
+        "polygon": [
+          [
+            8.0,
+            6.0
+          ],
+          [
+            12.0,
+            6.0
+          ],
+          [
+            12.0,
+            7.2
+          ],
+          [
+            8.0,
+            7.2
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      },
+      {
+        "id": "cmc-skylight-2",
+        "label": "洁净走廊采光带2",
+        "polygon": [
+          [
+            24.0,
+            6.0
+          ],
+          [
+            28.0,
+            6.0
+          ],
+          [
+            28.0,
+            7.2
+          ],
+          [
+            24.0,
+            7.2
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      },
+      {
+        "id": "cmc-skylight-3",
+        "label": "洁净走廊采光带3",
+        "polygon": [
+          [
+            40.0,
+            6.0
+          ],
+          [
+            44.0,
+            6.0
+          ],
+          [
+            44.0,
+            7.2
+          ],
+          [
+            40.0,
+            7.2
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.3
+      }
+    ],
+    "underlay": null,
+    "surroundings": [
+      {
+        "id": "park-taizhou-shipbuilding-workshop",
+        "label": "泰州产业演示·船舶海工车间",
+        "kind": "prism",
+        "height_m": 7.9,
+        "footprint": [
+          [
+            98.0,
+            0.0
+          ],
+          [
+            170.0,
+            0.0
+          ],
+          [
+            170.0,
+            36.0
+          ],
+          [
+            98.0,
+            36.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      },
+      {
+        "id": "park-taizhou-watertown-pavilion",
+        "label": "泰州产业演示·文旅坡屋面（按最高屋面棱柱保守示意）",
+        "kind": "prism",
+        "height_m": 4.574116658561971,
+        "footprint": [
+          [
+            0.0,
+            52.0
+          ],
+          [
+            44.0,
+            52.0
+          ],
+          [
+            44.0,
+            74.0
+          ],
+          [
+            0.0,
+            74.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      },
+      {
+        "id": "park-taizhou-lixiahe-coldchain",
+        "label": "泰州产业演示·农业冷链仓",
+        "kind": "prism",
+        "height_m": 3.0,
+        "footprint": [
+          [
+            98.0,
+            52.0
+          ],
+          [
+            152.0,
+            52.0
+          ],
+          [
+            152.0,
+            82.0
+          ],
+          [
+            98.0,
+            82.0
+          ]
+        ],
+        "center": null,
+        "radius_m": null
+      }
+    ]
+  },
+  "requirements": {
+    "text": "产业场景示例，非实测或客户工程。主跨双坡与低跨附楼；保留天窗、净化空调、酸雾塔和水罐，检查通道与限高。 按下列结构化要求计算；不能满足时保留失败原因，不得伪报通过。",
+    "structured": {
+      "budget_cny_max": null,
+      "payback_years_max": 6.0,
+      "capacity_kw_min": null,
+      "capacity_kw_max": null,
+      "walkway_m_min": 1.0,
+      "obstacle_clearance_m_min": null,
+      "edge_setback_m_min": null,
+      "keep_clear_ids": [
+        "cmc-skylight-1",
+        "cmc-skylight-2",
+        "cmc-skylight-3"
+      ],
+      "tilt_deg_range": null,
+      "notes": null
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "plane_flush"
+  },
+  "economics": {
+    "monthly_kwh": 150000.0,
+    "shifts": 3,
+    "capex_cny_per_w": null,
+    "self_use_ratio": null,
+    "price_self_cny_kwh": 0.68,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "本例全部屋面尺寸、障碍物、承载力、用电及经济条件为演示输入，不代表对应企业或实测工程。月用电量假设150000kWh、3班，自用比例由模拟逐时发电与示意负荷曲线计算，不预设高自用率。自用平段电价假设0.68元/kWh，计算期25年，折现率0.06。造价按实际工程量及当前目录的示意报价汇总；未填参数取data/catalog/assumptions.csv，并保留各自来源及限制。余电价格、峰谷电价、荷载能力和并网条件均待真实项目核实；不承诺回本。天气使用泰州区域坐标32.46N/119.92E的已标注来源数据，坐标用于区域气象，不是该建筑测绘坐标。所有输出为模型计算，不能替代现场测量和专业复核。"
+  },
+  "designs": []
+}

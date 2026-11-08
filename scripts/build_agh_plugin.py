@@ -28,7 +28,12 @@ def make_data(tool_prefix=TOOL_PREFIX, desktop_origins=DESKTOP_ORIGINS):
                 or origin.netloc != f"127.0.0.1:{origin.port}" or origin.path or origin.query or origin.fragment):
             raise ValueError("桌面源必须是 http://127.0.0.1:<端口>，不带路径")
     templates = []
-    for identifier, (_, project) in catalog_data(all=True, root=ROOT, mine=False).items():
+    public_roots = [(ROOT / relative).resolve() for relative in ('data/demo/projects', 'data/roofs')]
+    for identifier, (source, project) in catalog_data(all=True, root=ROOT, mine=False).items():
+        # Park roofs are user-editable even when the park began as a demo seed.
+        # Never bake those local inputs into a distributable plugin.
+        if not any(source.resolve().is_relative_to(folder) for folder in public_roots):
+            continue
         roof = project["roof"]
         templates.append(dict(id=identifier, name=project["name"], outline=roof["outline"],
                               obstacles=roof.get("obstacles", []), keepouts=roof.get("keepouts", [])))

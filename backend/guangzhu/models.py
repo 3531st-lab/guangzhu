@@ -80,6 +80,17 @@ class Obstacle(Record):
     footprint: list[Point2] | None = None
     center: Point2 | None = None
     radius_m: float | None = None
+    plane_id: int | None = Field(default=None, gt=0, strict=True)
+    part_id: str | None = None
+
+    @model_serializer(mode='wrap')
+    def optional_plane(self, handler):
+        data = handler(self)
+        if self.plane_id is None:
+            data.pop('plane_id', None)
+        if self.part_id is None:
+            data.pop('part_id', None)
+        return data
 
     @model_validator(mode="after")
     def geometry(self):
@@ -108,6 +119,7 @@ class Keepout(Record):
     polygon: list[Point2]
     preset: Literal['vent', 'skylight'] | None = None
     clearance_m: float | None = Field(default=None, ge=0)
+    plane_id: int | None = Field(default=None, gt=0, strict=True)
 
     @model_serializer(mode='wrap')
     def optional_preset(self, handler):
@@ -197,7 +209,15 @@ class RoofPlane(Record):
     material: Literal['metal', 'concrete', 'glass'] = 'metal'
     load_capacity_kn_m2: float | None = Field(default=None, gt=0)
     load_verified: bool | None = None
+    part_id: str | None = None
     _outline = field_validator('outline')(ccw)
+
+    @model_serializer(mode='wrap')
+    def optional_part(self, handler):
+        data = handler(self)
+        if self.part_id is None:
+            data.pop('part_id', None)
+        return data
 
 
 class PitchedSettings(Record):
@@ -210,6 +230,32 @@ class PitchedSettings(Record):
     teeth: int = Field(default=4, ge=1, strict=True)
     tooth_width_m: float | None = Field(default=None, gt=0)
     glass_deg: float = Field(default=70, gt=0, lt=90)
+
+
+class RoofPart(Record):
+    """An explicit building volume. Heights are absolute metres above ground."""
+    id: str
+    label: str = Field(min_length=1, max_length=80)
+    outline: list[Point2]
+    kind: Literal['flat', 'gable'] = 'flat'
+    eave_height_m: float = Field(gt=0, le=200)
+    slope_deg: float = Field(default=5, ge=0, lt=90)
+    material: Literal['metal', 'concrete'] = 'concrete'
+    ridge_mode: Literal['long', 'short'] = 'long'
+    load_capacity_kn_m2: float | None = Field(default=None, gt=0)
+    load_verified: bool | None = None
+    # Persisted identities survive adding, removing or reordering other parts.
+    plane_ids: list[Annotated[int, Field(gt=0, strict=True)]] = Field(default_factory=list, max_length=2)
+    _id = field_validator('id')(project_id)
+    _outline = field_validator('outline')(ccw)
+
+    @model_validator(mode='after')
+    def positive_gable_pitch(self):
+        if self.kind == 'gable' and self.slope_deg <= 0:
+            raise ValueError('双坡部分的坡度必须大于0')
+        if len(set(self.plane_ids)) != len(self.plane_ids):
+            raise ValueError('屋顶部分的坡面编号不能重复')
+        return self
 
 
 class GroundSettings(Record):
@@ -234,6 +280,48 @@ class CarportSettings(Record):
     columns: dict[str, list[Point2]] = Field(default_factory=dict)
 
 
+FacadeColor = Annotated[str, Field(pattern=r'^#[0-9A-Fa-f]{6}$')]
+
+
+class FacadeSettings(Record):
+    """Optional presentation details; these never enter photovoltaic geometry or quantities."""
+    enabled: bool = Field(default=True, strict=True)
+    wall_material: Literal['metal', 'concrete', 'brick'] = 'metal'
+    wall_color: FacadeColor = '#d6dde2'
+    trim_color: FacadeColor = '#49606c'
+    base_color: FacadeColor = '#64717a'
+    door_color: FacadeColor = '#3c5969'
+    bay_width_m: float = Field(default=6, ge=2, le=20, strict=True)
+    base_height_m: float = Field(default=.6, ge=0, le=2, strict=True)
+    columns: bool = Field(default=True, strict=True)
+    window_rows: int = Field(default=1, ge=0, le=2, strict=True)
+    window_width_m: float = Field(default=2.4, ge=.4, le=8, strict=True)
+    window_height_m: float = Field(default=1.2, ge=.3, le=3, strict=True)
+    window_sill_m: float = Field(default=3.8, ge=.5, le=12, strict=True)
+    front_edge: int | None = Field(default=None, ge=0, strict=True)
+    doors: int = Field(default=2, ge=0, le=6, strict=True)
+    door_width_m: float = Field(default=4, ge=1, le=8, strict=True)
+    door_height_m: float = Field(default=4, ge=2, le=8, strict=True)
+    canopy_depth_m: float = Field(default=1.8, ge=0, le=4, strict=True)
+    loading_docks: int = Field(default=1, ge=0, le=4, strict=True)
+    dock_height_m: float = Field(default=1.1, ge=.3, le=1.6, strict=True)
+    personnel_door: bool = Field(default=True, strict=True)
+
+
+class ParapetSegment(Record):
+    """A measured interval along one canonical exterior roof edge."""
+    edge_index: int = Field(ge=0, strict=True)
+    start_ratio: float = Field(default=0.0, ge=0, le=1, strict=True)
+    end_ratio: float = Field(default=1.0, ge=0, le=1, strict=True)
+    height_m: float = Field(ge=0, le=3, strict=True)
+
+    @model_validator(mode='after')
+    def increasing_interval(self):
+        if self.start_ratio >= self.end_ratio:
+            raise GzError('PARAPET_SEGMENT_INVALID', '女儿墙分段起点须小于终点', '沿选定外边填写0至1之间的起止比例')
+        return self
+
+
 class Roof(Record):
     use: Literal['barn', 'grazing'] | None = None
     animal: Literal['sheep', 'cow'] | None = None
@@ -241,6 +329,8 @@ class Roof(Record):
     ground: GroundSettings | None = None
     carport: CarportSettings | None = None
     planes: list[RoofPlane] = Field(default_factory=list)
+    parts: list[RoofPart] = Field(default_factory=list, max_length=32)
+    facade: FacadeSettings | None = None
     pitched: PitchedSettings | None = None
     seam_setback_m: float | None = Field(default=None, ge=0)
     wind: WindSettings | None = None
@@ -253,6 +343,8 @@ class Roof(Record):
     outline: list[Point2]
     height_m: float
     parapet_height_m: float
+    # None retains the legacy uniform perimeter; [] explicitly has no parapets.
+    parapet_segments: list[ParapetSegment] | None = Field(default=None, max_length=256)
     load_capacity_kn_m2: float
     # True only when the user confirms the allowed load comes from a structural check; otherwise it is an illustrative value.
     load_verified: bool = False
@@ -269,6 +361,38 @@ class Roof(Record):
 
     @model_validator(mode='before')
     @classmethod
+    def compile_parts(cls, value):
+        def checked_outline(points):
+            if not isinstance(points, (list, tuple)) or len(points) < 3 or any(
+                not isinstance(p, (list, tuple)) or len(p) != 2 or any(
+                    isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in p)
+                for p in points
+            ):
+                raise GzError('PARAPET_EDGE_INVALID', '分段女儿墙需要有效的二维屋顶外轮廓', '每个轮廓顶点须有两个有限的米制坐标')
+            return points
+
+        if isinstance(value, dict) and value.get('parts'):
+            if value.get('type') != 'pitched':
+                raise ValueError('组合屋顶须使用整栋坡面类型')
+            from .roofplane import generate_parts
+            value = dict(value)
+            compiled = generate_parts(value['parts'])
+            if value.get('parapet_segments') and 'outline' in value:
+                source, final = checked_outline(value['outline']), compiled['outline']
+                if len(source) != len(final) or any(math.dist(a, b) > 1e-8 for a, b in zip(source, final)):
+                    raise GzError('PARAPET_EDGE_CHANGED', '组合屋顶外轮廓已改变，原女儿墙边线需要重新确认',
+                                  '先按新屋顶重建分段女儿墙，或恢复统一女儿墙模式')
+            value.update(compiled)
+            value['pitched'] = None
+        if isinstance(value, dict) and value.get('parapet_segments') and value.get('outline'):
+            outline = checked_outline(value['outline'])
+            if not Polygon(outline).exterior.is_ccw:
+                raise GzError('PARAPET_EDGE_DIRECTION_INVALID', '分段女儿墙须引用逆时针排列的屋顶外轮廓',
+                              '先提交无分段的屋顶取得校验后的外轮廓，再重新选择女儿墙边线')
+        return value
+
+    @model_validator(mode='before')
+    @classmethod
     def animal_defaults(cls, value):
         if isinstance(value, dict) and value.get('use') == 'grazing':
             value = dict(value)
@@ -282,6 +406,8 @@ class Roof(Record):
 
     @model_validator(mode="after")
     def bounds(self):
+        if self.facade is not None and self.facade.front_edge is not None and self.facade.front_edge >= len(self.outline):
+            raise GzError('FACADE_FRONT_EDGE_INVALID', '主立面边编号超出屋顶轮廓', '重新选择现有外墙边，或设为自动选择主立面')
         if self.use == 'grazing' and self.type != 'ground':
             raise ValueError('牧光用途只适用于空地')
         if self.use == 'barn' and not (self.type == 'metal' or self.type == 'pitched'
@@ -290,7 +416,8 @@ class Roof(Record):
         if self.use != 'grazing' and (self.animal is not None or self.ground_sun_min_pct is not None):
             raise ValueError('牲畜和地面受光要求只用于牧光')
         if self.type == 'pitched':
-            if any(p.slope_deg <= 0 for p in self.planes):
+            if any(p.slope_deg <= 0 and not any(part.id == p.part_id and part.kind == 'flat' for part in self.parts)
+                   for p in self.planes):
                 raise ValueError('斜屋面坡度必须大于0')
             from .roofplane import validate_planes
             validate_planes(self)
@@ -307,6 +434,19 @@ class Roof(Record):
             if invalid:
                 raise GzError(code, message, hint)
         roof = Polygon(self.outline)
+        if self.parapet_segments is not None:
+            if self.type in ('ground', 'carport') and self.parapet_segments:
+                raise GzError('PARAPET_SEGMENT_INVALID', '地面与车棚场景不能设置屋顶女儿墙', '清除分段女儿墙设置')
+            previous_end = {}
+            for segment in sorted(self.parapet_segments, key=lambda s: (s.edge_index, s.start_ratio)):
+                if segment.edge_index >= len(self.outline):
+                    raise GzError('PARAPET_EDGE_INVALID', '女儿墙分段引用了不存在的外轮廓边', '按当前屋顶外轮廓重新选择边线')
+                a, b = self.outline[segment.edge_index], self.outline[(segment.edge_index + 1) % len(self.outline)]
+                if math.dist(a, b) <= 1e-9:
+                    raise GzError('PARAPET_EDGE_INVALID', '女儿墙不能位于零长度边', '合并重复的屋顶顶点后重新选择边线')
+                if segment.start_ratio < previous_end.get(segment.edge_index, 0):
+                    raise GzError('PARAPET_SEGMENT_OVERLAP', '同一外边的女儿墙分段不能重叠', '调整起止比例；相邻分段可以共用端点')
+                previous_end[segment.edge_index] = segment.end_ratio
         zones = [(o, obstacle_polygon(o), "OBSTACLE_OUTSIDE_ROOF") for o in self.obstacles]
         zones += [(k, Polygon(k.polygon), "KEEPOUT_OUTSIDE_ROOF") for k in self.keepouts]
         if len({z.id for z, _, _ in zones}) != len(zones):
@@ -314,9 +454,28 @@ class Roof(Record):
         for zone, polygon, code in zones:
             if not roof.covers(polygon):
                 raise GzError(code, f"{zone.label}（{zone.id}）超出屋顶", "调整其轮廓或圆心半径，使它完全位于屋顶内")
+            if self.parts and isinstance(zone, Obstacle) and zone.plane_id is None:
+                matches = [p for p in self.planes if Polygon(p.outline).buffer(1e-8).covers(polygon)]
+                if len(matches) != 1:
+                    raise GzError('OBSTACLE_PLANE_REQUIRED', f'{zone.label}跨越坡面或高低跨交界', '将设备分开并放在各自所属坡面内')
+                zone.plane_id = matches[0].id
+            if zone.plane_id is not None:
+                if self.type != 'pitched':
+                    raise GzError('ZONE_PLANE_INVALID', '设备与禁区的所属坡面只用于整栋屋顶', '清除此场景的坡面绑定')
+                plane = next((p for p in self.planes if p.id == zone.plane_id), None)
+                if plane is None or not Polygon(plane.outline).buffer(1e-8).covers(polygon):
+                    raise GzError('ZONE_PLANE_INVALID', f'{zone.label}不在指定坡面内', '检查所属坡面编号，或移动设备与禁区使其完全位于该坡面内')
+                if isinstance(zone, Obstacle):
+                    if zone.part_id is not None and zone.part_id != plane.part_id:
+                        raise GzError('ZONE_PLANE_INVALID', f'{zone.label}所属屋顶部分已改变', '重新确认设备所在的屋顶部分和坡面')
+                    zone.part_id = plane.part_id
+            elif isinstance(zone, Obstacle) and zone.part_id is not None:
+                raise GzError('ZONE_PLANE_INVALID', f'{zone.label}缺少所属坡面', '同时指定设备的屋顶部分和坡面')
         if len({z.id for z, _, _ in zones} | {s.id for s in self.surroundings}) != len(zones) + len(self.surroundings):
             raise GzError("ZONE_ID_DUPLICATE", "周边遮挡物和障碍物、禁区或彼此编号重复", "为每个周边遮挡物填写不同编号")
         for row in self.surroundings:
+            if row.plane_id is not None or row.part_id is not None:
+                raise GzError('ZONE_PLANE_INVALID', '周边遮挡物不能绑定屋顶坡面', '清除周边遮挡物的坡面编号')
             if roof.intersection(obstacle_polygon(row)).area > 1e-6:
                 raise GzError("SURROUNDING_ON_ROOF", f"{row.label}（{row.id}）压在屋顶上", "屋面上的设备填到障碍物里；周边遮挡物要放在屋顶外")
         return self
@@ -325,6 +484,12 @@ class Roof(Record):
     def omit_empty_surroundings(self, handler):
         # Roofs without surroundings or a confirmed load keep their exact earlier file bytes.
         data = handler(self)
+        if not self.parts:
+            data.pop('parts', None)
+        if self.facade is None:
+            data.pop('facade', None)
+        if self.parapet_segments is None:
+            data.pop('parapet_segments', None)
         for key in ('use', 'animal', 'ground_sun_min_pct'):
             if data.get(key) is None:
                 data.pop(key, None)
@@ -393,11 +558,21 @@ class Requirements(Record):
     structured: StructuredRequirements = Field(default_factory=StructuredRequirements)
 
 
+def normalize_inverter_brand(value):
+    """Stable IDs shared by project validation and installation catalogs."""
+    aliases = {'sungrow': 'Sungrow', '阳光电源': 'Sungrow', 'huawei': 'Huawei', '华为': 'Huawei',
+               'ginlong': 'Ginlong', 'ginlong solis': 'Ginlong', 'solis': 'Ginlong', '锦浪': 'Ginlong',
+               'goodwe': 'GoodWe', '固德威': 'GoodWe'}
+    return aliases.get(' '.join(value.split()).casefold(), value) if isinstance(value, str) else value
+
+
 class Equipment(Record):
-    inverter_brand: Literal['Sungrow', 'Huawei'] | None = None
+    inverter_brand: Literal['Sungrow', 'Huawei', 'Ginlong', 'GoodWe'] | None = None
     module_id: str
     inverter_id: str | None = None
     racking: str = "ballast_tilt"
+
+    _brand = field_validator('inverter_brand', mode='before')(normalize_inverter_brand)
 
     @model_serializer(mode='wrap')
     def optional_brand(self, handler):
@@ -609,7 +784,17 @@ class RemovedModule(Module):
     reason: str
 
 
+class LockedRegion(Record):
+    id: str = Field(min_length=1, max_length=64)
+    polygon: list[Point2]
+    _polygon = field_validator('polygon')(ccw)
+
+
 class Design(Record):
+    locked_module_ids: list[str] = Field(default_factory=list)
+    locked_plane_ids: list[int] = Field(default_factory=list)
+    locked_regions: list[LockedRegion] = Field(default_factory=list)
+    locked_geometry_sha256: str | None = Field(default=None, pattern=r'^[a-f0-9]{64}$')
     installation_roof: Roof | None = None
     version: int = Field(default=1, ge=1, strict=True)
     params: LayoutParams
@@ -623,9 +808,27 @@ class Design(Record):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     statistics: dict[str, Any] = Field(default_factory=dict)
 
+    @model_validator(mode='after')
+    def valid_locks(self):
+        identifiers = [module.id for module in self.modules]
+        if len(identifiers) != len(set(identifiers)):
+            raise ValueError('组件编号不能重复')
+        if len(self.locked_module_ids) != len(set(self.locked_module_ids)) or not set(self.locked_module_ids) <= set(identifiers):
+            raise ValueError('锁定组件必须存在且编号不能重复')
+        if any(type(value) is not int or value < 1 for value in self.locked_plane_ids) or len(self.locked_plane_ids) != len(set(self.locked_plane_ids)):
+            raise ValueError('锁定坡面须为不重复的正整数编号')
+        if len(self.locked_regions) != len({region.id for region in self.locked_regions}):
+            raise ValueError('锁定区域编号不能重复')
+        return self
+
     @model_serializer(mode='wrap')
     def optional_installation(self, handler):
         values = handler(self)
         if self.installation_roof is None:
             values.pop('installation_roof', None)
+        for key in ('locked_module_ids', 'locked_plane_ids', 'locked_regions'):
+            if not values[key]:
+                values.pop(key)
+        if values.get('locked_geometry_sha256') is None:
+            values.pop('locked_geometry_sha256', None)
         return values

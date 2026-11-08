@@ -10,6 +10,7 @@ import subprocess
 import sys
 import threading
 import time
+from urllib.error import HTTPError
 
 from fastapi.testclient import TestClient
 import pytest
@@ -511,6 +512,50 @@ def test_identical_healthy_resource_skips_writes_and_bad_catalog_reconnects(inst
     coordinator.client.send = send
     coordinator.client.mcp(coordinator.definition, configure=True)
     assert [action for _, action, _ in fake.writes[before:]] == ['mcp/reconnect']
+
+
+@pytest.mark.parametrize('actual', ['ready', 'failed'])
+def test_upgrade_reconnects_unavailable_mcp_before_reading_catalog(installed, actual):
+    coordinator, fake, _, _ = installed
+    coordinator.begin()
+    wait(coordinator, 'waiting_workspace')
+    before = len(fake.writes)
+    fake.mcp['actual'] = actual
+    original = fake.send
+    unavailable = [True]
+
+    def send(surface, action, body=None):
+        result = original(surface, action, body)
+        if action == 'mcp/reconnect':
+            unavailable[0] = False
+        if action == 'mcp/status' and unavailable[0]:
+            result.update(connectionState='failed', toolCount=0)
+        if action == 'mcp/tools' and unavailable[0]:
+            # Official AGH rejects catalog reads before the MCP connection is ready.
+            raise HTTPError('http://local.invalid/private', 409, 'MCP_CATALOG_UNAVAILABLE', None, None)
+        return result
+
+    coordinator.client.send = send
+    coordinator.client.mcp(coordinator.definition, configure=True)
+    assert not unavailable[0]
+    actions = [action for _, action, _ in fake.writes[before:]]
+    assert actions == (['mcp/reconnect'] if actual == 'ready' else ['mcp/enable', 'mcp/reconnect'])
+
+
+def test_http_management_error_is_not_misreported_as_missing_service(installed):
+    coordinator, _, _, logs = installed
+    attempts = []
+
+    def rejected(*args):
+        attempts.append(args)
+        raise HTTPError('http://local.invalid/SECRET', 503, 'SECRET', None, None)
+
+    client = setup_agh.Management(coordinator.home, logs.append, send=rejected)
+    with pytest.raises(ValueError, match='HTTP 503'):
+        client.read('resources', 'mcp/tools', serverId='guangzhu')
+    assert len(attempts) == 1
+    assert logs[-1]['result'] == 'http-error' and logs[-1]['http_status'] == 503
+    assert 'SECRET' not in json.dumps(logs)
 
 
 def test_skill_identity_switch_stops_before_trust(installed):

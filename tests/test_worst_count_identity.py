@@ -33,7 +33,9 @@ def large_roof(tmp_path, monkeypatch, rule, requirements, capex=None):
                       sum(row['total_loss_pct'] for row in values) / len(values), modules_over_threshold=0, threshold_pct=8))
         path = storage._path(project_id, f'analysis/v{version}/shading.json')
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(result), encoding='utf-8')
+        # Match the real shading writer so the completion manifest checks the
+        # same bytes; controlled loss values do not change the storage contract.
+        path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8', newline='\n')
         return result
     monkeypatch.setattr(shading, 'analyze', controlled_shading)
     return project, first, losses

@@ -4,18 +4,27 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>光筑</title><link rel="icon" href="/assets/guangzhu-128.png"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/scene.css">
   <link rel="stylesheet" href="/park.css">
+  <link rel="stylesheet" href="/design-edit.css">
+  <link rel="stylesheet" href="/design-diagnostics.css">
+  <link rel="stylesheet" href="/design-evidence.css">
+  <link rel="stylesheet" href="/facade-editor.css">
+  <link rel="stylesheet" href="/roofedit-objects.css">
+  <link rel="stylesheet" href="/parapet-editor.css">
+  <link rel="stylesheet" href="/pvsyst-workbench.css">
+  <link rel="stylesheet" href="/satmap.css">
 </head>
 <body>
   <div class="win">
     <header class="topnav">
       <a class="logo" href="#new"><img src="/assets/guangzhu-128.png" alt=""><b>光筑</b><small>基于 Agnes Harness</small></a>
-      <nav class="navtabs" aria-label="主导航"><a href="#new">新建设计</a><a href="#records">设计记录</a><a href="#park">园区</a></nav>
+      <nav class="navtabs" aria-label="主导航"><a href="#new">新建设计</a><a href="#records">设计记录</a><a href="#park">园区</a><a href="#satmap">卫星图设计</a></nav>
       <div class="navright"><span id="connection" class="conn">正在连接 AGH</span><button class="btn sm" id="settings-open">设置</button></div>
     </header>
     <main id="view" class="view"></main>
   </div>
   <div id="agh-dock" class="agh-dock parked"><iframe id="agh" title="Agnes Harness 原生会话"></iframe></div>
   <dialog id="settings"><header><h2>设置</h2><button class="btn sm" id="settings-close">关闭</button></header><div id="settings-content"></div></dialog>
+  <div id="active-task-bar" class="active-task-bar" role="region" aria-label="当前后台任务控制栏" hidden></div>
   <div id="notice" role="status" hidden></div>
   <script src="/vendor/three.min.js"></script><script src="/vendor/OrbitControls.min.js"></script>
   <script type="module" src="/app.js"></script>

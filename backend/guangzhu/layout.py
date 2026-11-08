@@ -87,8 +87,13 @@ def usable_geometry(project, params):
 
 def _catalog(project, params=None):
     def selected(filename, key, value):
-        with (DATA_DIR/"catalog"/filename).open(encoding="utf-8-sig", newline="") as stream:
-            rows = [r for r in csv.DictReader(stream) if r[key] == value]
+        files = [filename]
+        if filename == "modules.csv" and (DATA_DIR / "catalog" / "modules_extended.csv").is_file():
+            files.append("modules_extended.csv")
+        rows = []
+        for fname in files:
+            with (DATA_DIR / "catalog" / fname).open(encoding="utf-8-sig", newline="") as stream:
+                rows.extend([r for r in csv.DictReader(stream) if r[key] == value])
         if len(rows) != 1:
             raise GzError("EQUIPMENT_NOT_FOUND", "组件或支架编号不存在或不唯一", "选用data/catalog中已有的唯一编号")
         return rows[0]

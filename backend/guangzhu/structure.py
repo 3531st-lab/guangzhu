@@ -12,9 +12,9 @@ from . import wind
 def calculate(project,design):
     from .installation import effective, facilities
     project = effective(project, design)
-    from .electrical import equipment_catalog
+    from .electrical import equipment_catalog, resolve_catalog_for_project
     from .layout import rack_id
-    catalog=equipment_catalog()
+    catalog=resolve_catalog_for_project(project, equipment_catalog())
     module=catalog['modules'][project.equipment.module_id]
     rack=catalog['racking'][rack_id(project, design.params)]
     long,short=float(module['length_m']),float(module['width_m'])
@@ -33,9 +33,13 @@ def calculate(project,design):
         length=count*slope+(count-1)*gap
         right,back=np.array([-math.cos(angle),math.sin(angle)]),np.array([-math.sin(angle),-math.cos(angle)])
         base=np.array(item.corners[0][:2])-(item.tier-1)*(slope+gap)*math.cos(beta)*back
-        footprint=Polygon([base,base+width*right,base+width*right+length*math.cos(beta)*back,base+length*math.cos(beta)*back])
-        footprints[(key(item),item.row,item.col,item.orientation)]=footprint
-        panel_racks[item.id] = (key(item), item.row, item.col, item.orientation)
+        footprint = (Polygon([point[:2] for point in item.corners]) if design.statistics.get('manual_edits')
+                     else Polygon([base,base+width*right,base+width*right+length*math.cos(beta)*back,base+length*math.cos(beta)*back]))
+        rack_key = (key(item), item.row, item.col, item.orientation)
+        if design.statistics.get('manual_edits') and rack_key in footprints:
+            footprint = footprints[rack_key].union(footprint)
+        footprints[rack_key] = footprint
+        panel_racks[item.id] = rack_key
     area=unary_union(list(footprints.values())).area
     result, regions = wind.calculate(project, design, module, rack)
     def rack_masses():

@@ -1,0 +1,17 @@
+.design-diagnostics { margin:16px 0; }
+.design-diagnostics h3 { margin:0 0 8px; }
+.design-diagnostics p { margin:7px 0; font-size:12px; line-height:1.55; overflow-wrap:anywhere; }
+.dd-issue { margin:10px 0; padding:12px; border:1px solid var(--line-2); border-radius:10px; background:var(--well); }
+.dd-selected { border-color:var(--accent,#299b82); box-shadow:0 0 0 1px var(--accent,#299b82); }
+.dd-title { display:flex; flex-wrap:wrap; gap:6px; align-items:baseline; font-size:12px; }
+.dd-title>b { font-family:var(--f-mono); }
+.dd-title strong { flex:1; min-width:130px; }
+.dd-level { font-size:11px; color:var(--warn); }
+.dd-level.dd-hard { color:var(--danger,#c94e42); }
+.dd-actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+.dd-note { color:var(--warn); }
+.dd-unlocated { color:var(--ink-2); }
+.dd-evidence,.dd-source { margin:9px 0; font-size:12px; }
+.dd-evidence ul { margin:8px 0; padding-left:20px; }
+.dd-evidence li { margin:4px 0; overflow-wrap:anywhere; }
+.dd-source p { color:var(--ink-2); }

@@ -93,6 +93,17 @@ def rows(facts, summary=None, params=None, roof_type="flat", requirements=None, 
     if use == 'grazing':
         from .livestock import LAND
         add('牧草地复合利用', 'ask', LAND)
+    roof_dict = roof if isinstance(roof, dict) else {}
+    pitched_cfg = roof_dict.get('pitched') or {}
+    zone_labels = " ".join((z.get('label') or '') for z in (roof_dict.get('obstacles') or []) + (roof_dict.get('keepouts') or []))
+    if pitched_cfg.get('kind') == 'sawtooth':
+        add('锯齿形采光跨', 'ask', '锯齿形屋面北向陡坡玻璃采光窗严禁铺板与踩踏；南坡装板须避开天沟积水区并配置防坠落生命线')
+    if any(k in zone_labels for k in ('酸雾', '防爆', '反应釜', '化工')):
+        add('化工防腐与防爆', 'ask', '涉酸雾洗涤塔/化工排风环境须核实C4/C5重防腐导轨与316L紧固件，防爆禁区按GB 50058复核电气安全距离')
+    if any(k in zone_labels for k in ('草方格', '防沙', '固沙', '沙障')):
+        add('荒漠防沙治沙', 'ask', '光伏+草方格固沙生态区须核实桩基抗风蚀淘刷深度、双玻耐磨涂层及板下耐旱灌草滴灌运维通道')
+    if any(k in zone_labels for k in ('家禽', '禽舍', '饲喂', '饮水')):
+        add('禽畜防疫与净空', 'ask', '核实板下家禽/湖羊活动净空（≥1.5m）、直流线缆防啄咬保护套管及防疫消杀通道')
     if f.get('shifts') == 4:
         add('风机负荷', 'ask', '养殖场风机按七天运行、分季昼夜系数各月归一；为示意负荷，须实测确认')
     return out

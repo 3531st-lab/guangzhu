@@ -36,7 +36,7 @@ function details(name, data) {
       return [metric(trial(d) ? "基准规则通过" : "规则通过", `${shown(rules.passed)}/${shown(rules.total)}`), metric("硬性不通过", (trial(d) ?? rules).hard_failed),
         ...trial(d) ? [metric("试算状态", "未保存")] : []];
     case "gz_edit_design":
-      return [metric("版本", d.version), metric("修改", d.summary)];
+      return [metric("版本", d.version ?? (d.preview ? "预览" : undefined)), metric("修改", d.summary)];
     case "gz_compare_options":
       return (d.options ?? []).map((o) => metric(o.name, { version: o.version, dc_kw: o.dc_kw, payback_years: o.payback_years, irr_pct: o.irr_pct,
         meets_requirements: typeof o.hard_pass === "boolean" && Array.isArray(o.violated_requirements) ? o.hard_pass && !o.violated_requirements.length :

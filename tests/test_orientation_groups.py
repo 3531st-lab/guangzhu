@@ -55,7 +55,8 @@ def test_group_generation_hourly_and_orientation_cache(project, monkeypatch):
         calls.append((kwargs['tilt'], kwargs['azimuth']))
         b = kwargs['azimuth']
         rows = {name: dict(specific_yield_kwh_kwp=value) for name, value in dict(a=b - 10, b=b, c=b + 20).items()}
-        rows['b']['hourly'] = dict(utc=['a', 'b'], kwh=[b / 3, b * 2 / 3])
+        rows['b']['hourly'] = dict(utc=['2023-01-01T00:00:00+00:00', '2023-01-01T01:00:00+00:00'],
+                                 kwh=[b / 3, b * 2 / 3])
         return dict(results=rows, omitted={'d': 'unavailable'})
     monkeypatch.setattr(yieldsim, 'simulate_design_yields', simulate)
     shadows = dict(modules=[dict(id=m.id, total_loss_pct=loss) for m, loss in zip(modules, [10, 30, 20])])

@@ -11,12 +11,12 @@ FINANCIAL_KEYS = ('insurance_rate', 'cleaning_times', 'cleaning_per_w', 'replace
 def energy_key(project):
     """Prove saved energy/TOU inputs; current shading uses roof-relative geometry."""
     from .economics import resolve_parameters
-    from .electrical import equipment_catalog
+    from .electrical import resolve_catalog_for_project
     from .config import DATA_DIR
     inputs = project.model_dump(mode='json', exclude_none=True)
     for field in ('height_m', 'grid_point', 'inverter_positions'):
         inputs['roof'].pop(field, None)
-    module = equipment_catalog()['modules'][project.equipment.module_id]
+    module = resolve_catalog_for_project(project)['modules'][project.equipment.module_id]
     record = [inputs, resolve_parameters(project), module,
               (DATA_DIR / 'catalog/tou-jiangsu.csv').read_text(encoding='utf-8-sig'), 'T30-energy/1']
     return hashlib.sha256(json.dumps(record, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
@@ -161,7 +161,7 @@ def calculate(project, dc_kw, energy, *, design=None, electric=None, load=None, 
     effective = priced['effective_ratio']
     reference_ratio = priced.get('reference_self_use_kwh')
     reference_ratio = reference_ratio / energy['p50'] if reference_ratio is not None and energy['p50'] else effective
-    result['self_use'] = dict(algorithm='按用电逐时算' if supplied.monthly_kwh and supplied.shifts else priced['load_mode'],
+    result['self_use'] = dict(algorithm=priced['load_mode'],
                               effective_ratio=effective, ratio=reference_ratio,
                               self_use_kwh=priced['self_use_kwh'], export_kwh=exported,
                               curtailed_kwh=energy['p50'] - priced['self_use_kwh'] - exported,
@@ -169,6 +169,12 @@ def calculate(project, dc_kw, energy, *, design=None, electric=None, load=None, 
                               annual_load_kwh=supplied.monthly_kwh * 12 if supplied.monthly_kwh else None,
                               reference_self_use_kwh=priced.get('reference_self_use_kwh'),
                               manual_override=supplied.self_use_ratio is not None and priced['load_mode'] != '按用电逐时算')
+    if 'monthly' in priced:
+        result['self_use']['monthly'] = [dict(row,
+            export_kwh=0.0 if blocked else max(0.0, row['generation_kwh'] - row['self_use_kwh']),
+            curtailed_kwh=max(0.0, row['generation_kwh'] - row['self_use_kwh']) if blocked else 0.0)
+            for row in priced['monthly']]
+        result['self_use']['monthly_basis'] = '当前版本逐时模拟按北京时间汇总；自用分配口径见algorithm，不是用户电表实测数据'
     green_kwh = exported * max(0, 1 - (mechanism if mechanism_years else 0) - green_share)
     result['income_breakdown'] = dict(self_saving_cny=priced['revenue_cny'], export_cny=exported * market,
                                      green_cny=green_kwh / 1000 * green_price, subsidy_cny=subsidy if subsidy_year == 1 else 0,

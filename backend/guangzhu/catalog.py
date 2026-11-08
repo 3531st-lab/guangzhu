@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass, replace
 import hashlib
+import json
 import math
 from pathlib import Path
 import uuid
@@ -151,8 +152,107 @@ def _validate_equipment(module: pd.Series, inverter: pd.Series, series=SERIES, p
         raise CatalogDataError(f"STC string Vmp {voltage} V is outside the CEC MPPT range.")
 
 
+_CEC_PARAMETERS = ('alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s', 'Adjust')
+
+
+def _iv_point(module, irradiance, temperature):
+    params = pvlib.pvsystem.calcparams_cec(irradiance, temperature,
+        **{key: _number(module, key) for key in _CEC_PARAMETERS})
+    point = pvlib.pvsystem.singlediode(*params, method='lambertw')
+    values = {key: float(point[key]) for key in ('p_mp', 'v_mp', 'i_mp', 'v_oc', 'i_sc')}
+    if not all(math.isfinite(v) and v > 0 for v in values.values()) or not (
+            values['v_mp'] < values['v_oc'] and values['i_mp'] < values['i_sc']):
+        raise CatalogDataError('CEC proxy produced a nonphysical illuminated IV curve.')
+    return values
+
+
+def _proxy_module(source, target, source_row):
+    """Scale the complete source IV curve; never relabel it as a tested target model.
+
+    V'=s_v V, I'=s_i I preserves the single-diode equation when currents
+    (including I0/alpha) scale by s_i, a/beta by s_v, and both resistances by
+    s_v/s_i. Matching Pmp and Vmp does not fit Voc, Isc or temperature response.
+    """
+    positive = ('pmax_w', 'stc_w', 'vmp_v', 'imp_a', 'voc_v', 'isc_a', 'length_m', 'width_m', 'noct_c')
+    try:
+        values = {key: float(target[key]) for key in positive}
+    except (KeyError, TypeError, ValueError) as error:
+        raise CatalogDataError('CEC proxy target is missing finite numeric inputs.') from error
+    if not all(math.isfinite(v) and v > 0 for v in values.values()) or not (
+            values['voc_v'] > values['vmp_v'] and values['isc_a'] > values['imp_a']):
+        raise CatalogDataError('CEC proxy target has nonphysical power, voltage, current or geometry.')
+    if not math.isclose(values['stc_w'], values['pmax_w'], rel_tol=.01) or not math.isclose(
+            values['vmp_v'] * values['imp_a'], values['pmax_w'], rel_tol=.01):
+        raise CatalogDataError('CEC proxy target STC power and Vmp*Imp differ by more than the 1% input consistency allowance.')
+    if values['pmax_w'] >= 1000 * values['length_m'] * values['width_m']:
+        raise CatalogDataError('CEC proxy target STC efficiency must be below 100% of incident solar power.')
+    source_stc = _iv_point(source, 1000, 25)
+    scale_v = values['vmp_v'] / source_stc['v_mp']
+    scale_i = values['pmax_w'] / (values['vmp_v'] * source_stc['i_mp'])
+    module = source.copy()
+    for key in ('I_L_ref', 'I_o_ref', 'alpha_sc'):
+        module[key] = _number(source, key) * scale_i
+    for key in ('a_ref', 'beta_oc'):
+        module[key] = _number(source, key) * scale_v
+    for key in ('R_s', 'R_sh_ref'):
+        module[key] = _number(source, key) * scale_v / scale_i
+    module['Manufacturer'] = target['manufacturer']
+    module['STC'] = values['pmax_w']
+    module['A_c'] = values['length_m'] * values['width_m']
+    module['T_NOCT'] = values['noct_c']
+    module.name = 'proxy__' + target['module_id']
+    stc = _iv_point(module, 1000, 25)
+    for key, result_key in (('V_mp_ref', 'v_mp'), ('I_mp_ref', 'i_mp'), ('V_oc_ref', 'v_oc'), ('I_sc_ref', 'i_sc')):
+        module[key] = stc[result_key]
+    if not math.isclose(stc['p_mp'], values['pmax_w'], rel_tol=1e-6) or not math.isclose(stc['v_mp'], values['vmp_v'], rel_tol=1e-6):
+        raise CatalogDataError('Final CEC proxy does not reproduce its declared STC power and Vmp.')
+    irradiances, temperatures = (100, 200, 600, 1000, 1200), (-20, 25, 75, 85)
+    samples = []
+    for temperature in temperatures:
+        previous = 0.0
+        for irradiance in irradiances:
+            point = _iv_point(module, irradiance, temperature)
+            if point['p_mp'] <= previous:
+                raise CatalogDataError('CEC proxy power is not increasing with irradiance.')
+            previous = point['p_mp']
+            samples.append(dict(irradiance_w_m2=irradiance, cell_temperature_c=temperature, **point))
+    cold, hot = _iv_point(module, 1000, 24), _iv_point(module, 1000, 26)
+    temperature_coefficients = {}
+    for key, field in (('p_mp', 'gamma_pmax_pct_c'), ('v_oc', 'beta_voc_pct_c'), ('i_sc', 'alpha_isc_pct_c')):
+        calculated = (hot[key] - cold[key]) / (2 * stc[key]) * 100
+        declared = float(target[field])
+        if not math.isfinite(declared):
+            raise CatalogDataError('CEC proxy target temperature coefficient is not finite.')
+        temperature_coefficients[field] = dict(proxy=calculated, catalog_input=declared,
+                                               difference_pct_per_c=calculated - declared)
+    parameters = {key: _number(module, key) for key in (*_CEC_PARAMETERS, 'STC', 'A_c', 'T_NOCT',
+                   'V_mp_ref', 'I_mp_ref', 'V_oc_ref', 'I_sc_ref', 'beta_oc')}
+    provenance = dict(status='proxy', target_module_id=target['module_id'], target_model=target['model'],
+        target_parameters_status='unverified', manufacturer_certified=False,
+        source_module_id=source_row['module_id'], source_module_name=source_row['sam_original_name'],
+        source_module_key=source_row['pvlib_key'], method='cec_iv_homothetic_scale_pmp_vmp_v1',
+        method_description='完整缩放源CEC的电流、电压和电阻参数，使代理STC功率与工作电压对应目录输入；未拟合目标Voc/Isc/温度曲线',
+        scale_current=scale_i, scale_voltage=scale_v, parameters=parameters,
+        parameter_sha256=hashlib.sha256(json.dumps(parameters, sort_keys=True, separators=(',', ':')).encode()).hexdigest(),
+        target_input_sha256=hashlib.sha256(json.dumps(target, sort_keys=True, ensure_ascii=False).encode()).hexdigest(),
+        annual_energy_error_pct=None,
+        limitation='代理估算；扩展机型的目录输入未逐项核验厂家原始规格书。STC吻合与数值稳定不构成厂家认证或全年精度验证；温度响应继承源模型，未模拟背面增益；年发电误差未知。',
+        validation=dict(stc=dict(p_mp_w=stc['p_mp'], v_mp_v=stc['v_mp'], i_mp_a=stc['i_mp'],
+            v_oc_v=stc['v_oc'], i_sc_a=stc['i_sc'],
+            pmax_error_pct=(stc['p_mp'] / values['pmax_w'] - 1) * 100,
+            vmp_error_pct=(stc['v_mp'] / values['vmp_v'] - 1) * 100,
+            imp_error_pct=(stc['i_mp'] / values['imp_a'] - 1) * 100,
+            voc_error_pct=(stc['v_oc'] / values['voc_v'] - 1) * 100,
+            isc_error_pct=(stc['i_sc'] / values['isc_a'] - 1) * 100),
+            temperature_coefficients=temperature_coefficients,
+            operating_grid=dict(passed=True, sample_count=len(samples), irradiance_w_m2=list(irradiances),
+                cell_temperature_c=list(temperatures), checks=['finite_positive', 'vmp_below_voc', 'imp_below_isc', 'power_increases_with_irradiance'],
+                samples=samples)))
+    return module, provenance
+
+
 def load_cec_equipment(*, offline: bool = False, module_id=None) -> tuple[pd.Series, pd.Series, dict]:
-    """Return unchanged pvlib CEC Series plus the fixed T03 array provenance.
+    """Return pinned CEC Series or an explicitly identified, validated proxy.
 
     Explicit offline mode uses the committed subsets. Otherwise existing full
     catalogs are verified on every call before any download; only a network
@@ -161,13 +261,24 @@ def load_cec_equipment(*, offline: bool = False, module_id=None) -> tuple[pd.Ser
     """
     specs = _specs()
     selected, series, parallel = None, SERIES, PARALLEL
+    extended_selected = None
     if module_id and module_id != 'trina-tsm-550de19':
         from .electrical import load_catalog
-        selected = load_catalog('modules.csv').get(module_id)
+        base_mods = load_catalog('modules.csv')
+        selected = base_mods.get(module_id)
         arrays = {'runergy-hy-wh144p8-550': (19, 7), 'trina-tsm-605neg19rc20': (20, 6), 'jinko-jkm605n-66hl4m-bdv': (20, 6)}
-        if selected is None or module_id not in arrays:
+        if selected is None:
+            ext_mods = load_catalog('modules.csv', include_extended=True)
+            if module_id in ext_mods:
+                extended_selected = ext_mods[module_id]
+                selected = base_mods.get(extended_selected.get('proxy_source_module_id'))
+                if selected is None or any(extended_selected.get(k) != selected[k] for k in ('sam_original_name', 'pvlib_key')):
+                    raise CatalogDataError('CEC proxy source ID, original name and key must identify the same pinned module.')
+                series, parallel = arrays.get(selected['module_id'], (SERIES, PARALLEL))
+        if selected is None or (extended_selected is None and module_id not in arrays):
             raise CatalogDataError('Selected module has no verified CEC reference array.')
-        series, parallel = arrays[module_id]
+        if extended_selected is None:
+            series, parallel = arrays[module_id]
         specs = (replace(specs[0], original_name=selected['sam_original_name'], key=selected['pvlib_key']), specs[1])
     paths = [Path(CACHE_DIR) / spec.filename for spec in specs]
     source_used, fallback_reason = "cache", None
@@ -199,6 +310,16 @@ def load_cec_equipment(*, offline: bool = False, module_id=None) -> tuple[pd.Ser
         _read_selected(path, spec.original_name, spec.key) for spec, path in zip(specs, paths)
     )
     _validate_equipment(module, inverter, series, parallel, selected)
+    proxy = None
+    if extended_selected is not None:
+        module, proxy = _proxy_module(module, extended_selected, selected)
+        choices = [(s, p) for s in range(1, 51) for p in range(1, 21)
+                   if float(inverter['Mppt_low']) <= s * float(module['V_mp_ref']) <= float(inverter['Mppt_high'])
+                   and 1.1 <= s * p * float(module['STC']) / float(inverter['Paco']) <= 1.25]
+        if not choices:
+            raise CatalogDataError('No eligible efficiency reference array for the final proxy model.')
+        series, parallel = min(choices, key=lambda sp: (abs(sp[0] * sp[1] * float(module['STC']) / float(inverter['Paco']) - 1.18),
+                                                       abs(sp[0] * float(module['V_mp_ref']) - 680), sp))
     dc_capacity_kw = series * parallel * float(module["STC"]) / 1000
     metadata = {
         "sam_commit": SAM_COMMIT, "source_used": source_used,
@@ -217,4 +338,7 @@ def load_cec_equipment(*, offline: bool = False, module_id=None) -> tuple[pd.Ser
     }
     if fallback_reason is not None:
         metadata["fallback_reason"] = fallback_reason
+    if proxy is not None:
+        metadata.update(model_status='proxy', model_provenance=proxy,
+                        module_name='代理估算：' + extended_selected['model'], module_key=module.name)
     return module, inverter, metadata

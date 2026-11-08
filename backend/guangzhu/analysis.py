@@ -6,6 +6,7 @@ import json
 import re
 import sys
 import time
+from datetime import datetime, timedelta, timezone
 from . import project as storage, shading, electrical, structure, rules, economics, yieldsim
 from .models import GzError
 from .runtime_diagnostics import stage
@@ -107,6 +108,18 @@ def fit_summary(result, budget=1920):
     return result
 
 
+def _monthly_generation(energy):
+    """Persist local-month totals from the same shaded AC series used by economics."""
+    hourly = energy['hourly']
+    months = [dict(month=month, ac_kwh=0.0) for month in range(1, 13)]
+    for timestamp, value in zip(hourly['utc'], hourly['kwh'], strict=True):
+        stamp = datetime.fromisoformat(timestamp).astimezone(timezone(timedelta(hours=8)))
+        months[stamp.month - 1]['ac_kwh'] += value
+    energy['monthly_kwh'] = months
+    energy['monthly_basis'] = 'b链逐时交流发电，已按当前遮挡模型扣减；按北京时间汇总，不是实测发电'
+    return energy
+
+
 def generation(project,design,shadows,dc_kw,*,offline=False):
     design = next(orientation.views(design))[1] if len(orientation.groups(design)) == 1 else design
     if len(orientation.groups(design)) > 1 or project.roof.type == 'pitched' and design.modules:
@@ -130,7 +143,7 @@ def generation(project,design,shadows,dc_kw,*,offline=False):
                     shading_pct=100 * (1 - multiplier / capacity) if capacity else 0))
             omitted.update(result['omitted'])
         energy['per_kw'] = energy['p50'] / dc_kw if dc_kw else 0.0
-        return energy, dict(groups=records, omitted=omitted)
+        return _monthly_generation(energy), dict(groups=records, omitted=omitted)
     loss=economics.load_assumptions()['design_system_loss_pct']['value']
     result=yieldsim.simulate_design_yields(project.site.lat,project.site.lon,tilt=design.params.tilt_deg,
                                          azimuth=design.params.azimuth_deg,loss_percent=loss,offline=offline,
@@ -141,21 +154,28 @@ def generation(project,design,shadows,dc_kw,*,offline=False):
                 per_kw=specific['b']*(1-shadows['summary']['avg_loss_pct']/100))
     hourly = result['results']['b']['hourly']
     energy['hourly'] = dict(utc=hourly['utc'], kwh=[value * multiplier for value in hourly['kwh']])
-    return energy,result
+    return _monthly_generation(energy),result
 
 
 def analyze(project_id,version,*,offline=False):
     started=time.perf_counter()
     with stage("analysis.load"):
         project,design=storage.load(project_id),storage.load_design(project_id,version)
+    from .analysis_inputs import project_signature, write_completion, engine_inputs
+    input_hash = project_signature(project)
     from .installation import effective
     project = effective(project, design)
     path=storage._path(project_id,f'analysis/v{version}/shading.json')
     design_hash=hashlib.sha256(storage._path(project_id,f'designs/v{version}.json').read_bytes()).hexdigest()
-    shadows=json.loads(path.read_text(encoding='utf-8')) if path.exists() else None
-    reused=bool(shadows and shadows.get('version')==version and shadows.get('metadata',{}).get('design_sha256')==design_hash)
+    shadow_bytes = path.read_bytes() if path.exists() else None
+    shadows=json.loads(shadow_bytes) if shadow_bytes is not None else None
+    shadow_metadata = shadows.get('metadata') if isinstance(shadows, dict) else None
+    reused=bool(isinstance(shadow_metadata, dict) and shadows.get('version')==version
+                and shadow_metadata.get('design_sha256')==design_hash and shadow_metadata.get('project_inputs_sha256')==input_hash)
     with stage("analysis.shading"):
-        if not reused:shadows=shading.analyze(project_id,version,offline=offline)
+        if not reused:
+            shadows=shading.analyze(project_id,version,offline=offline)
+            shadow_bytes = (json.dumps(shadows, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
     with stage("analysis.electrical"):
         electric=electrical.calculate(project,design,offline=offline,shadows=shadows)
     with stage("analysis.structure"):
@@ -173,14 +193,21 @@ def analyze(project_id,version,*,offline=False):
     summary=_summary(design,shadows,electric,load,cash,energy,checked,omitted=generated['omitted'])
     cash['generation'] = yieldsim.without_hourly(generated)
     cash['analysis_metadata']=dict(elapsed_seconds=time.perf_counter()-started,shading_reused=reused,design_sha256=design_hash,
+                                   calculation_engine=engine_inputs(),
+                                   project_inputs_sha256=input_hash, completion_required=True,
                                    system_loss_source=assumptions['design_system_loss_pct'],
                                    yield_kwh=yieldsim.without_hourly(energy),
                                    interval_note='五条链天气与模型差异范围，非统计概率置信区间；p50字段沿用旧名，是基准年估算（b链：NASA POWER 2023天气+CEC详细模型），不是概率P50')
     with stage("analysis.save"):
+        output_hashes = {'shading.json': hashlib.sha256(shadow_bytes).hexdigest()}
         for name,result in [('electrical',electric),('structure',load),('economics',cash),('rules',checked)]:
+            output_hashes[name + '.json'] = hashlib.sha256((json.dumps(result, ensure_ascii=False, indent=2) + '\n').encode('utf-8')).hexdigest()
             rules.save_result(project_id,version,name,result)
         path=storage._path(project_id,f'analysis/v{version}/summary.json')
-        path.write_text(serialized(summary)+'\n',encoding='utf-8',newline='\n')
+        summary_text = serialized(summary) + '\n'
+        path.write_text(summary_text,encoding='utf-8',newline='\n')
+        output_hashes['summary.json'] = hashlib.sha256(summary_text.encode('utf-8')).hexdigest()
+        write_completion(path.parent, version, design_hash, input_hash, expected_hashes=output_hashes)
     return summary
 
 

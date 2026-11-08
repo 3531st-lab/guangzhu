@@ -18,16 +18,31 @@ def test_geometry_exports_every_template_zone_without_losing_circle_or_polygon()
     legacy_ids = {'changzhou-demo', 'l-shape', 'metal-demo-n', 'metal-demo-s', 'rotated', 'south-tower'}
     legacy_ids |= {f't12-{group}-{number:02d}' for group, count in [('boundary', 6), ('impossible', 6), ('real', 12)]
                    for number in range(1, count + 1)}
-    pitched_ids = {'pitched-gable-demo', 'pitched-saw-demo'}
+    pitched_ids = {'pitched-gable-demo', 'pitched-saw-demo', 'compound-factory-demo'}
     installation_ids = {'ground-demo', 'carport-demo'}
     livestock_ids = {'grazing-demo', 'barn-demo'}
-    assert len(legacy_ids) == 30 and len(pitched_ids) == 2
-    assert {row['id'] for row in data['templates']} == set(catalog(all=True)) == legacy_ids | pitched_ids | installation_ids | livestock_ids
-    assert len(data['templates']) == 36
+    taizhou_ids = {
+        'taizhou-cmc-pharma', 'taizhou-shipbuilding-workshop', 'taizhou-watertown-pavilion', 'taizhou-lixiahe-coldchain',
+        'taizhou-sawtooth-textile', 'taizhou-taixing-chemical', 'taizhou-lixiahe-poultry', 'northwest-desert-sandcontrol',
+    }
+    assert len(legacy_ids) == 30 and len(pitched_ids) == 3 and len(taizhou_ids) == 8
+    assert {row['id'] for row in data['templates']} == legacy_ids | pitched_ids | installation_ids | livestock_ids | taizhou_ids
+    assert {row['id'] for row in data['templates']} <= set(catalog(all=True, mine=False))
+    assert len(data['templates']) == 45
     for template in data['templates']:
         roof = json.loads(resolve(template['id']).read_text(encoding='utf8'))['roof']
         for key in ('outline', 'obstacles', 'keepouts'):
             assert template[key] == roof[key]
+
+
+def test_public_plugin_never_embeds_local_park_geometry(monkeypatch):
+    original = builder.catalog_data
+    private_project = {'name': 'private customer', 'roof': {'outline': [[0, 0], [12, 0], [0, 12]]}}
+    def with_private_park(*args, **kwargs):
+        return original(*args, **kwargs) | {'private-park-roof':
+            (ROOT / 'data/parks/private/roofs/private-park-roof/project.json', private_project)}
+    monkeypatch.setattr(builder, 'catalog_data', with_private_park)
+    assert 'private-park-roof' not in {row['id'] for row in builder.make_data()['templates']}
 
 
 @pytest.mark.parametrize('origin', ['*', 'https://example.com', 'http://localhost:8765', 'http://127.0.0.1:8765/',

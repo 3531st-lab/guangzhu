@@ -1,0 +1,14 @@
+{
+  "source": "pvgis_pvcalc",
+  "latitude": 32.46,
+  "longitude": 119.92,
+  "tilt": 18,
+  "azimuth": 180,
+  "peakpower_kw": 1,
+  "loss_percent": 14.0,
+  "request_url": "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc?lat=32.46&lon=119.92&peakpower=1&loss=14.0&angle=18&aspect=0&raddatabase=PVGIS-ERA5&outputformat=json",
+  "download_time": "2026-11-04T05:47:49.934311+00:00",
+  "used": "download",
+  "data_file": "pvgis_32.4600_119.9200_tilt18.0000_azimuth180.0000.json",
+  "data_file_sha256": "e1f292194867fb6af92d76db0bbe80f2f475fdded8e7e8f94ca272d7bc0612f1"
+}

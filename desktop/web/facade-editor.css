@@ -1,0 +1,21 @@
+.re-facade { padding: 0; min-width: 0; }
+.re-facade > summary { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 14px 16px; cursor: pointer; font-weight: 600; }
+.re-facade > summary::before { content: '▸'; color: var(--accent); }
+.re-facade[open] > summary::before { content: '▾'; }
+.re-facade > summary::marker { content: ''; }
+.re-facade > summary small { color: var(--muted); font-size: 11px; font-weight: 400; }
+.re-facade-body { display: grid; gap: 12px; padding: 0 16px 16px; }
+.re-facade-settings { display: grid; gap: 12px; min-width: 0; padding: 0; margin: 0; border: 0; }
+.re-facade-settings:disabled { opacity: .55; }
+.re-facade-settings h4 { font-size: 13px; margin: 4px 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
+.re-facade-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.re-facade-presets i { display: inline-block; width: 13px; height: 13px; border: 2px solid; border-radius: 3px; margin-right: 5px; }
+.re-facade-colors { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.re-facade-color { display: grid; grid-template-columns: minmax(0,1fr) 36px; align-items: center; gap: 3px 6px; font-size: 12px; }
+.re-facade-color input[type=color] { width: 36px; height: 29px; padding: 2px; grid-row: span 2; }
+.re-facade-color code { color: var(--muted); font-size: 10px; }
+.re-facade-body p { margin: 0; font-size: 12px; line-height: 1.5; }
+.re-facade-warning { color: var(--warn); }
+.re-facade-warning[hidden] { display: none; }
+.re-canvas.is-3d .re-tools { display: flex; z-index: 2; top: 14px; bottom: auto; }
+.re-canvas.is-3d .re-tools label { display: none; }

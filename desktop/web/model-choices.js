@@ -3,8 +3,8 @@ export const qualified = model => model?.route ? model.route + '/' + model.id : 
 const pick = (models, preference) => preference ? models.find(m => qualified(m) === preference) ??
   (preference.includes('/') ? null : models.find(m => m.id === preference)) : null;
 export function modelChoices(models, preference = '', reviewPreference = '') {
-  const deepseek = models.find(m => /deepseek-v4-pro/i.test(m.id)) ?? models.find(m => /deepseek/i.test(m.id + ' ' + m.label));
-  const agnes = models.find(m => /agnes-3\.0-flash/i.test(m.id)) ?? models.find(m => /agnes/i.test(m.id + ' ' + m.label));
+  const deepseek = models.find(m => /deepseek-v4-pro/i.test(m.id)) ?? models.find(m => /deepseek/i.test(m.id + ' ' + m.label + ' ' + (m.route ?? '')));
+  const agnes = models.find(m => /agnes-3\.0-flash/i.test(m.id)) ?? models.find(m => /agnes/i.test(m.id + ' ' + m.label + ' ' + (m.route ?? '')));
   const design = pick(models, preference) ?? deepseek ?? agnes ?? models[0];
   return {design, review:pick(models, reviewPreference) ?? agnes ?? design};
 }

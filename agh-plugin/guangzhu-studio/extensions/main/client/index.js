@@ -186,6 +186,216 @@ var DATA = {
       ]
     },
     {
+      "id": "compound-factory-demo",
+      "name": "高低跨组合厂房（示意）",
+      "outline": [
+        [
+          80,
+          12
+        ],
+        [
+          60,
+          12
+        ],
+        [
+          60,
+          24
+        ],
+        [
+          0,
+          24
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          60,
+          0
+        ],
+        [
+          80,
+          0
+        ]
+      ],
+      "obstacles": [
+        {
+          "id": "annex-hvac",
+          "label": "附楼机房（示意）",
+          "kind": "prism",
+          "height_m": 2,
+          "footprint": [
+            [
+              65,
+              4
+            ],
+            [
+              69,
+              4
+            ],
+            [
+              69,
+              7
+            ],
+            [
+              65,
+              7
+            ]
+          ],
+          "center": null,
+          "radius_m": null,
+          "plane_id": 3,
+          "part_id": "annex"
+        }
+      ],
+      "keepouts": [
+        {
+          "id": "skylight-1",
+          "label": "采光带1",
+          "polygon": [
+            [
+              4,
+              5
+            ],
+            [
+              6,
+              5
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              4,
+              6
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        },
+        {
+          "id": "skylight-2",
+          "label": "采光带2",
+          "polygon": [
+            [
+              12,
+              5
+            ],
+            [
+              14,
+              5
+            ],
+            [
+              14,
+              6
+            ],
+            [
+              12,
+              6
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        },
+        {
+          "id": "skylight-3",
+          "label": "采光带3",
+          "polygon": [
+            [
+              20,
+              5
+            ],
+            [
+              22,
+              5
+            ],
+            [
+              22,
+              6
+            ],
+            [
+              20,
+              6
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        },
+        {
+          "id": "skylight-4",
+          "label": "采光带4",
+          "polygon": [
+            [
+              28,
+              5
+            ],
+            [
+              30,
+              5
+            ],
+            [
+              30,
+              6
+            ],
+            [
+              28,
+              6
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        },
+        {
+          "id": "skylight-5",
+          "label": "采光带5",
+          "polygon": [
+            [
+              36,
+              5
+            ],
+            [
+              38,
+              5
+            ],
+            [
+              38,
+              6
+            ],
+            [
+              36,
+              6
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        },
+        {
+          "id": "skylight-6",
+          "label": "采光带6",
+          "polygon": [
+            [
+              44,
+              5
+            ],
+            [
+              46,
+              5
+            ],
+            [
+              46,
+              6
+            ],
+            [
+              44,
+              6
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        }
+      ]
+    },
+    {
       "id": "grazing-demo",
       "name": "常州某牧场牧光（养羊示意）",
       "outline": [
@@ -604,6 +814,102 @@ var DATA = {
       ]
     },
     {
+      "id": "northwest-desert-sandcontrol",
+      "name": "西北生态演示·荒漠光伏草方格防沙治沙基地",
+      "outline": [
+        [
+          0,
+          0
+        ],
+        [
+          72,
+          0
+        ],
+        [
+          72,
+          44
+        ],
+        [
+          0,
+          44
+        ]
+      ],
+      "obstacles": [
+        {
+          "id": "sand-pump-1",
+          "label": "光伏扬水滴灌控制泵房",
+          "kind": "prism",
+          "height_m": 2.4,
+          "footprint": [
+            [
+              32,
+              4
+            ],
+            [
+              37,
+              4
+            ],
+            [
+              37,
+              7.5
+            ],
+            [
+              32,
+              7.5
+            ]
+          ],
+          "center": null,
+          "radius_m": null
+        }
+      ],
+      "keepouts": [
+        {
+          "id": "sand-grid-1",
+          "label": "草方格沙障与梭梭固沙示范带1",
+          "polygon": [
+            [
+              6,
+              4
+            ],
+            [
+              18,
+              4
+            ],
+            [
+              18,
+              8.5
+            ],
+            [
+              6,
+              8.5
+            ]
+          ]
+        },
+        {
+          "id": "sand-grid-2",
+          "label": "草方格沙障与柠条固沙示范带2",
+          "polygon": [
+            [
+              46,
+              4
+            ],
+            [
+              58,
+              4
+            ],
+            [
+              58,
+              8.5
+            ],
+            [
+              46,
+              8.5
+            ]
+          ]
+        }
+      ]
+    },
+    {
       "id": "pitched-gable-demo",
       "name": "常州示意双坡整栋厂房",
       "outline": [
@@ -915,6 +1221,834 @@ var DATA = {
         }
       ],
       "keepouts": []
+    },
+    {
+      "id": "taizhou-cmc-pharma",
+      "name": "泰州产业演示·医药洁净厂房",
+      "outline": [
+        [
+          78,
+          18
+        ],
+        [
+          56,
+          18
+        ],
+        [
+          56,
+          28
+        ],
+        [
+          0,
+          28
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          56,
+          0
+        ],
+        [
+          78,
+          0
+        ]
+      ],
+      "obstacles": [
+        {
+          "id": "ahu-clean-1",
+          "label": "洁净空调机组AHU",
+          "kind": "prism",
+          "height_m": 2.2,
+          "footprint": [
+            [
+              59,
+              11.5
+            ],
+            [
+              64,
+              11.5
+            ],
+            [
+              64,
+              15
+            ],
+            [
+              59,
+              15
+            ]
+          ],
+          "center": null,
+          "radius_m": null,
+          "plane_id": 3,
+          "part_id": "annex"
+        },
+        {
+          "id": "scrubber-acid-1",
+          "label": "酸雾洗涤排风塔",
+          "kind": "cylinder",
+          "height_m": 2.8,
+          "footprint": null,
+          "center": [
+            72,
+            13.5
+          ],
+          "radius_m": 1.2,
+          "plane_id": 3,
+          "part_id": "annex"
+        },
+        {
+          "id": "purified-tank-1",
+          "label": "纯化水储罐",
+          "kind": "cylinder",
+          "height_m": 2.4,
+          "footprint": null,
+          "center": [
+            72,
+            5
+          ],
+          "radius_m": 1.4,
+          "plane_id": 3,
+          "part_id": "annex"
+        }
+      ],
+      "keepouts": [
+        {
+          "id": "cmc-skylight-1",
+          "label": "洁净走廊采光带1",
+          "polygon": [
+            [
+              8,
+              6
+            ],
+            [
+              12,
+              6
+            ],
+            [
+              12,
+              7.2
+            ],
+            [
+              8,
+              7.2
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        },
+        {
+          "id": "cmc-skylight-2",
+          "label": "洁净走廊采光带2",
+          "polygon": [
+            [
+              24,
+              6
+            ],
+            [
+              28,
+              6
+            ],
+            [
+              28,
+              7.2
+            ],
+            [
+              24,
+              7.2
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        },
+        {
+          "id": "cmc-skylight-3",
+          "label": "洁净走廊采光带3",
+          "polygon": [
+            [
+              40,
+              6
+            ],
+            [
+              44,
+              6
+            ],
+            [
+              44,
+              7.2
+            ],
+            [
+              40,
+              7.2
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        }
+      ]
+    },
+    {
+      "id": "taizhou-lixiahe-coldchain",
+      "name": "泰州产业演示·农业冷链仓",
+      "outline": [
+        [
+          0,
+          0
+        ],
+        [
+          54,
+          0
+        ],
+        [
+          54,
+          30
+        ],
+        [
+          0,
+          30
+        ]
+      ],
+      "obstacles": [
+        {
+          "id": "evap-condenser-1",
+          "label": "1号冷库蒸发冷机组",
+          "kind": "prism",
+          "height_m": 2.5,
+          "footprint": [
+            [
+              8,
+              22
+            ],
+            [
+              13,
+              22
+            ],
+            [
+              13,
+              26
+            ],
+            [
+              8,
+              26
+            ]
+          ],
+          "center": null,
+          "radius_m": null
+        },
+        {
+          "id": "evap-condenser-2",
+          "label": "2号冷库蒸发冷机组",
+          "kind": "prism",
+          "height_m": 2.5,
+          "footprint": [
+            [
+              16,
+              22
+            ],
+            [
+              21,
+              22
+            ],
+            [
+              21,
+              26
+            ],
+            [
+              16,
+              26
+            ]
+          ],
+          "center": null,
+          "radius_m": null
+        },
+        {
+          "id": "freight-lift-1",
+          "label": "冷链货运电梯机房",
+          "kind": "prism",
+          "height_m": 2.8,
+          "footprint": [
+            [
+              43,
+              21
+            ],
+            [
+              48,
+              21
+            ],
+            [
+              48,
+              26
+            ],
+            [
+              43,
+              26
+            ]
+          ],
+          "center": null,
+          "radius_m": null
+        },
+        {
+          "id": "defrost-tank-1",
+          "label": "融霜蓄水箱",
+          "kind": "cylinder",
+          "height_m": 2.2,
+          "footprint": null,
+          "center": [
+            46,
+            8
+          ],
+          "radius_m": 1.4
+        }
+      ],
+      "keepouts": [
+        {
+          "id": "refrigerant-pipe-bridge",
+          "label": "冷媒管桥检修通道",
+          "polygon": [
+            [
+              8,
+              19.5
+            ],
+            [
+              21,
+              19.5
+            ],
+            [
+              21,
+              21.2
+            ],
+            [
+              8,
+              21.2
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "taizhou-lixiahe-poultry",
+      "name": "泰州产业演示·姜堰里下河农牧光家禽湖羊基地",
+      "outline": [
+        [
+          0,
+          0
+        ],
+        [
+          64,
+          0
+        ],
+        [
+          64,
+          42
+        ],
+        [
+          0,
+          42
+        ]
+      ],
+      "obstacles": [],
+      "keepouts": [
+        {
+          "id": "poultry-feed-1",
+          "label": "家禽与湖羊自动饲喂饮水区",
+          "polygon": [
+            [
+              4,
+              4
+            ],
+            [
+              11,
+              4
+            ],
+            [
+              11,
+              8.5
+            ],
+            [
+              4,
+              8.5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "taizhou-sawtooth-textile",
+      "name": "泰州产业演示·海陵纺织锯齿形采光厂房",
+      "outline": [
+        [
+          0,
+          0
+        ],
+        [
+          60,
+          0
+        ],
+        [
+          60,
+          40
+        ],
+        [
+          0,
+          40
+        ]
+      ],
+      "obstacles": [
+        {
+          "id": "textile-ahu-1",
+          "label": "织机恒温恒湿空调除尘机组",
+          "kind": "prism",
+          "height_m": 2.2,
+          "footprint": [
+            [
+              4,
+              2
+            ],
+            [
+              9.5,
+              2
+            ],
+            [
+              9.5,
+              5.5
+            ],
+            [
+              4,
+              5.5
+            ]
+          ],
+          "center": null,
+          "radius_m": null,
+          "plane_id": 1
+        },
+        {
+          "id": "vent-turbo-1",
+          "label": "屋脊涡轮无动力风帽1",
+          "kind": "cylinder",
+          "height_m": 1.4,
+          "footprint": null,
+          "center": [
+            22,
+            14.5
+          ],
+          "radius_m": 0.8,
+          "plane_id": 3
+        },
+        {
+          "id": "vent-turbo-2",
+          "label": "屋脊涡轮无动力风帽2",
+          "kind": "cylinder",
+          "height_m": 1.4,
+          "footprint": null,
+          "center": [
+            42,
+            24.5
+          ],
+          "radius_m": 0.8,
+          "plane_id": 5
+        }
+      ],
+      "keepouts": [
+        {
+          "id": "saw-gutter-1",
+          "label": "锯齿天沟排水检修通道",
+          "polygon": [
+            [
+              0,
+              8.8
+            ],
+            [
+              60,
+              8.8
+            ],
+            [
+              60,
+              9.35
+            ],
+            [
+              0,
+              9.35
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "taizhou-shipbuilding-workshop",
+      "name": "泰州产业演示·船舶海工车间",
+      "outline": [
+        [
+          0,
+          0
+        ],
+        [
+          72,
+          0
+        ],
+        [
+          72,
+          36
+        ],
+        [
+          0,
+          36
+        ]
+      ],
+      "obstacles": [
+        {
+          "id": "weld-filter-1",
+          "label": "焊烟除尘净化塔",
+          "kind": "cylinder",
+          "height_m": 3,
+          "footprint": null,
+          "center": [
+            64,
+            7
+          ],
+          "radius_m": 1.6
+        },
+        {
+          "id": "crane-hoist-vent",
+          "label": "行车检修排风机房",
+          "kind": "prism",
+          "height_m": 2.4,
+          "footprint": [
+            [
+              6,
+              27
+            ],
+            [
+              11,
+              27
+            ],
+            [
+              11,
+              31
+            ],
+            [
+              6,
+              31
+            ]
+          ],
+          "center": null,
+          "radius_m": null
+        }
+      ],
+      "keepouts": [
+        {
+          "id": "ridge-vent-west",
+          "label": "屋脊通风气楼（西）",
+          "polygon": [
+            [
+              10,
+              17
+            ],
+            [
+              32,
+              17
+            ],
+            [
+              32,
+              19
+            ],
+            [
+              10,
+              19
+            ]
+          ],
+          "preset": "vent",
+          "clearance_m": 0.5
+        },
+        {
+          "id": "ridge-vent-east",
+          "label": "屋脊通风气楼（东）",
+          "polygon": [
+            [
+              40,
+              17
+            ],
+            [
+              62,
+              17
+            ],
+            [
+              62,
+              19
+            ],
+            [
+              40,
+              19
+            ]
+          ],
+          "preset": "vent",
+          "clearance_m": 0.5
+        },
+        {
+          "id": "ship-skylight-1",
+          "label": "总装跨FRP采光带1",
+          "polygon": [
+            [
+              20,
+              5
+            ],
+            [
+              22,
+              5
+            ],
+            [
+              22,
+              14
+            ],
+            [
+              20,
+              14
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        },
+        {
+          "id": "ship-skylight-2",
+          "label": "总装跨FRP采光带2",
+          "polygon": [
+            [
+              48,
+              5
+            ],
+            [
+              50,
+              5
+            ],
+            [
+              50,
+              14
+            ],
+            [
+              48,
+              14
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.3
+        }
+      ]
+    },
+    {
+      "id": "taizhou-taixing-chemical",
+      "name": "泰州产业演示·泰兴精细化工防腐车间",
+      "outline": [
+        [
+          0,
+          0
+        ],
+        [
+          72,
+          0
+        ],
+        [
+          72,
+          24
+        ],
+        [
+          48,
+          24
+        ],
+        [
+          48,
+          42
+        ],
+        [
+          0,
+          42
+        ]
+      ],
+      "obstacles": [
+        {
+          "id": "chem-scrubber-1",
+          "label": "酸雾洗涤排风塔1",
+          "kind": "cylinder",
+          "height_m": 3.2,
+          "footprint": null,
+          "center": [
+            14,
+            34
+          ],
+          "radius_m": 1.5
+        },
+        {
+          "id": "chem-scrubber-2",
+          "label": "酸雾洗涤排风塔2",
+          "kind": "cylinder",
+          "height_m": 3.2,
+          "footprint": null,
+          "center": [
+            32,
+            34
+          ],
+          "radius_m": 1.5
+        },
+        {
+          "id": "chem-ct-1",
+          "label": "玻璃钢逆流冷却塔",
+          "kind": "cylinder",
+          "height_m": 2.8,
+          "footprint": null,
+          "center": [
+            62,
+            17.5
+          ],
+          "radius_m": 1.8
+        },
+        {
+          "id": "chem-penthouse-1",
+          "label": "出屋面防爆消防电梯机房",
+          "kind": "prism",
+          "height_m": 3.4,
+          "footprint": [
+            [
+              4,
+              18
+            ],
+            [
+              9.5,
+              18
+            ],
+            [
+              9.5,
+              23
+            ],
+            [
+              4,
+              23
+            ]
+          ],
+          "center": null,
+          "radius_m": null
+        },
+        {
+          "id": "chem-hvac-1",
+          "label": "防爆洁净新风空调机组",
+          "kind": "prism",
+          "height_m": 2.1,
+          "footprint": [
+            [
+              52,
+              4
+            ],
+            [
+              58,
+              4
+            ],
+            [
+              58,
+              8
+            ],
+            [
+              52,
+              8
+            ]
+          ],
+          "center": null,
+          "radius_m": null
+        }
+      ],
+      "keepouts": [
+        {
+          "id": "chem-skylight-1",
+          "label": "反应釜防爆泄压采光天窗1",
+          "polygon": [
+            [
+              18,
+              12
+            ],
+            [
+              26,
+              12
+            ],
+            [
+              26,
+              14.5
+            ],
+            [
+              18,
+              14.5
+            ]
+          ]
+        },
+        {
+          "id": "chem-skylight-2",
+          "label": "反应釜防爆泄压采光天窗2",
+          "polygon": [
+            [
+              34,
+              12
+            ],
+            [
+              42,
+              12
+            ],
+            [
+              42,
+              14.5
+            ],
+            [
+              34,
+              14.5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "taizhou-watertown-pavilion",
+      "name": "泰州产业演示·文旅坡屋面",
+      "outline": [
+        [
+          0,
+          0
+        ],
+        [
+          44,
+          0
+        ],
+        [
+          44,
+          22
+        ],
+        [
+          0,
+          22
+        ]
+      ],
+      "obstacles": [],
+      "keepouts": [
+        {
+          "id": "atrium-skylight-1",
+          "label": "戏曲茶社中庭天窗",
+          "polygon": [
+            [
+              19,
+              4
+            ],
+            [
+              25,
+              4
+            ],
+            [
+              25,
+              7.5
+            ],
+            [
+              19,
+              7.5
+            ]
+          ],
+          "preset": "skylight",
+          "clearance_m": 0.4,
+          "plane_id": 1
+        }
+      ]
     },
     {
       "id": "t12-boundary-01",
@@ -4755,8 +5889,8 @@ function createEmbeddedTheme(win) {
 var qualified = (model) => model?.route ? model.route + "/" + model.id : model?.id ?? "";
 var pick = (models, preference) => preference ? models.find((m) => qualified(m) === preference) ?? (preference.includes("/") ? null : models.find((m) => m.id === preference)) : null;
 function modelChoices(models, preference = "", reviewPreference = "") {
-  const deepseek = models.find((m) => /deepseek-v4-pro/i.test(m.id)) ?? models.find((m) => /deepseek/i.test(m.id + " " + m.label));
-  const agnes = models.find((m) => /agnes-3\.0-flash/i.test(m.id)) ?? models.find((m) => /agnes/i.test(m.id + " " + m.label));
+  const deepseek = models.find((m) => /deepseek-v4-pro/i.test(m.id)) ?? models.find((m) => /deepseek/i.test(m.id + " " + m.label + " " + (m.route ?? "")));
+  const agnes = models.find((m) => /agnes-3\.0-flash/i.test(m.id)) ?? models.find((m) => /agnes/i.test(m.id + " " + m.label + " " + (m.route ?? "")));
   const design = pick(models, preference) ?? deepseek ?? agnes ?? models[0];
   return { design, review: pick(models, reviewPreference) ?? agnes ?? design };
 }
@@ -4915,8 +6049,14 @@ async function configuredModels(ctx, preference, reviewPreference) {
 }
 function createBridge(ctx, win = window) {
   let hello, peer, peerOrigin, serial = 0, timer, last = 0, reading = false, dirty = false, stopped = false, starting = false, pendingTool = "";
-  let currentNodes = [], installation = null, workspaceId = null;
+  let currentNodes = [], installation = null, workspaceId = null, activeSessionId = ctx.session.getSnapshot() ?? null;
   const listeners = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set(), theme = createEmbeddedTheme(win);
+  const blockWorkspaceReset = (event) => {
+    if (event.target?.closest?.("#composer-workspace, .composer-workspace")) {
+      event.preventDefault?.();
+      event.stopPropagation?.();
+    }
+  };
   const emit = (type, fields2, re = hello) => {
     if (!stopped && hello && peer !== win) peer.postMessage({ v: 1, type, id: `gz-${Date.now()}-${++serial}`, re, ...fields2 }, peerOrigin);
   };
@@ -5003,7 +6143,12 @@ function createBridge(ctx, win = window) {
     }
   };
   const navigate = (session_id) => {
+    activeSessionId = session_id;
     const url = new URL(win.location.href);
+    if (url.searchParams.get("session") === session_id && snapshot() === session_id) {
+      schedule();
+      return;
+    }
     url.searchParams.set("session", session_id);
     win.location.assign(url.href);
   };
@@ -5020,6 +6165,7 @@ function createBridge(ctx, win = window) {
       peer = event.source;
       peerOrigin = event.origin;
       win.document.documentElement.setAttribute("data-gz-embedded", "");
+      win.document.addEventListener?.("click", blockWorkspaceReset, true);
       theme.apply(win.document.documentElement.classList.contains("dark") ? "dark" : "light");
       try {
         const source = installation ? (await configuredModels(ctx).catch(() => ({ models: [] }))).models.map((model) => ({ ...model, label: model.name })) : (await ctx.agnes.apis()).profile.models ?? [];
@@ -5045,22 +6191,36 @@ function createBridge(ctx, win = window) {
     }
     if (m.type === "gz.saveKey") {
       const provider = Object.hasOwn(PROVIDERS, m.provider) ? PROVIDERS[m.provider] : null, key = typeof m.key === "string" ? m.key.trim() : "";
+      const rawUrl = typeof m.baseUrl === "string" ? m.baseUrl.trim() : "";
+      let baseUrl = "";
+      if (rawUrl) {
+        try {
+          const parsedUrl = new URL(rawUrl);
+          if (!["http:", "https:"].includes(parsedUrl.protocol) || !parsedUrl.hostname || parsedUrl.username || parsedUrl.password || parsedUrl.search || parsedUrl.hash || /\s/.test(rawUrl)) return fail(m.id, "KEY_FORMAT");
+          baseUrl = rawUrl.replace(/\/+$/, "");
+        } catch {
+          return fail(m.id, "KEY_FORMAT");
+        }
+      }
       if (!provider || !/^[!-~]{8,4096}$/.test(key)) return fail(m.id, "KEY_FORMAT");
       try {
-        const tested = await ctx.agnes.config.test({ providerId: provider.id, apiKey: key });
+        const endpoint = baseUrl ? { baseUrl } : {};
+        const tested = await ctx.agnes.config.test({ providerId: provider.id, apiKey: key, ...endpoint });
         if (tested?.verified !== true || !tested.models?.length) return fail(m.id, "KEY_REJECTED");
-        const model = (tested.models.find((row) => row.id === provider.model) ?? tested.models[0]).id;
+        const pick2 = (target) => target ? tested.models.find((row) => row.id === target) ?? tested.models.find((row) => row.id.toLowerCase().includes(target.toLowerCase())) : null;
+        const model = (pick2(provider.model) ?? pick2(m.provider) ?? tested.models[0]).id;
         const before = await ctx.agnes.config.get();
         await ctx.agnes.config.save({
           providerId: provider.id,
           apiKey: key,
+          ...endpoint,
           model,
           accountId: "gz-" + m.provider,
           label: provider.label + "（光筑）",
           enabled: true,
           makeDefault: m.provider === "deepseek" || !before?.defaultAccountId
         });
-        return emit("gz.keySaved", { provider: m.provider, model }, m.id);
+        return emit("gz.keySaved", { provider: m.provider, model, ...endpoint }, m.id);
       } catch {
         return fail(m.id, "KEY_SAVE");
       }
@@ -5166,6 +6326,12 @@ function createBridge(ctx, win = window) {
   win.addEventListener("message", receive);
   const off = ctx.session.projection.subscribe(schedule);
   const switched = ctx.session.subscribe(() => {
+    const currentId = snapshot();
+    if (currentId) activeSessionId = currentId;
+    else if (hello && !starting && activeSessionId) {
+      navigate(activeSessionId);
+      return;
+    }
     resume();
     schedule();
   });
@@ -5186,6 +6352,7 @@ function createBridge(ctx, win = window) {
       stopped = true;
       win.clearTimeout(timer);
       win.removeEventListener("message", receive);
+      win.document.removeEventListener?.("click", blockWorkspaceReset, true);
       off();
       switched();
       theme.dispose();

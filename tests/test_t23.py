@@ -80,7 +80,8 @@ def test_new_catalog_has_small_and_large_official_models():
         assert any(30 <= r['rated_ac_kw'] <= 60 for r in brand)
         assert any(r['rated_ac_kw'] > 110 for r in brand)
         for row in brand:
-            assert len(row) == 29 and row['datasheet_url'].startswith('https://')
+            assert len(row) == 30 and row['manufacturer_display']
+            assert row['datasheet_url'].startswith('https://')
             assert all(row[k] for k in ('datasheet_version', 'datasheet_page', 'datasheet_date'))
 
 

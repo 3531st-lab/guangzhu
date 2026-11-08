@@ -77,4 +77,18 @@ export class ParkQueue {
     if (this.item?.status === 'cancelling') await this.restore(this.item);
     else await this.next();
   }
+  forceReset() {
+    this.busy = false;
+    this.cancelling = null;
+    if (this.queue?.items) {
+      for (const item of this.queue.items) {
+        if (!['completed', 'failed', 'skipped'].includes(item.status)) {
+          item.status = 'skipped';
+          item.reason = '已由用户手动强制停止并重置任务状态';
+        }
+      }
+      this.queue.paused = false;
+    }
+    this.changed?.();
+  }
 }

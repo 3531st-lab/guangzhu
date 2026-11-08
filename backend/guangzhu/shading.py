@@ -30,9 +30,24 @@ def _front_mask(design):
     right=np.array([-np.cos(angle),np.sin(angle)])
     projected=np.array([m.corners for m in design.modules])[:,:,:2] @ right
     low,high=projected.min(axis=1),projected.max(axis=1)
-    rows=np.array([m.row for m in design.modules])
+    if design.statistics.get('partial_reflow'):
+        # A local reflow assigns fresh row IDs above every historical ID. They are identities,
+        # not physical ordering. Keep tiers of the same rack together, including removed tiers
+        # that establish its leading edge, then compare actual positions towards the back.
+        back = np.array([-np.sin(angle), -np.cos(angle)])
+        rack_key = lambda module: (orientation.key(module), module.row, module.col)
+        stations = {rack_key(module): float('inf') for module in design.modules}
+        for module in [*design.modules, *design.removed_modules]:
+            key = rack_key(module)
+            if key in stations:
+                stations[key] = min(stations[key], float((np.asarray(module.corners)[:, :2] @ back).min()))
+        rows = np.array([stations[rack_key(module)] for module in design.modules])
+        ahead = rows[:, None] > rows[None, :] + 1e-6
+    else:
+        rows=np.array([m.row for m in design.modules])
+        ahead = rows[:, None] > rows[None, :]
     overlaps=(low[:,None]<high[None,:]-1e-6)&(high[:,None]>low[None,:]+1e-6)
-    return (overlaps & (rows[:,None]>rows[None,:])).any(axis=1)
+    return (overlaps & ahead).any(axis=1)
 
 
 class SiteShading:
@@ -57,7 +72,7 @@ class RemovalShading:
     When the byte limit is reached we recompute that hour without retaining it.
     """
 
-    def __init__(self, project, design, *, offline=False, site=None, max_cache_bytes=16 * 1024 * 1024):
+    def __init__(self, project, design, *, offline=False, site=None, max_cache_bytes=128 * 1024 * 1024):
         self.project = project.model_copy(deep=True)
         self.reference = design.model_copy(deep=True)
         self.site = site or SiteShading(project, offline=offline)
@@ -115,7 +130,10 @@ def analyze_design(project, design, *, offline=False, _site=None, _ray_hits=None
             summary[name] = sum(r['summary'][name] * (len(r['modules']) / len(modules) if name == 'avg_loss_pct' else 1)
                                 for _, r in results)
         summary.update(module_count=len(modules), max_loss_pct=max(row['total_loss_pct'] for row in modules.values()))
-        for name in ('source_loss_pct', 'beam_cause_loss_pct'):
+        breakdowns = ['source_loss_pct', 'beam_cause_loss_pct']
+        if design.statistics.get('manual_edits') or design.statistics.get('geometry_sky'):
+            breakdowns.append('diffuse_cause_loss_pct')
+        for name in breakdowns:
             summary[name] = {cause: sum(r['summary'][name].get(cause, 0) * len(r['modules']) / len(modules) for _, r in results)
                              for cause in sorted(set().union(*(r['summary'][name] for _, r in results)))}
         lost = sum(summary['source_loss_pct'].values())
@@ -159,26 +177,44 @@ def analyze_design(project, design, *, offline=False, _site=None, _ray_hits=None
             beam+=weight*fraction
             for cause,share in shares.items():
                 causes[cause]+=weight*share
-    # Passias assumes isotropic sky; applying its factor to Perez sky is the
-    # task's approximation. Obstacle/parapet diffuse shading is excluded.
-    sky_fraction=0.0 if params.tilt_deg==0 or project.roof.type in ("metal", 'pitched', 'carport') else float(pvlib.shading.sky_diffuse_passias(
-        pvlib.shading.masking_angle_passias(params.tilt_deg,design.statistics["gcr"])))
-    diffuse=_front_mask(design)*sky_fraction*float(poa.poa_sky_diffuse.sum())
+    # Manual placement destroys the regular-pitch assumptions of Passias.
+    # Integrate the actual scene instead, retaining all orientation groups via
+    # the same ray callback used for direct irradiation. Both methods assume an
+    # isotropic visibility factor applied to the annual Perez sky component.
+    manual = bool(design.statistics.get('manual_edits') or design.statistics.get('geometry_sky'))
+    sky_energy = float(poa.poa_sky_diffuse.sum())
+    if manual:
+        from .sky_visibility import sky_visibility
+        with stage('shading.sky-visibility'):
+            sky_fractions, sky_shares = sky_visibility(design, scene, points, owners, hits=_ray_hits or ray_hits)
+        sky_fraction = float(sky_fractions.mean()) if len(sky_fractions) else 0.0
+        diffuse = sky_fractions * sky_energy
+        diffuse_causes = {cause: values * sky_energy for cause, values in sky_shares.items()}
+    else:
+        sky_fraction=0.0 if params.tilt_deg==0 or project.roof.type in ("metal", 'pitched', 'carport') else float(pvlib.shading.sky_diffuse_passias(
+            pvlib.shading.masking_angle_passias(params.tilt_deg,design.statistics["gcr"])))
+        diffuse=_front_mask(design)*sky_fraction*sky_energy
+        diffuse_causes = {'front_row': diffuse}
     losses=100*(beam+diffuse)/total
     per_module=[]
+    combined = {cause: causes.get(cause, np.zeros(len(design.modules))) + diffuse_causes.get(cause, 0)
+                for cause in causes.keys() | diffuse_causes.keys()} if manual else causes
     for i,module in enumerate(design.modules):
-        positive=[(float(value[i]),cause) for cause,value in causes.items() if value[i]>0]
+        positive=[(float(value[i]),cause) for cause,value in combined.items() if value[i]>0]
         main=min(positive,key=lambda pair:(-pair[0],pair[1]))[1] if positive else "none"
         per_module.append(dict(id=module.id,beam_loss_pct=float(100*beam[i]/total),
                                diffuse_loss_pct=float(100*diffuse[i]/total),total_loss_pct=float(losses[i]),main_cause=main))
     denominator=len(design.modules)*total
     detail={cause:100*float(value.sum())/denominator for cause,value in sorted(causes.items())} if denominator else {}
-    categories=dict(obstacles=0.0,parapet=0.0,front_row=100*float(diffuse.sum())/denominator if denominator else 0.0)
+    diffuse_detail = {cause: 100 * float(value.sum()) / denominator for cause, value in sorted(diffuse_causes.items())} if denominator else {}
+    categories=dict(obstacles=0.0,parapet=0.0,front_row=0.0)
     if project.roof.type in ('pitched', 'carport'):
         categories['roof'] = 0.0
     nearby={row.id for row in project.roof.surroundings}
     categories|=dict(surroundings=0.0) if nearby else {}
-    for cause,loss in detail.items():
+    source_detail = {cause: detail.get(cause, 0) + diffuse_detail.get(cause, 0)
+                     for cause in detail.keys() | diffuse_detail.keys()}
+    for cause,loss in sorted(source_detail.items()):
         known = ('parapet', 'front_row', 'roof') if project.roof.type in ('pitched', 'carport') else ('parapet', 'front_row')
         categories[cause if cause in known else "surroundings" if cause in nearby else "obstacles"]+=loss
     lost=sum(categories.values())
@@ -187,14 +223,22 @@ def analyze_design(project, design, *, offline=False, _site=None, _ray_hits=None
                  max_loss_pct=float(losses.max()) if len(losses) else 0,
                  modules_over_threshold=int((losses>SHADING_THRESHOLD_PCT).sum()),threshold_pct=SHADING_THRESHOLD_PCT,
                  source_loss_pct=categories,source_loss_share_pct=source_shares,beam_cause_loss_pct=detail)
+    if manual:
+        summary['diffuse_cause_loss_pct'] = diffuse_detail
     metadata=dict(weather=weather_meta,weather_sha256=weather_meta["data_file_sha256"],
                   threshold_pct=SHADING_THRESHOLD_PCT,threshold_note="示意",sample_year=2023,
                   representative_days=12,daylight_hours=daylight,points_per_module=9,
                   timestamp_rule="UTC month-15 hour label + 30 minutes",sky_masking_fraction=sky_fraction,
                   poa_global_wh_m2=total,poa_direct_wh_m2=float(poa.poa_direct.sum()),
                   poa_sky_diffuse_wh_m2=float(poa.poa_sky_diffuse.sum()),elapsed_seconds=time.perf_counter()-started)
+    if manual:
+        from .sky_visibility import AZIMUTH_SAMPLES, ELEVATION_SAMPLES
+        metadata.update(sky_visibility_method='isotropic_geometry_quadrature',
+                        sky_visibility_directions=AZIMUTH_SAMPLES * ELEVATION_SAMPLES,
+                        sky_visibility_note='实际三维几何的等亮天空积分，余弦加权；作用于Perez年天空散射量的近似，不含地面反射遮挡。')
     if project.roof.type == 'pitched':
-        metadata['roof_note'] = '真实坡面含玻璃面按不透光几何遮挡示意；仅正面入射代表光线计直射损失；未模拟透射及天空遮挡'
+        metadata['roof_note'] = '真实坡面含玻璃面按不透光几何遮挡示意；仅正面入射代表光线计直射损失；' + (
+            '天空遮挡采用等亮天空近似，未模拟透射及地面反射遮挡' if manual else '未模拟透射及天空遮挡')
     if project.roof.type == 'carport':
         metadata['roof_note'] = '完整有效车棚按不透光实体计算互遮挡；删板不删棚；仅正面入射；未模拟天空遮挡'
     return dict(version=design.version,modules=per_module,summary=summary,metadata=metadata)
@@ -202,9 +246,11 @@ def analyze_design(project, design, *, offline=False, _site=None, _ray_hits=None
 
 def analyze(project_id, version, *, offline=False):
     from . import project as storage
+    from .analysis_inputs import project_signature
     project,design=storage.load(project_id),storage.load_design(project_id,version)
     result=analyze_design(project,design,offline=offline)
     result["metadata"]["design_sha256"]=hashlib.sha256(storage._path(project_id,f"designs/v{version}.json").read_bytes()).hexdigest()
+    result['metadata']['project_inputs_sha256'] = project_signature(project)
     path=storage._path(project_id,f"analysis/v{version}/shading.json")
     path.parent.mkdir(parents=True,exist_ok=True)
     path.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8",newline="\n")

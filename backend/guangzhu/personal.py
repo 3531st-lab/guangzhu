@@ -78,7 +78,8 @@ def prepare(project, design, *, offline=False, shadows=None):
     losses = {row['id']: row['total_loss_pct'] for row in shadows['modules']}
     ordered = sorted(design.modules, key=lambda m: (losses[m.id], math.dist(m.center[:2], grid), m.id))
     req = project.requirements.structured
-    power = electrical.equipment_catalog()['modules'][project.equipment.module_id]['pmax_w'] / 1000
+    cat_for_proj = electrical.resolve_catalog_for_project(project, electrical.equipment_catalog())
+    power = cat_for_proj['modules'][project.equipment.module_id]['pmax_w'] / 1000
     if req.phase1_kw:
         target = math.ceil(req.phase1_kw / power)
     else:
@@ -90,7 +91,7 @@ def prepare(project, design, *, offline=False, shadows=None):
         target = min(len(ordered), maximum)
     counts = range(max(1, target), len(ordered) + 1) if req.phase1_kw else range(min(target, len(ordered)), 0, -1)
     chosen, fallback, chosen_cost = 0, 0, 0
-    catalog, limit = electrical.equipment_catalog(), transformer_limit(project)
+    catalog, limit = cat_for_proj, transformer_limit(project)
     for count in counts:
         halves = [ordered[:count], ordered[count:]]
         choices = [[r for r in electrical.calculate(project, design.model_copy(update=dict(modules=members)),
@@ -127,7 +128,7 @@ def prepare(project, design, *, offline=False, shadows=None):
 
 def phase_electrical(project, design, *, offline=False, shadows=None):
     from . import electrical, cables
-    catalog = electrical.equipment_catalog()
+    catalog = electrical.resolve_catalog_for_project(project, electrical.equipment_catalog())
     views = [design.model_copy(update=dict(modules=[m for m in design.modules if m.phase == phase])) for phase in (1, 2)]
     views = [view for view in views if view.modules]
     choices = [electrical.calculate(project, view, offline=offline, options=True) for view in views]
@@ -197,7 +198,7 @@ def phase_cash(project, design, shadows, cash, *, offline=False, cost_scale=None
         return
     view = design.model_copy(update=dict(modules=members))
     shade = shading.analyze_design(project, view, offline=offline)
-    power = electrical.equipment_catalog()['modules'][project.equipment.module_id]['pmax_w'] / 1000
+    power = electrical.resolve_catalog_for_project(project, electrical.equipment_catalog())['modules'][project.equipment.module_id]['pmax_w'] / 1000
     energy, _ = analysis.generation(project, view, shade, len(members) * power, offline=offline)
     electric = electrical.calculate(project, view, offline=offline, shadows=shade)
     phase_load = structure.calculate(project, view)

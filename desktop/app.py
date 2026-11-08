@@ -80,7 +80,9 @@ def register_app():
 
 def backend_ready():
     try:
-        with urlopen(API_ORIGIN + '/api/status', timeout=.35) as response:
+        # Status includes the separately starting AGH service. Read our local
+        # identity only, so an unavailable AGH cannot look like a port conflict.
+        with urlopen(API_ORIGIN + '/api/identity', timeout=2) as response:
             data = json.load(response)
         if data.get('app') == 'guangzhu' and data.get('installation') == installation(ROOT):
             return True
@@ -139,6 +141,10 @@ def main():
                                         ('runtime/agh/agnes-win32-x64.exe', 'runtime/python/python.exe')):
             raise RuntimeError('安装文件缺少内置组件，请重新安装光筑。')
         import webview
+        try:
+            webview.settings['ALLOW_DOWNLOADS'] = True
+        except Exception:
+            pass
     except RuntimeError as error:
         return native_error(str(error))
     except Exception:

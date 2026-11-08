@@ -76,8 +76,12 @@ def sheets(cash, sheet, book):
                 keys = [material.cell(row, 3).value]
                 matches = [r for r in items if r['key'] in keys and r.get('plane') == int(prefix)]
         if keys and keys[0] in ('dc_cable', 'ac_cable'):
-            section = str(material.cell(row, 3).value).replace('4×', '').replace(' mm²', '')
-            matches = [r for r in matches if f'{float(section):g} mm²' in r['name']]
+            cable_id = material.cell(row, 12).value
+            if cable_id:
+                matches = [r for r in matches if r.get('cable_id') == cable_id]
+            else:
+                section = str(material.cell(row, 3).value).replace('4×', '').replace(' mm²', '')
+                matches = [r for r in matches if f'{float(section):g} mm²' in r['name']]
         subtotal = sum(r['subtotal_cny'] for r in matches)
         if keys == ['ballast']:
             total_kg = sum(r['quantity'] for r in matches) * 1000

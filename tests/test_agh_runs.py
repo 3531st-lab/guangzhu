@@ -911,6 +911,21 @@ def test_feedback_allows_successful_readonly_calls_between_analysis_and_edit():
     assert result['passed'] and result['feedback_sequences'][0][1] - result['feedback_sequences'][0][0] == 3
 
 
+def test_feedback_allows_preview_edit_design_before_saving_and_reanalyzing():
+    events = complete()
+    edit_call = next(e for e in events if e['type'] == 'tool/call' and exporter.tool_name(e) == 'gz_edit_design')
+    edit_res = next(e for e in events if e['type'] == 'tool/result' and e['data']['toolUseId'] == edit_call['data']['toolUseId'])
+    preview_call, preview_res = copy.deepcopy(edit_call), copy.deepcopy(edit_res)
+    preview_call['data']['toolUseId'] = preview_res['data']['toolUseId'] = 'synthetic-preview-edit'
+    preview_call['data']['args']['preview'] = True
+    preview_res['data']['content'][0]['text'] = json.dumps(dict(ok=True, preview=True, fingerprint='fp123'))
+    edit_call['data']['args']['preview'] = False
+    edit_call['data']['args']['expected_fingerprint'] = 'fp123'
+    index = events.index(edit_call)
+    result = verifier.verify(resequence(events[:index] + [preview_call, preview_res] + events[index:]))
+    assert result['passed'] and result['checks'][2]['passed']
+
+
 def test_last_normal_analysis_for_export_version_cannot_be_replaced_by_what_if():
     events = complete()
     final = [e for e in events if e['type'] == 'tool/call' and exporter.tool_name(e) == 'gz_analyze'][-1]

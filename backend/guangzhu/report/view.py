@@ -57,6 +57,10 @@ def rule_value(rule, field):
         lengths = [length for group in rule[field] for length in group]
         if lengths and len(set(lengths)) == 1:
             return Markup('{} 串，均为 {}').format(len(lengths), fmt(lengths[0], rule.get('unit', '')))
+        if len(lengths) > 6:
+            from collections import Counter
+            counts = Counter(lengths)
+            return Markup('；').join(Markup('{} × {} 串').format(fmt(k, rule.get('unit', '')), v) for k, v in counts.items())
     return fmt(rule[field], rule.get('unit', ''), 2 if rule['id'] == 'E07' else None)
 
 
@@ -111,6 +115,11 @@ def render(c):
     review_state = ('独立审核（' + review.get('reviewer_model', '模型未记录') + '）：' + ('审核未通过（' + '；'.join(failed) + '）' if failed
                     else '审核员结论' + fmt(review.get('verdict')))) if review else '本归档未提供独立审核原文'
     approved = '导出经 AGH 审批卡批准（仅允许这次）' if approval.get('verdict') == 'allowed-once' else '导出批准证据见执行记录页'
+    if c.get('local_workflow'):
+        review_state = review_state if review else '尚未独立审核；规则预检查不等同于工程审核'
+        approved = ('本地用户已批准一次初步方案文件导出；不是施工批准' if c.get('local_approval')
+                    else '候选方案；尚未批准导出')
+        notice = '此报告来自当前版本的完整计算记录；数据来源、示意参数和规则适用范围仍须现场及专业复核。'
     add(p['name'], [f'屋顶光伏初步设计 · v{c["version"]} · {stamp}',
         Markup('纬度 {} / 经度 {}').format(fmt(p['site']['lat'], '°'), fmt(p['site']['lon'], '°')),
         ('光筑 Agent 生成 · ' if c.get('sessions') else '光筑工具生成 · ') + review_state + ' · ' + approved,
@@ -166,18 +175,25 @@ def render(c):
     bearing = p['roof'].get('slope_azimuth_deg') if metal else 180
     direction = ('北', '东北', '东', '东南', '南', '西南', '西', '西北')[round(bearing / 45) % 8]
     metal_note = f"彩钢瓦单坡 {p['roof'].get('slope_deg'):g}°、朝{direction}（{bearing:g}°），夹具顺坡平铺，没有压块" if metal else ''
-    add('三方案对比', ['彩钢瓦，不适用：顺坡平铺，倾角就是坡度'] if metal else tilts if options else ['本次未做三方案对比'],
+    metal_summary = [
+        '彩钢瓦，不适用：顺坡平铺，倾角就是坡度',
+        Markup('当前选定顺坡方案：装机 {}（{}），基准年发电 {}，静态回收期 {}，内部收益率 {}。').format(
+            fmt(s['dc_kw'], 'kW'), fmt(s['modules'], '块'), fmt(s['yield_kwh']['p50'], 'kWh'),
+            fmt(e['payback_years'], '年'), fmt(e['irr_pct'], '%')),
+    ]
+    add('三方案对比', metal_summary if metal else tilts if options else ['本次未做三方案对比'],
         comparison, ['方案', '排法', '倾角', '装机', '年发电', '回本', '收益率', '遮挡', '满足要求'],
         curve, kind='options')
     layout = facts(d['params'], [('tilt_deg', '倾角', '°'), ('azimuth_deg', '方位角', '°'), ('edge_setback_m', '边距', 'm')])
     layout += facts(d['statistics'], [('row_spacing_m', '排距', 'm'), ('clear_gap_m', '净距', 'm'),
                                     ('usable_area_m2', '可用面积', 'm²')])
-    layout.append(('GCR', fmt(d['statistics']['gcr'] * 100, '%', raw=d['statistics']['gcr'])))
+    gcr = d['statistics'].get('gcr')
+    layout.append(('GCR', fmt(gcr * 100 if gcr is not None else None, '%', raw=gcr)))
     if metal:
         layout = [row for row in layout if row[0] not in ('排距', '净距')]
     if p['roof']['type'] == 'pitched':
         layout = [row for row in layout if row[0] in ('边距', '可用面积')]
-        layout += [('安装方式', '各面顺坡平铺，坡度与朝向见逐面表'), ('接缝两侧退让', fmt(d['statistics']['seam_setback_m'], 'm'))]
+        layout += [('安装方式', '各面顺坡平铺，坡度与朝向见逐面表'), ('接缝两侧退让', fmt(d['statistics'].get('seam_setback_m'), 'm'))]
     color_note = '组件按期着色：一期绿色、二期橙色。' if e.get('phases') else '组件按组串着色，串号标在第一块组件旁。'
     add('屋顶与排布', [metal_note] if metal else ['x 向东，y 向北；' + color_note],
         layout, ['参数', '值'], plan(c), kind='layout')
@@ -221,21 +237,29 @@ def render(c):
         text = r['evidence'].replace('本项按任务卡额外检查厂家范围', '本项另按厂家规格书检查')
         if r['id'] == 'E07':
             return text.split('；接线')[0].split('；第1台')[0] + '（每台分配见下表）'
-        lengths = {length for row in el.get('strings', []) for length in [len(row['module_ids'])]}
-        return f"{len(el.get('strings', []))} 串，每串都是 {lengths.pop()} 块" if r['id'] == 'E09' and len(lengths) == 1 else text
+        lengths = [len(row['module_ids']) for row in el.get('strings', [])]
+        if r['id'] == 'E09' and lengths:
+            if len(set(lengths)) == 1:
+                return f"{len(lengths)} 串，每串都是 {lengths[0]} 块"
+            if len(lengths) > 6 and '[[' in text:
+                from collections import Counter
+                summary = '、'.join(f'{k}块×{v}串' for k, v in Counter(lengths).items())
+                return f"共 {len(lengths)} 串（{summary}），同路 MPPT 内串长一致"
+        return text
     electrical = [(r['id'], r['name_zh'], rule_value(r, 'value'), rule_value(r, 'limit'), evidence(r)) for r in rules if r['id'].startswith('E')]
     string_label, inverter_label = electrical_labels(el)
-    module_label = load_catalog('modules.csv').get(el['module_id'], {}).get('model', el['module_id'])
+    module_label = load_catalog('modules.csv', include_extended=True).get(el['module_id'], {}).get('model', el['module_id'])
     add('电气与组串', [f'组件：{module_label}；逆变器：{inverter_label}',
         Markup('组串 {}；容配比 {}。').format(string_label, fmt(el['dc_ac_ratio'], digits=2))],
         electrical, ['编号', '校核', '数值', '限值', '证据式'], kind='electrical')
     cable = el.get('cables')
     if cable:
-        totals = [('直流' if r['kind'] == 'dc' else '交流四芯', fmt(r['section_mm2'], 'mm²'),
+        totals = [('直流' if r['kind'] == 'dc' else '交流四芯', r.get('cable_model', '旧记录未提供'),
+                   r.get('material', '未记录'), fmt(r['section_mm2'], 'mm²'),
                    fmt(r['length_m'], 'm'), fmt(r['drop_pct_max'], '%')) for r in cable['summary']]
         places = '；'.join(f"{r['label']}：({r['point'][0]:.1f}, {r['point'][1]:.1f})m（{r['note']}）" for r in cable['positions'])
         add('电缆和压降', [el['wiring']['method'] + '：' + el['wiring']['reason'], places, *cable['notes']],
-            totals, ['电缆', '截面', '总长', '最大压降'], kind='cables', newpage=True)
+            totals, ['电缆', '目录型号', '材质', '截面', '总长', '最大压降'], kind='cables', newpage=True)
         routing = cable.get('routing')
         if routing:
             detail = [(r['id'], '可达' if r['routing_status'] == 'ok' else '不可达，仅下界估算',
@@ -301,9 +325,10 @@ def render(c):
     sources = [(row['中文名'], source_value(e['params'].get(key), row['单位']), row['状态'],
                 link(row['链接'] or row['来源标题'], row['来源标题']), row['访问日期'] or '未提供') for key, row in e['source'].items()]
     equipment = [link(el['metadata'][key], name) for key, name in [('module_source', '组件规格书'), ('inverter_source', '逆变器规格书')]]
-    add('假设与来源', equipment, sources, ['参数', '数值', '状态', '来源', '访问日期'], kind='sources')
+    add('假设与来源', [*equipment, *el['metadata'].get('equipment_limitations', [])],
+        sources, ['参数', '数值', '状态', '来源', '访问日期'], kind='sources')
     checked = '通过' if check.get('passed') else '没通过：' + check.get('reason', '原因未记录') if check.get('passed') is False else '未核对'
-    notes = [review_state, '审核意见是模型的判断，原样转载', '审核模型：' + review.get('reviewer_model', '未提供'),
+    notes = [review_state, '审核意见是模型的判断，原样转载' if review else '未取得可核对的独立审核来源，不将规则预检查称为独立审核。', '审核模型：' + review.get('reviewer_model', '未提供'),
              '审核员结论：' + fmt(review.get('verdict')), '审核记录核对（光筑按执行记录检查审核员有没有按规矩查数据）：' + checked]
     findings = [(fmt(row['severity']), row['item'], row['evidence'], row['suggestion']) for row in review.get('findings', [])]
     add('独立审核', notes, findings, ['等级（附原文）', '问题（原文）', '证据（原文）', '建议（原文）'], kind='review')

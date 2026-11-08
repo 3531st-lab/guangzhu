@@ -14,7 +14,7 @@ $started = [Diagnostics.Stopwatch]::StartNew()
 $root = Split-Path -Parent $PSScriptRoot
 $cache = Join-Path $root 'build/installer-cache'
 $stage = Join-Path $root ('build/光筑-' + [guid]::NewGuid().ToString('N'))
-$manifest = [ordered]@{ sources = @(); wheels = @() }
+$manifest = [ordered]@{ version = '0.3.0'; sources = @(); wheels = @(); application_files = @{} }
 function Run([string]$Program, [string[]]$Arguments) {
     & $Program @Arguments
     if ($LASTEXITCODE -ne 0) { throw "$Program failed: exit $LASTEXITCODE" }
@@ -99,7 +99,8 @@ foreach ($name in @('LICENSE','NOTICE')) {
 }
 $manifest.sources += @{ input = 'user-provided official agnes-win32-x64-5da4073.zip';
     url = "https://github.com/AgnesAI-Labs/agnes-harness/tree/$revision"; sha256 = (Get-FileHash $AghArchive).Hash }
-$wheelhouse = Join-Path $cache ('wheels-' + [guid]::NewGuid().ToString('N'))
+$lockDigest = (Get-FileHash -LiteralPath "$root/requirements.lock.txt" -Algorithm SHA256).Hash.Substring(0,16).ToLowerInvariant()
+$wheelhouse = Join-Path $cache ('wheels-' + $lockDigest)
 Run $Python @('-m','pip','wheel','--no-cache-dir','--verbose','--index-url','https://pypi.org/simple','--no-deps',
     '-r',"$root/requirements.lock.txt",'-w',$wheelhouse)
 $site = Join-Path $stage 'runtime/python/Lib/site-packages'
@@ -123,6 +124,11 @@ foreach ($relative in @('backend/guangzhu','desktop','data/catalog','data/demo',
     New-Item -ItemType Directory -Force -Path (Split-Path $destination) | Out-Null
     Copy-Item -LiteralPath (Join-Path $root $relative) -Destination $destination -Recurse
 }
+# Ship only the curated synthetic park; never copy personal parks or projects.
+# It is seeded only on a fresh installation so upgrades preserve edited parks.
+$parkSeed = Join-Path $stage 'data/demo/park-seeds/taizhou-cmc-demo'
+New-Item -ItemType Directory -Force -Path $parkSeed | Out-Null
+Copy-Item -LiteralPath (Join-Path $root 'data/parks/taizhou-cmc-demo/park.json') -Destination (Join-Path $parkSeed 'park.json')
 foreach ($notice in @('LICENSE', 'THIRD_PARTY_NOTICES.md')) {
     Copy-Item -LiteralPath (Join-Path $root $notice) -Destination (Join-Path $stage $notice)
 }
@@ -149,8 +155,12 @@ if ($LASTEXITCODE -ne 0) { throw 'Plugin release failed' }
 $snapshot = ($release | Where-Object { $_ -like 'Package source: file:./*' }) -replace '^Package source: file:\./',''
 New-Item -ItemType Directory -Path (Join-Path $stage 'plugins') | Out-Null
 Copy-Item -LiteralPath (Join-Path $root $snapshot) -Destination (Join-Path $stage 'plugins') -Recurse
-$manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $stage 'build-manifest.json') -Encoding utf8
 Run $Python @("$PSScriptRoot/installer_stage.py", $stage, '--host-python', $Python, '--developer-root', $root, '--clean')
+foreach ($source in Get-ChildItem -LiteralPath $stage -Recurse -File | Where-Object { $_.FullName -notlike '*\runtime\*' -and $_.Extension -notin '.pyc','.log' }) {
+    $relativeName = $source.FullName.Substring($stage.Length + 1).Replace('\','/')
+    $manifest.application_files[$relativeName] = (Get-FileHash -LiteralPath $source.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+$manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $stage 'build-manifest.json') -Encoding utf8
 $probe = @'
 import json, os, subprocess, sys
 allowed = "APPDATA HOMEDRIVE HOMEPATH LOCALAPPDATA PATH PROCESSOR_ARCHITECTURE SYSTEMDRIVE SYSTEMROOT TEMP USERNAME USERPROFILE PROGRAMFILES".split()

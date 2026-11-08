@@ -16,20 +16,25 @@ description: 用光筑 MCP 工具完成屋顶光伏排板、规则修正、方�
 
 1. 一键先用 `project.id/template/economics` 和任务书给定的 `equipment` 调 `gz_new_project`；`PROJECT_EXISTS` 即停，不能复用旧项目。普通模式用已有项目。
 2. 建项目成功（含审批重试成功）后，必须单独调用 `gz_project_summary`；等摘要成功后用一句话说明计划，再调用 `gz_set_requirements` 原样保存需求。计划前只允许建空项目或读摘要，不取天气、不排板。边界和留空编号取摘要。
-3. **检查点 A**：gz_set_requirements 返回 contradictions 非空，立即结束本轮工具调用，禁止再调用任何工具；不能用 gz_set_requirements 试写候选。最终做不到时也停止。只在文字里依据本次矛盾提出能解除整组冲突的单项建议，不编数值。
-取消冲突下限是合法单项，无需先试保存；依赖该下限的预算不足、屋顶上限冲突同时不成立，其他要求不变。仍有矛盾的候选不得编号为建议；唯一可行候选必须列为建议①，不凑建议②③，无则只说明。建议置前，每条一行、最多三条、合计不超过200字，写原值/单位；说明后置。工具审批不等于同意放宽要求；
+3. **检查点 A**：gz_set_requirements 返回 contradictions 非空，立即结束本轮工具调用，禁止再调用任何工具；不能用 gz_set_requirements 试写候选。最终做不到时也停止。只在文字里依据本次矛盾提出待验证的放宽方向，不编数值。
+逻辑消冲不代表非空可用方案；未经非空排布和全部硬规则复算只能称待验证方向，不得取消装机下限或用零组件冒称可行。仍有已知矛盾的方向不推荐；只列有依据的方向，不凑建议②③，无则只说明。方向置前，每条一行、最多三条、合计不超过200字，写原值/单位；说明后置。工具审批不等于同意放宽要求；
 只有用户明确同意后才改该项、同步原文和结构化值并重存需求，仍有矛盾必须再停。
 4. 本会话成功取 `nasa_hourly` 天气 → 生成初稿 → 分析，不能用旧设计代替。按 `level:hard` 不通过项的完整建议修改、原因写规则编号、再分析；`module_id_ranges` 只是压缩说明，按 `suggestions_format` 展开同前缀末尾数字的闭区间、
 保留零填充，换成现有 `module_ids` 参数；不跨前缀、不补区间外缺号、不猜编号、不小批试删，兼容建议在同一次修改提交。普通最多6轮，一键最多 `run.max_rounds`。仍不过按检查点A停止，也说明建议级警告。
 `where.worst_count` 原样提交：按本次分析原版本遮挡损失降序、编号升序取前指定数量；同批已删除的组件不重复补删。
 U05、U06、U07、G07 不通过时照常按建议修改并重新分析；没有可执行建议时说明冲突，不自行放宽要求。
 
-5. 硬性规则全过后做三方案；一键 `run.compare=false` 则跳过。选 `recommended[run.prefer]`（默认 balanced），把 `why` 告诉用户，不按方案名字自行挑。推荐当前方案时就用当前方案；跳过时用最后通过的版本。`tilt_trials` 仅挑倾角，不能当方案指标；摘要最新版本可能是候选，
+**局部修改与锁定**：修改已有方案前先读 `gz_project_summary.locks`。`module_count` 是所有锁覆盖的组件数；`plane_ids`、`region_ids` 是已锁面和区域的编号，`truncated=true` 表示列表未列全，不能当作没有其他锁。
+AI不得解锁或撤销，也不能通过旧版本、新生成或三方案搜索绕过锁。锁定冲突时停止并解释，由用户在工作台决定是否解锁。带锁比较改用 `gz_edit_design` 的 `reflow_unlocked`，仅改变未锁定部分；其他参数可用同样保锁的 `set_param`。
+先调用 `gz_edit_design(preview=true)`，核对组件数量、增删和锁定数量；再用完全相同的版本、原因、操作，将返回的 `fingerprint` 填入 `expected_fingerprint` 确认。`DESIGN_PREVIEW_STALE` 后必须重新预览，不得删除指纹强行保存。几何预览不代表发电、造价、回本或硬规则已通过，保存新版本后必须 `gz_analyze`，非空排布且全部硬规则通过才可称为可行方案。没有用户授予的修改范围时先询问。
+用户可在工作台手动补放、移动和旋转组件；随后应针对对应版本复算，不得按旧遮挡结果删板。手动散排的通道连续性尚不能自动核实；若 G03 要求人工核对，不得取消用户通道要求来冒称通过。已有手动几何及锁定仍由上述保锁修改规则保护。
+
+5. 非空排布且硬性规则全过后做三方案；已有锁时按上文做局部候选预览比较，一键 `run.compare=false` 则跳过。全屋三方案选 `recommended[run.prefer]`（默认 balanced），把 `why` 告诉用户，不按方案名字自行挑。推荐当前方案时就用当前方案；跳过时用最后通过的版本。`tilt_trials` 仅挑倾角，不能当方案指标；摘要最新版本可能是候选，
 `exported_versions` 才表示已导出版本。
 摘要里 `roof_type` 是 metal 时不做三方案，也不改倾角；工具返回 `COMPARE_NOT_APPLICABLE` 时说明不适用，用当前通过的版本。
 三方案已经比较正南、顺边、东西向人字形和横放补位，仍按 recommended 选。普通模式说“顺着厂房排”用 align=edge，说“东西向”用 layout=ew；说“多装”做三方案并按 max_capacity 推荐选，排板打开 fill_landscape。
 6. 最终选定版本须串行：先单独调用 gz_analyze，等待成功结果；再单独调用 gz_crosscheck_yield，等待成功结果；之后才按任务书模式审核或申请 gz_export。不得在同一轮回复并发或批量调用这些工具。**每次三方案追问必须重新调用
-`gz_compare_options`**，不能只引用旧结果；电价追问必须调用 `gz_analyze.what_if`，试算标“未保存”，不修改项目代替试算。最终回答和追问的所有数字只照抄本次相关工具返回，不自行推算工具未返回的百分比、增量或差值；`tilt_trials` 仍不能当方案指标。全程中文。
+`gz_compare_options`（已有锁时改为局部重排预览与新版本分析）**，不能只引用旧结果；电价追问必须调用 `gz_analyze.what_if`，试算标“未保存”，不修改项目代替试算。最终回答和追问的所有数字只照抄本次相关工具返回，不自行推算工具未返回的百分比、增量或差值；`tilt_trials` 仍不能当方案指标。全程中文。
 7. **先判断 `run.review.mode=independent`**：本设计会话不创建或调用任何审核员，禁用所有 `subagent_*`（含 fork、spawn、collect）及 `gz_record_review`；直接按第8条申请导出，完成后结束、不等待审核。
 外部桌面软件之后另建 Agnes 原生会话发审核任务。否则，一键 `run.review.enabled=true` 时用 `subagent_fork`，model=`run.review.model`；question 原样用任务书审核员任务，只换「〔版本〕」。返回JSON由本会话调用
 `gz_record_review`：version填审核版本，reviewer_model填`run.review.model`，verdict、findings逐字照抄。无可用JSON再审核一次，仍无则跳过并写“审核没有给出可用结论”。

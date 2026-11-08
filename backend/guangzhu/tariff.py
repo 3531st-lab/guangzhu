@@ -16,6 +16,8 @@ def reprice(project, basis, flat):
     if ratio is not None and ratio != basis['input_self_ratio']:
         for row in result['bands'].values():
             row['self_use_kwh'] = row['generation_kwh'] * ratio
+        for row in result.get('monthly', []):
+            row['self_use_kwh'] = row['generation_kwh'] * ratio
         result['load_mode'] = '手填比例均摊到各小时'
     total = result['generation_kwh']
     used = math.fsum(row['self_use_kwh'] for row in result['bands'].values())
@@ -78,11 +80,14 @@ def integrate(project, energy, ratio, flat):
     automatic = has_load and (supplied.self_use_ratio is None or physical or phased)
     self_energy = [min(g, l) for g, l in zip(generation, loads)] if automatic else [g * ratio for g in generation]
     totals = {key: dict(generation_kwh=0.0, self_use_kwh=0.0) for key in BANDS}
+    monthly = [dict(month=month, generation_kwh=0.0, self_use_kwh=0.0) for month in range(1, 13)]
     cells = {}
     with (DATA_DIR / 'catalog/tou-jiangsu.csv').open(encoding='utf-8-sig', newline='') as stream:
         schedule = list(csv.DictReader(stream))
     for value, consumed, timestamp in zip(generation, self_energy, times, strict=True):
         stamp = datetime.fromisoformat(timestamp).astimezone(timezone(timedelta(hours=8)))
+        monthly[stamp.month - 1]['generation_kwh'] += value
+        monthly[stamp.month - 1]['self_use_kwh'] += consumed
         cell = cells.setdefault((stamp.month, stamp.hour), [0.0, 0.0, 0])
         for minute in (0, 30):
             key = band(stamp, minute, eligible, schedule)
@@ -98,7 +103,7 @@ def integrate(project, energy, ratio, flat):
                 effective_ratio=used / energy['p50'] if energy['p50'] else 0, generation_kwh=energy['p50'], bands=totals, schedule=schedule,
                 reference_self_use_kwh=math.fsum(min(g, l) for g, l in zip(generation, loads)) if has_load else None,
                 load_mode='按用电逐时算' if automatic else '手填比例均摊到各小时' if supplied.self_use_ratio is not None else '示意比例',
-                input_self_ratio=supplied.self_use_ratio, flat_price=flat,
+                input_self_ratio=supplied.self_use_ratio, flat_price=flat, monthly=monthly,
                 graph=[dict(month=m, hour=h, generation_kwh=g / n, price_cny_kwh=flat * p / n, price_factor=p / n)
                        for (m, h), (g, p, n) in sorted(cells.items())],
                 note=f'用电类别：{dict(two_part="两部制", single100="单一制、100千伏安及以上", single_small="单一制、100千伏安以下")[kind]}'

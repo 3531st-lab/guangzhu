@@ -1,0 +1,563 @@
+/* PVsyst 7.x Professional Simulation & Live Official Weather Workbench Styles */
+
+.pvsyst-workbench {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--ink, #221d18);
+  font-family: var(--f-body, system-ui, -apple-system, sans-serif);
+  line-height: 1.5;
+}
+
+/* Top Workbench Banner */
+.pvsyst-wb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--card, #fffefa) 0%, var(--well, #faf6f1) 100%);
+  border: 1px solid var(--line-2, #e2d7ca);
+  border-left: 4px solid var(--accent, #c87743);
+  border-radius: 10px;
+  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
+}
+
+.pvsyst-wb-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pvsyst-wb-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pvsyst-engine-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--f-mono, monospace);
+  color: var(--run, #3f6fd8);
+  background: var(--run-soft, #e7eefc);
+  border-radius: 999px;
+}
+
+.pvsyst-wb-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted, #998e83);
+}
+
+.pvsyst-wb-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Core Summary Ribbon */
+.pvsyst-kpi-ribbon {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 10px;
+}
+
+.pvsyst-kpi-box {
+  padding: 10px 12px;
+  background: var(--card, #fffefa);
+  border: 1px solid var(--line, #ece4da);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pvsyst-kpi-box.highlight {
+  border-color: var(--accent-line, #e7b48f);
+  background: var(--accent-soft, #f7ede3);
+}
+
+.pvsyst-kpi-box.bankable {
+  border-color: rgba(42, 157, 99, 0.35);
+  background: var(--ok-soft, #e4f5eb);
+}
+
+.pvsyst-kpi-label {
+  font-size: 11px;
+  color: var(--muted, #998e83);
+  font-weight: 500;
+}
+
+.pvsyst-kpi-val {
+  font-size: 17px;
+  font-weight: 700;
+  font-family: var(--f-mono, monospace);
+  color: var(--ink, #221d18);
+  letter-spacing: -0.02em;
+}
+
+.pvsyst-kpi-sub {
+  font-size: 11px;
+  color: var(--ink-2, #4b423a);
+}
+
+/* Section Card */
+.pvsyst-section-card {
+  background: var(--card, #fffefa);
+  border: 1px solid var(--line-2, #e2d7ca);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow, 0 1px 4px rgba(0, 0, 0, 0.04));
+}
+
+.pvsyst-sec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line, #ece4da);
+}
+
+.pvsyst-sec-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pvsyst-sec-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted, #998e83);
+}
+
+/* Badges */
+.pvsyst-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pvsyst-badge.live {
+  background: var(--ok-soft, #e4f5eb);
+  color: var(--ok, #2a9d63);
+  border: 1px solid rgba(42, 157, 99, 0.3);
+}
+
+.pvsyst-badge.fallback {
+  background: var(--warn-soft, #fdf4d9);
+  color: var(--warn, #c98b0f);
+  border: 1px solid rgba(201, 139, 15, 0.3);
+}
+
+.pvsyst-badge.info {
+  background: var(--run-soft, #e7eefc);
+  color: var(--run, #3f6fd8);
+  border: 1px solid rgba(63, 111, 216, 0.25);
+}
+
+/* Live Weather Panel */
+.pvsyst-weather-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 1180px) {
+  .pvsyst-weather-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .pvsyst-weather-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pvsyst-wx-card {
+  padding: 10px 11px;
+  border-radius: 8px;
+  background: var(--well, #faf6f1);
+  border: 1px solid var(--line, #ece4da);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.pvsyst-wx-card.power-highlight {
+  background: linear-gradient(135deg, var(--ok-soft, #e4f5eb), var(--card, #fffefa));
+  border-color: rgba(42, 157, 99, 0.4);
+}
+
+.pvsyst-wx-label {
+  font-size: 11px;
+  color: var(--muted, #998e83);
+}
+
+.pvsyst-wx-main {
+  font-size: 15.5px;
+  font-weight: 700;
+  font-family: var(--f-mono, monospace);
+  color: var(--ink, #221d18);
+}
+
+.pvsyst-wx-sub {
+  font-size: 11px;
+  color: var(--ink-2, #4b423a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 7-Day Forecast Strip */
+.pvsyst-7d-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@media (max-width: 960px) {
+  .pvsyst-7d-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 580px) {
+  .pvsyst-7d-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pvsyst-day-card {
+  padding: 8px 9px;
+  border-radius: 8px;
+  background: var(--well, #faf6f1);
+  border: 1px solid var(--line, #ece4da);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pvsyst-day-card.today {
+  border-color: var(--accent, #c87743);
+  background: var(--accent-soft, #f7ede3);
+}
+
+.pvsyst-day-date {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-2, #4b423a);
+}
+
+.pvsyst-day-wx {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink, #221d18);
+}
+
+.pvsyst-day-temp {
+  font-size: 11px;
+  font-family: var(--f-mono, monospace);
+  color: var(--muted, #998e83);
+}
+
+.pvsyst-day-poa {
+  font-size: 11px;
+  color: var(--accent-ink, #b8612c);
+  font-family: var(--f-mono, monospace);
+}
+
+.pvsyst-day-kwh {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ok, #2a9d63);
+  font-family: var(--f-mono, monospace);
+}
+
+/* SVG Containers */
+.pvsyst-svg-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--well, #faf6f1);
+  border: 1px solid var(--line, #ece4da);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.pvsyst-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Two-Column Side-by-Side Layout */
+.pvsyst-dual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 980px) {
+  .pvsyst-dual-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pvsyst-subpanel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--well, #faf6f1);
+  border: 1px solid var(--line, #ece4da);
+  border-radius: 8px;
+}
+
+.pvsyst-subpanel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pvsyst-subpanel-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink, #221d18);
+}
+
+/* Monthly Balances Table */
+.pvsyst-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.pvsyst-bal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pvsyst-bal-table th,
+.pvsyst-bal-table td {
+  padding: 6px 8px;
+  border: 1px solid var(--line-2, #e2d7ca);
+  text-align: right;
+}
+
+.pvsyst-bal-table th:first-child,
+.pvsyst-bal-table td:first-child {
+  text-align: center;
+  font-weight: 600;
+}
+
+.pvsyst-bal-table thead th {
+  background: var(--well, #faf6f1);
+  color: var(--ink-2, #4b423a);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pvsyst-bal-table tbody tr:nth-child(even) {
+  background: rgba(128, 128, 128, 0.03);
+}
+
+.pvsyst-bal-table tbody tr:hover {
+  background: var(--accent-soft, #f7ede3);
+}
+
+.pvsyst-bal-table tfoot td {
+  background: var(--well, #faf6f1);
+  font-weight: 700;
+  border-top: 2px solid var(--accent-line, #e7b48f);
+  color: var(--ink, #221d18);
+}
+
+/* Probability KPI Row */
+.pvsyst-prob-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+@media (max-width: 640px) {
+  .pvsyst-prob-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pvsyst-prob-pill {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--card, #fffefa);
+  border: 1px solid var(--line, #ece4da);
+  text-align: center;
+}
+
+.pvsyst-prob-pill.p50 {
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.pvsyst-prob-pill.p90 {
+  border-color: rgba(16, 185, 129, 0.55);
+  background: var(--ok-soft, #e4f5eb);
+}
+
+.pvsyst-prob-pill span {
+  display: block;
+  font-size: 10.5px;
+  color: var(--muted, #998e83);
+}
+
+.pvsyst-prob-pill b {
+  font-size: 13px;
+  font-family: var(--f-mono, monospace);
+  color: var(--ink, #221d18);
+}
+
+/* Interactive Loss Tuning Grid */
+.pvsyst-tuning-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+@media (max-width: 580px) {
+  .pvsyst-tuning-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pvsyst-param-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 9px;
+  background: var(--card, #fffefa);
+  border: 1px solid var(--line, #ece4da);
+  border-radius: 6px;
+}
+
+.pvsyst-param-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.pvsyst-param-name {
+  font-weight: 600;
+  color: var(--ink-2, #4b423a);
+}
+
+.pvsyst-param-val {
+  font-family: var(--f-mono, monospace);
+  font-weight: 700;
+  color: var(--accent-ink, #b8612c);
+  font-size: 12px;
+}
+
+.pvsyst-param-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pvsyst-param-controls input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent, #c87743);
+  cursor: pointer;
+  height: 5px;
+}
+
+.pvsyst-param-controls input[type="number"] {
+  width: 66px;
+  padding: 3px 5px;
+  font-size: 11.5px;
+  font-family: var(--f-mono, monospace);
+  border: 1px solid var(--line-2, #e2d7ca);
+  border-radius: 4px;
+  background: var(--well, #faf6f1);
+  text-align: right;
+}
+
+.pvsyst-param-hint {
+  font-size: 10.5px;
+  color: var(--muted, #998e83);
+}
+
+.pvsyst-tuning-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line-2, #e2d7ca);
+}
+
+/* Action Buttons inside PVsyst Workbench */
+.pvsyst-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid var(--line-2, #e2d7ca);
+  background: var(--card, #fffefa);
+  color: var(--ink, #221d18);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pvsyst-btn:hover {
+  border-color: var(--accent, #c87743);
+  background: var(--accent-soft, #f7ede3);
+}
+
+.pvsyst-btn.primary {
+  background: var(--accent, #c87743);
+  color: var(--on-accent, #ffffff);
+  border-color: var(--accent-b, #c57540);
+}
+
+.pvsyst-btn.primary:hover {
+  filter: brightness(1.06);
+}

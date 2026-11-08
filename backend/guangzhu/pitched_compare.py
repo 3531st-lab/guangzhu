@@ -32,6 +32,8 @@ def compare(project_id, base, current, *, offline=False):
         reuse = shading.RemovalShading(project, design, site=site)
         shadows = reuse.analyze(design)
         storage.save_design(project_id, design, offline=offline, shadows=shadows)
+        summary = None
+        checked = None
         for _ in range(len(design.modules) + 8):
             _cache_shadows(project_id, design, reuse.analyze(design))
             summary = analysis.analyze(project_id, design.version, offline=offline)
@@ -44,14 +46,16 @@ def compare(project_id, base, current, *, offline=False):
             operation = fix['suggestion']
             changed = storage.edit_design(project_id, design.version, [operation], label + '：修正' + fix['id'], 'agent', offline=offline)
             design = storage.load_design(project_id, changed['version'])
+            summary, checked = None, None
             after = design.model_dump(exclude={'created_at', 'version', 'parent_version', 'reason', 'author'})
             if operation['op'] == 'set_param':
                 reuse = shading.RemovalShading(project, design, site=site)
             if before == after:
                 break
-        _cache_shadows(project_id, design, reuse.analyze(design))
-        summary = analysis.analyze(project_id, design.version, offline=offline)
-        checked = _read(project_id, f'analysis/v{design.version}/rules.json')
+        if summary is None or checked is None:
+            _cache_shadows(project_id, design, reuse.analyze(design))
+            summary = analysis.analyze(project_id, design.version, offline=offline)
+            checked = _read(project_id, f'analysis/v{design.version}/rules.json')
         return metric(label, design, summary, checked)
 
     current.update(align='pitched', tilt_deg=None, planes=sorted({int(m.id.split('-')[0][1:]) for m in base.modules}))

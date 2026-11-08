@@ -48,10 +48,11 @@ def vertices(geometry):
     return list(geometry.coords)
 
 
-def minimum(roof, footprint):
+def minimum(roof, footprint, plane_id=None):
     if roof.type != 'pitched':
         return min((elevation(roof, p) for p in vertices(footprint)), default=0)
-    return min((plane_elevation(p, xy) for p in roof.planes
+    planes = [member(roof, plane_id)] if plane_id is not None else roof.planes
+    return min((plane_elevation(p, xy) for p in planes
                 for xy in vertices(Polygon(p.outline).intersection(footprint))), default=0)
 
 
@@ -59,44 +60,107 @@ def path3d(roof, points):
     """Split an existing XY route at every face edge; outside spans interpolate eave endpoints."""
     from shapely.ops import nearest_points
     shape = Polygon(roof.outline)
+    plane_shapes = [(plane, Polygon(plane.outline)) for plane in roof.planes]
+    # GEOS exact boundary intersection can miss a rotated ridge when a route is a
+    # few floating-point ulps outside its parallel edge. This numerical tolerance
+    # is deliberately far smaller than the separate 2 cm roof seam validation.
+    precision = 1e-8
+    cross = lambda a, b: a[0] * b[1] - a[1] * b[0]
+
+    def crossings(a, b, c, d):
+        direction = (b[0] - a[0], b[1] - a[1])
+        edge = (d[0] - c[0], d[1] - c[1])
+        delta = (c[0] - a[0], c[1] - a[1])
+        run, span = math.hypot(*direction), math.hypot(*edge)
+        if span <= 1e-12:
+            return []
+        determinant = cross(direction, edge)
+        if abs(determinant) <= 1e-12 * run * span:
+            if abs(cross(delta, direction)) / run > precision:
+                return []
+            candidates = [sum((p[i] - a[i]) * direction[i] for i in range(2)) / run for p in (c, d)]
+        else:
+            t, u = cross(delta, edge) / determinant, cross(delta, direction) / determinant
+            if not -precision / span <= u <= 1 + precision / span:
+                return []
+            candidates = [t * run]
+        return [min(run, max(0, value)) for value in candidates if -precision <= value <= run + precision]
+
     output = []
     for a, b in zip(points, points[1:]):
         segment = LineString([a[:2], b[:2]])
         if segment.length < 1e-12:
             continue
         distances = {0.0, segment.length}
-        for plane in roof.planes:
-            crossings = segment.intersection(Polygon(plane.outline).boundary)
-            distances.update(segment.project(Point(p)) for p in vertices(crossings))
-        coordinates = [segment.interpolate(d).coords[0] for d in sorted(distances)]
+        for plane, _ in plane_shapes:
+            for c, d in zip(plane.outline, plane.outline[1:] + plane.outline[:1]):
+                distances.update(crossings(a, b, c, d))
+        stops = []
+        for distance in sorted(distances):
+            if not stops or distance - stops[-1] > precision:
+                stops.append(distance)
+        stops[-1] = segment.length
+        coordinates = [segment.interpolate(d).coords[0] for d in stops]
         for left, right in zip(coordinates, coordinates[1:]):
             middle = Point((left[0] + right[0]) / 2, (left[1] + right[1]) / 2)
-            plane = min(roof.planes, key=lambda p: (Polygon(p.outline).distance(middle), p.id))
+            plane = min(plane_shapes, key=lambda pair: (
+                0 if pair[1].distance(middle) <= precision else pair[1].distance(middle), pair[0].id))[0]
+            inside = shape.distance(middle) <= precision
             for point in (left, right):
-                anchor = point if shape.covers(Point(point)) else nearest_points(shape, Point(point))[0].coords[0]
-                height = plane_elevation(plane, anchor) if shape.covers(middle) else elevation(roof, anchor)
+                anchor = point if shape.distance(Point(point)) <= precision else nearest_points(shape, Point(point))[0].coords[0]
+                height = plane_elevation(plane, anchor) if inside else elevation(roof, anchor)
                 value = [*point, height]
                 if not output or math.dist(output[-1], value) > 1e-9:
                     output.append(value)
     return output
 
 
+def parapet_faces(roof):
+    """Shared render/ray faces; heights follow each actual exterior roof span."""
+    if roof.parapet_segments is None:
+        runs = [(i, 0, 1, roof.parapet_height_m) for i in range(len(roof.outline))]
+    else:
+        runs = [(s.edge_index, s.start_ratio, s.end_ratio, s.height_m) for s in roof.parapet_segments]
+    faces = []
+    for index, start, end, height in runs:
+        if height <= 0:
+            continue
+        a, b = roof.outline[index], roof.outline[(index + 1) % len(roof.outline)]
+        points = [[a[j] + (b[j] - a[j]) * ratio for j in range(2)] for ratio in (start, end)]
+        boundary = path3d(roof, points) if roof.type == 'pitched' else [[*p, elevation(roof, p)] for p in points]
+        for first, last in zip(boundary, boundary[1:]):
+            if math.dist(first[:2], last[:2]) <= 1e-9:
+                continue
+            faces.append([first, last, [*last[:2], last[2] + height], [*first[:2], first[2] + height]])
+    return faces
+
+
 def scene_geometry(roof, added_keepouts=()):
     """Serializable render geometry from the same validated surfaces used by rays."""
     from .models import obstacle_polygon, Keepout
     faces = [dict(id=p.id, material=p.material, outline=p.outline,
+                  **({'part_id': p.part_id} if p.part_id is not None else {}),
                   points=[[*xy, plane_elevation(p, xy)] for xy in p.outline]) for p in roof.planes]
-    boundary = path3d(roof, [*roof.outline, roof.outline[0]])
+    ring = [*roof.outline, roof.outline[0]]
+    boundary = path3d(roof, ring) if roof.type in ('pitched', 'carport') and roof.planes else [
+        [*p, elevation(roof, p)] for p in ring]
     walls = [[a, b, [*b[:2], -roof.height_m], [*a[:2], -roof.height_m]] for a, b in zip(boundary, boundary[1:])
              if math.dist(a[:2], b[:2]) > 1e-9]
-    keepouts = []
+    steps = step_walls(roof)
+    walls.extend(steps)
+    keepouts, keepout_faces = [], []
     for zone in [*roof.keepouts, *[Keepout.model_validate(k) for k in added_keepouts]]:
         for plane in roof.planes:
+            if zone.plane_id is not None and zone.plane_id != plane.id:
+                continue
             for shape in pieces(Polygon(plane.outline).intersection(Polygon(zone.polygon))):
                 if shape.geom_type == 'Polygon':
-                    keepouts.append([[*p, plane_elevation(plane, p) + .02] for p in list(shape.exterior.coords)[:-1]])
-    return dict(faces=faces, boundary=boundary, walls=walls, keepouts=keepouts,
-                obstacle_bases={o.id: minimum(roof, obstacle_polygon(o)) for o in roof.obstacles})
+                    points = [[*p, plane_elevation(plane, p) + .02] for p in list(shape.exterior.coords)[:-1]]
+                    keepouts.append(points)
+                    keepout_faces.append(dict(id=zone.id, points=points))
+    return dict(faces=faces, boundary=boundary, walls=walls, step_walls=steps, keepouts=keepouts,
+                keepout_faces=keepout_faces, parapets=parapet_faces(roof),
+                obstacle_bases={o.id: minimum(roof, obstacle_polygon(o), o.plane_id) for o in roof.obstacles})
 
 
 def _matched_edges(first, second):
@@ -142,11 +206,46 @@ def seams(roof):
     return output
 
 
+def step_walls(roof):
+    """Vertical shared walls between explicit volumes, split where height order changes."""
+    if not roof.parts:
+        return []
+    output = []
+    part_ids = {part.id for part in roof.parts}
+    for a, b, edge in seams(roof):
+        if a.part_id not in part_ids or b.part_id not in part_ids or a.part_id == b.part_id:
+            continue
+        left, right = list(edge.coords)
+        delta = [plane_elevation(a, p) - plane_elevation(b, p) for p in (left, right)]
+        stops = [left, right]
+        if delta[0] * delta[1] < 0:
+            ratio = delta[0] / (delta[0] - delta[1])
+            stops.insert(1, tuple(x + ratio * (y - x) for x, y in zip(left, right)))
+        for start, end in zip(stops, stops[1:]):
+            heights = [(plane_elevation(a, p), plane_elevation(b, p)) for p in (start, end)]
+            if max(abs(x - y) for x, y in heights) <= 1e-9:
+                continue
+            points = [[*start, min(heights[0])], [*end, min(heights[1])],
+                      [*end, max(heights[1])], [*start, max(heights[0])]]
+            clean = []
+            for point in points:
+                if not clean or math.dist(point, clean[-1]) > 1e-9:
+                    clean.append(point)
+            if math.dist(clean[0], clean[-1]) <= 1e-9:
+                clean.pop()
+            if len(clean) >= 3:
+                output.append(clean)
+    return output
+
+
 def validate_planes(roof):
     from .models import GzError
     fail = lambda text: GzError('ROOF_PLANES_INVALID', text, '检查坡面外形、坡向和最低边偏移，容差为2厘米')
     if not roof.planes or len({p.id for p in roof.planes}) != len(roof.planes):
         raise fail('整栋需要坡面，且坡面编号不能重复')
+    part_ids = {part.id for part in roof.parts}
+    if any(p.part_id is not None and p.part_id not in part_ids for p in roof.planes):
+        raise fail('坡面引用了不存在的屋顶部分')
     boundary = Polygon(roof.outline)
     shapes = [Polygon(p.outline) for p in roof.planes]
     # Maximum local thickness is the diameter of an inscribed disk in a residual.
@@ -160,11 +259,55 @@ def validate_planes(roof):
         if thick(a.intersection(b)):
             raise fail('坡面重叠宽度超过2厘米')
     for a, b in combinations(roof.planes, 2):
+        # A declared volume boundary is an intentional step; ordinary ridge seams retain 2 cm validation.
+        if a.part_id in part_ids and b.part_id in part_ids and a.part_id != b.part_id:
+            continue
         intersection = Polygon(a.outline).boundary.intersection(Polygon(b.outline).boundary)
         samples = [(p, p) for p in vertices(intersection)]
         samples += [(p, q) for left, right in _matched_edges(a, b) for p, q in zip(left, right)]
         if any(abs(plane_elevation(a, p) - plane_elevation(b, q)) > TOLERANCE + 1e-9 for p, q in samples):
             raise fail(f'P{a.id}与P{b.id}的公共边高度差超过2厘米')
+
+
+def generate_parts(parts):
+    """Compile connected non-overlapping flat/gable volumes into one canonical roof."""
+    from .models import GzError, RoofPart, RoofPlane, ccw, validated
+    fail = lambda text: GzError('ROOF_PARTS_INVALID', text, '各部分须相邻、不重叠、不留内孔；填写独立檐口高度和坡度')
+    if not isinstance(parts, (list, tuple)) or not 1 <= len(parts) <= 32:
+        raise fail('组合屋顶需要1至32个部分')
+    parts = [validated(RoofPart, part, 'ROOF_PARTS_INVALID') for part in parts]
+    if len({part.id for part in parts}) != len(parts):
+        raise fail('屋顶部分编号不能重复')
+    shapes = [Polygon(part.outline) for part in parts]
+    if any(a.intersection(b).area > 1e-8 for a, b in combinations(shapes, 2)):
+        raise fail('屋顶部分的平面轮廓不能重叠')
+    boundary = unary_union(shapes)
+    if boundary.geom_type != 'Polygon' or not boundary.is_valid or boundary.interiors:
+        raise fail('屋顶部分须通过公共边相连，合并后不能有缺口或内孔')
+    datum = min(part.eave_height_m for part in parts)
+    reserved = [identifier for part in parts for identifier in part.plane_ids]
+    if len(set(reserved)) != len(reserved):
+        raise fail('不同屋顶部分不能使用相同坡面编号')
+    next_id = max(reserved, default=0) + 1
+    planes = []
+    for part in parts:
+        if part.kind == 'flat':
+            generated = [RoofPlane(id=1, outline=part.outline, slope_deg=0, slope_azimuth_deg=180,
+                                   material=part.material).model_dump()]
+        else:
+            generated = generate(part.outline, dict(kind='gable', slope_deg=part.slope_deg,
+                                 material=part.material, ridge_mode=part.ridge_mode))['planes']
+        assigned = part.plane_ids[:len(generated)]
+        while len(assigned) < len(generated):
+            assigned.append(next_id)
+            next_id += 1
+        part.plane_ids = assigned
+        for identifier, item in zip(assigned, generated):
+            item.update(id=identifier, part_id=part.id, offset_m=item['offset_m'] + part.eave_height_m - datum,
+                        load_capacity_kn_m2=part.load_capacity_kn_m2, load_verified=part.load_verified)
+            planes.append(item)
+    return dict(parts=[part.model_dump() for part in parts], planes=planes,
+                outline=ccw(list(boundary.exterior.coords)[:-1]), height_m=datum)
 
 
 def generate(outline, settings):

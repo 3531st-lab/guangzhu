@@ -7,6 +7,7 @@ import re
 import time
 import uuid
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 from .config import AGH_ORIGIN, AGH_PORT
 
 TOOLS = ['gz_project_summary', 'gz_set_requirements', 'gz_fetch_weather', 'gz_generate_layout', 'gz_analyze',
@@ -64,8 +65,14 @@ class Management:
                               state=result.get('state'), command=(body or {}).get('commandId'),
                               error_code=code if re.fullmatch('[A-Z][A-Z0-9_]{0,63}', code) else None))
                 return result
-            except OSError:
-                self.log(dict(surface=surface, action=action, result='transport-unconfirmed', attempt=attempt + 1))
+            except HTTPError as error:
+                # An HTTP response proves the management service answered. Keep
+                # the status only: response bodies and URLs may contain secrets.
+                self.log(dict(surface=surface, action=action, result='http-error', http_status=error.code))
+                raise ValueError(f'AGH 管理接口返回 HTTP {error.code}（{surface}/{action}）') from None
+            except OSError as error:
+                self.log(dict(surface=surface, action=action, result='transport-unconfirmed', attempt=attempt + 1,
+                              error_type=type(error).__name__))
                 if attempt:
                     raise ValueError(f'无法连接 AGH 管理接口（端口 {AGH_PORT}）') from None
 
@@ -145,10 +152,14 @@ class Management:
                 self.write('resources', 'mcp/' + action, **args)
         row = get()
         status = self.read('resources', 'mcp/status', serverId='guangzhu')
-        tools, catalogs = self.pages('resources', 'mcp/tools', serverId='guangzhu')
         if (row['definition'] != definition or row['trust'] != 'trusted' or row['desired'] != 'enabled' or row['actual'] != 'ready'
                 or status.get('connectionState') != 'ready' or status.get('observedRevision') != row['revision']
-                or status.get('toolCount') != 12 or catalogs != {status.get('catalogRevision')}
+                or status.get('toolCount') != 12):
+            # AGH rejects catalog requests while a persisted connection is not
+            # ready. Report NotReady first so configure=True can reconnect it.
+            raise NotReady('光筑12个工具尚未全部就绪，请查看官方MCP管理界面')
+        tools, catalogs = self.pages('resources', 'mcp/tools', serverId='guangzhu')
+        if (catalogs != {status.get('catalogRevision')}
                 or len(tools) != 12 or {tool['name'] for tool in tools} != set(TOOLS)):
             raise NotReady('光筑12个工具尚未全部就绪，请查看官方MCP管理界面')
 

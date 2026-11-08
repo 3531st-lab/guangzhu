@@ -31,9 +31,9 @@ def voltage(ac_kw):
 
 
 def itemized(project, dc_kw, design=None, electric=None, load=None):
-    from .electrical import equipment_catalog
+    from .electrical import resolve_catalog_for_project
     from .layout import rack_id
-    equipment = equipment_catalog()
+    equipment = resolve_catalog_for_project(project)
     if design is not None and load is None:
         from .structure import calculate
         load = calculate(project, design)
@@ -77,9 +77,24 @@ def itemized(project, dc_kw, design=None, electric=None, load=None):
         add('ballast', ballast / 1000)
     for cable in (electric or {}).get('cables', {}).get('summary', []):
         key = cable['kind'] + '_cable'
-        add(key, cable['length_m'] * cable['section_mm2'], True,
-            ('直流' if key.startswith('dc') else '交流四芯') + f"电缆 {cable['section_mm2']:g} mm²")
-        items[-1].update(quantity=cable['length_m'], unit='m', unit_price_cny=prices[key]['value'] * cable['section_mm2'])
+        if cable.get('cable_id') and cable.get('unit_price_cny_m') is not None:
+            price = cable['unit_price_cny_m']
+            if type(price) not in (int, float) or not math.isfinite(price) or price < 0:
+                raise GzError('COSTS_INVALID', '所选电缆单价无效', '重新进行电缆选型并核对目录')
+            source = dict(key=cable['cable_id'], value=price, 状态='示意', 单位='元/m',
+                          中文名=cable['cable_model'], 来源标题=cable.get('price_source', '电缆目录示意单价'),
+                          备注='与电气选型的同一目录行计价；非厂家报价，施工前复核',
+                          catalog_row_sha256=cable.get('catalog_row_sha256'))
+            items.append(dict(key=key, name=cable['cable_model'], cable_id=cable['cable_id'],
+                              cable_model=cable['cable_model'], material=cable['material'], section_mm2=cable['section_mm2'],
+                              quantity=cable['length_m'], unit='m', unit_price_cny=price,
+                              subtotal_cny=cable['length_m'] * price, hardware=True, source=source))
+        else:
+            # Old archives have only a section; do not pretend their generic
+            # estimate is a newly selected manufacturer's product quotation.
+            add(key, cable['length_m'] * cable['section_mm2'], True,
+                ('直流' if key.startswith('dc') else '交流四芯') + f"电缆 {cable['section_mm2']:g} mm²")
+            items[-1].update(quantity=cable['length_m'], unit='m', unit_price_cny=prices[key]['value'] * cable['section_mm2'])
         if project.roof.use == 'grazing' and cable['kind'] == 'dc':
             add('dc_animal_protection', cable['length_m'], True)
     add('grid_lv' if ac <= 400 else 'grid_mv' if ac <= 6000 else 'grid_hv', 1 if count else 0, True)
@@ -105,7 +120,8 @@ def itemized(project, dc_kw, design=None, electric=None, load=None):
         row['unit_price_cny'] *= factor
     if items:
         items[-1]['subtotal_cny'] += capex - math.fsum(row['subtotal_cny'] for row in items)
-    consumed = {row['key']: row['source'] for row in items if row['quantity']}
+    consumed = {row['key'] + (':' + row['cable_id'] if row.get('cable_id') else ''): row['source']
+                for row in items if row['quantity']}
     digest = hashlib.sha256(json.dumps(consumed, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
     return dict(items=items, capex_cny=capex, quoted_capex_cny=quoted, manual_override=manual is not None,
                 hardware_cny=math.fsum(row['subtotal_cny'] for row in items if row['hardware']),

@@ -7,13 +7,15 @@ from datetime import datetime, timedelta, timezone
 from .. import electrical, project as storage
 
 
-def write_deliverables(project_id, version, directory):
+def write_deliverables(project_id, version, directory, base_dir=None):
     import ezdxf
+    from pathlib import Path
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill
 
     def read(relative):
-        return json.loads(storage._path(project_id, relative).read_text(encoding="utf-8"))
+        target_path = (Path(base_dir) / relative) if base_dir is not None else storage._path(project_id, relative)
+        return json.loads(target_path.read_text(encoding="utf-8"))
 
     project = read("project.json")
     design = read(f"designs/v{version}.json")
@@ -22,7 +24,7 @@ def write_deliverables(project_id, version, directory):
     economy = read(f"analysis/v{version}/economics.json")
     strings = read(f"analysis/v{version}/electrical.json")
     structure = read(f"analysis/v{version}/structure.json")
-    module = electrical.equipment_catalog()["modules"][project["equipment"]["module_id"]]
+    module = electrical.equipment_catalog(include_extended=True)["modules"][project["equipment"]["module_id"]]
     string_label, inverter_label = electrical.labels(strings)
     racking = 'ballast_ew' if design['params'].get('layout') == 'ew' and project['roof']['type'] == 'flat' else project['equipment']['racking']
     racking_label = {'ballast_tilt': '压载斜支架', 'clamp_flush': '彩钢瓦夹具（示意）',
@@ -67,9 +69,99 @@ def write_deliverables(project_id, version, directory):
     notes = [title, f"tilt {params['tilt_deg']} deg | azimuth {params['azimuth_deg']} deg | {date} | x East, y North"]
     if roof['type'] == 'pitched':
         notes[1] = f"Flush on each P# face; angles and material on face layers | {date} | x East, y North"
+    if design['statistics'].get('manual_edits'):
+        notes[1] = f"Manual per-module placement and rotation; PV outlines use actual corners | {date} | x East, y North"
     for index, note in enumerate(notes):
         point = (min(p[0] for p in roof["outline"]), min(p[1] for p in roof["outline"]) - 1 - index)
         space.add_text(note, dxfattribs={"layer": "TEXT", "height": .4, "insert": point})
+
+    # Add GB standard CAD dimension lines (DIM) and drawing frame + bottom-right title block (FRAME)
+    for lname, col in (("DIM", 3), ("FRAME", 7)):
+        if lname not in drawing.layers:
+            drawing.layers.new(lname, dxfattribs={"color": col, "linetype": "CONTINUOUS"})
+    rxs = [p[0] for p in roof["outline"]]
+    rys = [p[1] for p in roof["outline"]]
+    min_rx, max_rx = min(rxs), max(rxs)
+    min_ry, max_ry = min(rys), max(rys)
+    span_rx, span_ry = max(1.0, max_rx - min_rx), max(1.0, max_ry - min_ry)
+
+    def _dxf_dim_h(x1, x2, y_ref, y_dim, txt):
+        if abs(x2 - x1) < 0.2:
+            return
+        space.add_line((x1, y_ref), (x1, y_dim + (0.4 if y_dim >= y_ref else -0.4)), dxfattribs={"layer": "DIM"})
+        space.add_line((x2, y_ref), (x2, y_dim + (0.4 if y_dim >= y_ref else -0.4)), dxfattribs={"layer": "DIM"})
+        space.add_line((x1, y_dim), (x2, y_dim), dxfattribs={"layer": "DIM"})
+        space.add_text(txt, dxfattribs={"layer": "DIM", "height": 0.45, "insert": ((x1 + x2) / 2 - 1.2, y_dim + 0.15)})
+
+    def _dxf_dim_v(y1, y2, x_ref, x_dim, txt):
+        if abs(y2 - y1) < 0.2:
+            return
+        space.add_line((x_ref, y1), (x_dim + (0.4 if x_dim >= x_ref else -0.4), y1), dxfattribs={"layer": "DIM"})
+        space.add_line((x_ref, y2), (x_dim + (0.4 if x_dim >= x_ref else -0.4), y2), dxfattribs={"layer": "DIM"})
+        space.add_line((x_dim, y1), (x_dim, y2), dxfattribs={"layer": "DIM"})
+        space.add_text(txt, dxfattribs={"layer": "DIM", "height": 0.45, "insert": (x_dim - 2.6 if x_dim < x_ref else x_dim + 0.3, (y1 + y2) / 2)})
+
+    ux = sorted({round(p[0], 2) for p in roof["outline"]})
+    if len(ux) > 2:
+        for i in range(len(ux) - 1):
+            seg = ux[i + 1] - ux[i]
+            if seg >= 1.0:
+                _dxf_dim_h(ux[i], ux[i + 1], max_ry, max_ry + 2.2, f"{int(round(seg * 1000))} ({seg:.1f}m)")
+    _dxf_dim_h(min_rx, max_rx, max_ry, max_ry + 4.4, f"{int(round(span_rx * 1000))} ({span_rx:.1f}m)")
+    _dxf_dim_h(min_rx, max_rx, min_ry, min_ry - 3.8, f"{int(round(span_rx * 1000))}")
+
+    uy = sorted({round(p[1], 2) for p in roof["outline"]})
+    if len(uy) > 2:
+        for i in range(len(uy) - 1):
+            seg = uy[i + 1] - uy[i]
+            if seg >= 1.0:
+                _dxf_dim_v(uy[i], uy[i + 1], min_rx, min_rx - 2.5, f"{int(round(seg * 1000))} ({seg:.1f}m)")
+    _dxf_dim_v(min_ry, max_ry, min_rx, min_rx - 5.2, f"{int(round(span_ry * 1000))} ({span_ry:.1f}m)")
+    _dxf_dim_v(min_ry, max_ry, max_rx, max_rx + 2.8, f"{int(round(span_ry * 1000))}")
+
+    for obs in roof["obstacles"]:
+        if obs["kind"] == "cylinder":
+            cx, cy = obs["center"][:2]
+            r = obs["radius_m"]
+            space.add_text(f"Φ{int(round(r * 2000))} H={int(round(obs.get('height_m', 1.8) * 1000))}",
+                           dxfattribs={"layer": "DIM", "height": 0.35, "insert": (cx + r + 0.3, cy)})
+        else:
+            fp = obs["footprint"]
+            ox0, ox1 = min(p[0] for p in fp), max(p[0] for p in fp)
+            oy0, oy1 = min(p[1] for p in fp), max(p[1] for p in fp)
+            _dxf_dim_h(ox0, ox1, oy1, oy1 + 0.7, f"{int(round((ox1 - ox0) * 1000))}")
+            _dxf_dim_v(oy0, oy1, ox1, ox1 + 0.7, f"{int(round((oy1 - oy0) * 1000))}")
+
+    # GB double-line frame + bottom-right title block + compact 4-line 技术要求
+    fx0, fy0 = min_rx - 10.0, min_ry - 16.0
+    fx1, fy1 = max(max_rx + 12.0, fx0 + 70.0), max_ry + 9.0
+    for bx0, by0, bx1, by1 in [(fx0 - 1.2, fy0 - 1.2, fx1 + 1.2, fy1 + 1.2), (fx0, fy0, fx1, fy1)]:
+        for p1, p2 in [((bx0, by0), (bx1, by0)), ((bx1, by0), (bx1, by1)), ((bx1, by1), (bx0, by1)), ((bx0, by1), (bx0, by0))]:
+            space.add_line(p1, p2, dxfattribs={"layer": "FRAME"})
+    tb_w = min(38.0, (fx1 - fx0) * 0.52)
+    tb_h = 8.5
+    tx0, ty0 = fx1 - tb_w, fy0
+    for p1, p2 in [((tx0, ty0), (fx1, ty0)), ((fx1, ty0), (fx1, ty0 + tb_h)), ((fx1, ty0 + tb_h), (tx0, ty0 + tb_h)), ((tx0, ty0 + tb_h), (tx0, ty0))]:
+        space.add_line(p1, p2, dxfattribs={"layer": "FRAME"})
+    space.add_line((tx0, ty0 + tb_h * 0.5), (fx1, ty0 + tb_h * 0.5), dxfattribs={"layer": "FRAME"})
+    space.add_line((tx0 + tb_w * 0.55, ty0), (tx0 + tb_w * 0.55, ty0 + tb_h), dxfattribs={"layer": "FRAME"})
+    space.add_text(f"材料标记: {module['model']} × {len(panels)}块 ({design['statistics']['dc_kw']}kWp)",
+                   dxfattribs={"layer": "FRAME", "height": 0.45, "insert": (tx0 + 0.8, ty0 + tb_h * 0.65)})
+    space.add_text(f"设计: 光筑AI  |  校核: 规则预检(GB50797/50009)  |  比例 1:200  |  单位 mm(m)",
+                   dxfattribs={"layer": "FRAME", "height": 0.40, "insert": (tx0 + 0.8, ty0 + tb_h * 0.18)})
+    space.add_text(f"图号: PV-01-v{version}",
+                   dxfattribs={"layer": "FRAME", "height": 0.50, "insert": (tx0 + tb_w * 0.58, ty0 + tb_h * 0.65)})
+    space.add_text(f"项目: {project['name'][:16]}",
+                   dxfattribs={"layer": "FRAME", "height": 0.40, "insert": (tx0 + tb_w * 0.58, ty0 + tb_h * 0.18)})
+    reqs = [
+        "技术要求",
+        f"1. 未注尺寸单位为 mm(m)，屋面外沿退距 e={int(round(float(params.get('edge_setback_m', 1.0))*1000))}mm。",
+        f"2. 阵列倾角 {params['tilt_deg']}°，方位角 {params['azimuth_deg']}°，排距 D={int(round(float(params.get('row_spacing_m', 1.2))*1000))}mm。",
+        "3. 严禁跨越采光带与消防检修通道；防雷接地冲击电阻 R≤4Ω。",
+    ]
+    for r_idx, r_txt in enumerate(reqs):
+        space.add_text(r_txt, dxfattribs={"layer": "FRAME", "height": 0.40, "insert": (tx0 + 0.8, ty0 + tb_h + 3.6 - r_idx * 0.85)})
+
     dxf = directory / f"layout-v{version}.dxf"
     drawing.saveas(dxf)
     book = Workbook()
@@ -100,8 +192,10 @@ def write_deliverables(project_id, version, directory):
         ["组串", None, None, None, strings["string_count"], "串"],
         ["每串块数", None, string_label, None, strings["modules_per_string"], "块/串"],
     ] + [["直流电缆" if r['kind'] == 'dc' else "交流电缆", None,
-          ('' if r['kind'] == 'dc' else '4×') + f"{r['section_mm2']} mm²", None, r['length_m'], 'm', None,
-          '示意；敷设/温度现场复核；交流为四芯路线米，直流含1.1富余'] for r in strings.get('cables', {}).get('summary', [])])
+          r.get('cable_model') or ('' if r['kind'] == 'dc' else '4×') + f"{r['section_mm2']} mm²", None, r['length_m'], 'm', None,
+          f"{r.get('material', '材质未记录')}；示意；敷设/温度现场复核；交流为四芯路线米，直流含1.1富余",
+          None, None, None, r.get('cable_id')] for r in strings.get('cables', {}).get('summary', [])])
+    book['材料清单'].cell(1, 12, '目录设备编号')
     currents = {(row["inverter"], row["mppt"]): row for row in strings["mppt_currents"]}
     rows = [["串号", "块数", "逆变器", "MPPT", "最冷开路电压 V", "最热工作电压 V", "所属 MPPT 合计工作电流 A", "所属 MPPT 合计短路电流 A"]]
     for string in strings["strings"]:
@@ -154,7 +248,7 @@ def write_deliverables(project_id, version, directory):
                         phase_rows.append([phase, f"P{plane['id']} 抗风夹具", '实际布点', sum(r['clamps']['adopted'] for r in selected), '个'])
             for kind in ('dc', 'ac'):
                 routes = [r for r in strings['cables'][kind] if r['id'] in (ids if kind == 'dc' else {'I' + str(u['inverter']) for u in units})]
-                phase_rows += [[phase, kind + '电缆', str(r['section_mm2']) + 'mm²', r['length_m'], 'm'] for r in routes]
+                phase_rows += [[phase, kind + '电缆', r.get('cable_model') or str(r['section_mm2']) + 'mm²', r['length_m'], 'm'] for r in routes]
         sheet('分期材料', phase_rows)
         sheet('分期组串', [['串号', '阶段', '逆变器', '块数']] +
               [[r['id'], r['phase'], r['inverter'], len(r['module_ids'])] for r in strings['strings']])

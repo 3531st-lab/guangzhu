@@ -32,6 +32,27 @@ def data_home():
     return Path(override) if override else Path(os.environ.get('LOCALAPPDATA', str(Path.home()))) / 'guangzhu'
 
 
+def seed_examples(root):
+    """Create bundled parks once from templates; upgrades never replace user edits."""
+    from . import park_store
+    root = Path(root).resolve()
+    source_root = root / 'data/demo/park-seeds'
+    created = []
+    with park_store.transaction(root):
+        for source in sorted(source_root.glob('*/park.json')):
+            if source.parent.is_symlink() or not source.resolve().is_relative_to(source_root.resolve()):
+                raise ValueError('演示园区种子路径无效')
+            payload = json.loads(source.read_text(encoding='utf-8'))
+            park = park_store.Park.model_validate(payload)
+            if park.id != source.parent.name:
+                raise ValueError('演示园区种子编号不一致')
+            if park_store.folder(park.id, root).exists():
+                continue
+            park_store.save(payload, root)
+            created.append(park.id)
+    return created
+
+
 def occupied():
     with socket.socket() as connection:
         connection.settimeout(.2)
@@ -59,6 +80,8 @@ class Coordinator:
     def __init__(self, root, start=None, send=None, analyze=offline, port=occupied, probe=runtime):
         self.root, self.start, self.send, self.analyze, self.port = Path(root).resolve(), start, send, analyze, port
         self.installation = installation(root)
+        if self.installation['installed']:
+            seed_examples(self.root)
         self.probe = probe
         self.home = data_home() / 'agh'
         self.cache = self.root / 'desktop/settings.json'

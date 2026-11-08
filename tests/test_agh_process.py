@@ -1,5 +1,6 @@
 """Guangzhu's own AGH instance: start with its own port, own only the verified daemon generation, stop only that."""
 import sys
+import json
 from types import SimpleNamespace
 import pytest
 
@@ -8,6 +9,12 @@ from guangzhu import agh_process, config
 
 def process(calls):
     return SimpleNamespace(pid=42, _handle=4242, poll=lambda: None, terminate=lambda: calls.append('terminate'), wait=lambda **kw: calls.append('wait'))
+
+
+def expire_after_first_retry(monkeypatch):
+    clock = [0.0]
+    monkeypatch.setattr(agh_process.time, 'monotonic', lambda: clock[0])
+    monkeypatch.setattr(agh_process.time, 'sleep', lambda duration: clock.__setitem__(0, 120.0))
 
 
 @pytest.mark.parametrize('before_running,parent,start,path,reachable,generation,owned', [
@@ -34,6 +41,8 @@ def test_only_new_verified_child_generation_owned(tmp_path, monkeypatch, before_
     owner = {'pid':43,'processStartId':f'win32:43:{start}','generation':generation,'startedAt':'date','socketPath':'pipe'}
     statuses = iter([{'running':before_running}, {'running':True,'socketReachable':reachable,'owner':owner}])
     monkeypatch.setattr(servers, 'daemon', lambda action: next(statuses))
+    if not reachable:
+        expire_after_first_retry(monkeypatch)
     if reachable:
         servers.start(str(executable), str(home), 'local-dev', str(tmp_path))
     else:
@@ -89,6 +98,7 @@ def test_own_launch_removes_inherited_node_override_without_changing_parent_envi
     servers = agh_process.OwnedAgh()
     statuses = iter([dict(running=False), dict(running=True, socketReachable=False)])
     monkeypatch.setattr(servers, 'daemon', lambda action: next(statuses))
+    expire_after_first_retry(monkeypatch)
     with pytest.raises(RuntimeError):
         servers.start(str(tmp_path / 'agnes-win32-x64.exe'), str(home), 'local-dev', str(tmp_path))
     assert 'AGNES_NODE_EXEC_PATH' not in calls[0]['env']
@@ -115,7 +125,7 @@ def test_a_start_given_up_stops_only_the_daemon_it_created(tmp_path, monkeypatch
     monkeypatch.setattr(servers, 'daemon', daemon)
     with pytest.raises(RuntimeError, match='未能启动'):
         servers.start(str(tmp_path / 'agnes-win32-x64.exe'), str(home), 'local-dev', str(tmp_path))
-    assert calls == (['status', 'status'] if before_running else ['status', 'status', 'terminate', 'stop'])
+    assert calls == (['status'] if before_running else ['status', 'terminate', 'stop'])
 
 
 @pytest.mark.parametrize('status,stop', [({'running':False},False), ({'running':True,'owner':{'pid':43}},False),
@@ -257,3 +267,87 @@ def test_exited_original_serve_cannot_claim_a_reused_parent_pid(tmp_path, monkey
     assert servers.owner is None
     servers.close()
     assert calls == []
+
+
+@pytest.fixture
+def startup_probes(tmp_path, monkeypatch):
+    """Control only the OS boundaries; exercise the real startup/ownership loop."""
+    def make(http, sockets, *, before_running=False, exit_at=None):
+        calls, clock = [], [0.0]
+        home = tmp_path / 'private-home'
+        home.mkdir()
+        executable = tmp_path / 'bundle' / 'agnes.exe'
+        helper = process(calls)
+        helper.poll = lambda: 7 if exit_at is not None and clock[0] >= exit_at else None
+        monkeypatch.setattr(agh_process.subprocess, 'Popen', lambda *args, **kwargs: helper)
+        monkeypatch.setattr(agh_process.time, 'monotonic', lambda: clock[0])
+        monkeypatch.setattr(agh_process.time, 'sleep', lambda duration: clock.__setitem__(0, clock[0] + 30))
+        http_values, socket_values = iter(http), iter(sockets)
+        last_http, last_socket = [http[-1]], [sockets[-1]]
+        def reachable():
+            calls.append('http')
+            last_http[0] = next(http_values, last_http[0])
+            return last_http[0]
+        monkeypatch.setattr(agh_process, 'reachable', reachable)
+        monkeypatch.setattr(agh_process, 'process_identity', lambda pid, retained=None:
+            dict(start=100, parent=0, path=str(executable)) if pid == 42 else
+            dict(start=101, parent=42, path=str(executable.parent / 'runtime' / 'node.exe')))
+        server = agh_process.OwnedAgh()
+        first = [True]
+        def daemon(action):
+            calls.append(action)
+            if action == 'stop':
+                return 'stopped'
+            if first[0]:
+                first[0] = False
+                return dict(running=before_running)
+            last_socket[0] = next(socket_values, last_socket[0])
+            return dict(running=True, socketReachable=last_socket[0], owner=dict(pid=43,
+                processStartId='win32:43:101', generation='verified-generation', startedAt='date', socketPath='pipe'))
+        monkeypatch.setattr(server, 'daemon', daemon)
+        return SimpleNamespace(server=server, home=home, executable=executable, calls=calls, clock=clock,
+                               start=lambda: server.start(str(executable), str(home), 'local-dev', str(tmp_path)))
+    return make
+
+
+@pytest.mark.parametrize('http,sockets', [([True, True], [False, True]),
+    ([False, True], [False, True]), ([True, False, True], [False, True, True])])
+def test_start_retries_transient_http_and_socket_until_jointly_ready(startup_probes, http, sockets):
+    probe = startup_probes(http, sockets)
+    probe.start()
+    assert 'stop' not in probe.calls and 'terminate' not in probe.calls
+    assert probe.server.owner == dict(pid=43, processStartId='win32:43:101', generation='verified-generation')
+    assert 0 < probe.clock[0] < 120
+
+
+def test_confirmed_ready_is_not_discarded_by_an_extra_http_probe(startup_probes):
+    probe = startup_probes([True, False], [True])
+    probe.start()
+    assert probe.calls.count('http') == 1
+    assert 'stop' not in probe.calls and 'terminate' not in probe.calls
+    records = [json.loads(line) for line in (probe.home.parent / 'setup/agh-startup.jsonl').read_text(encoding='utf-8').splitlines()]
+    assert records[-1]['event'] == 'ready'
+    assert records[-1]['http_ready'] and records[-1]['daemon_socket_ready']
+    assert records[-1]['serve_exit_code'] is None
+    assert all(set(row) == {'event', 'time_utc', 'elapsed_seconds', 'http_ready',
+                            'daemon_socket_ready', 'serve_exit_code'} for row in records)
+    assert str(probe.home) not in json.dumps(records)
+
+
+@pytest.mark.parametrize('before_running', [False, True])
+@pytest.mark.parametrize('failure', ['deadline', 'serve_exit'])
+def test_joint_probe_failure_keeps_deadline_exit_and_external_owner_guards(startup_probes, before_running, failure):
+    probe = startup_probes([True], [False], before_running=before_running,
+                           exit_at=30 if failure == 'serve_exit' else None)
+    with pytest.raises(RuntimeError, match='未能启动'):
+        probe.start()
+    assert ('stop' in probe.calls) is (not before_running)
+    assert ('terminate' in probe.calls) is (not before_running and failure == 'deadline')
+    assert probe.server.owner is None
+    if failure == 'deadline':
+        assert probe.clock[0] >= 120
+    else:
+        assert probe.clock[0] == 30
+    records = [json.loads(line) for line in (probe.home.parent / 'setup/agh-startup.jsonl').read_text(encoding='utf-8').splitlines()]
+    assert records[-1]['event'] == 'failed'
+    assert records[-1]['serve_exit_code'] == (7 if failure == 'serve_exit' else None)

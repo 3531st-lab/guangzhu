@@ -6,30 +6,44 @@ from . import orientation, cables
 from collections import Counter, defaultdict
 
 from .config import DATA_DIR, DC_AC_MIN, DC_AC_MAX, DC_AC_TARGET
-from .models import Design, GzError, validate_project, validated
+from .models import Design, GzError, normalize_inverter_brand, validate_project, validated
 from .weather import load_nasa_daily_extremes
 
 CATALOG_DIR = DATA_DIR / "catalog"
 STANDARD_REF = "GB 50797-2012（2024年局部修订）6.4.2"
 
 
-def load_catalog(filename):
+def load_catalog(filename, *, include_extended=False):
     """Read plain installation CSV rows keyed by their unique equipment ID."""
     try:
-        with (CATALOG_DIR / filename).open(encoding="utf-8-sig", newline="") as stream:
-            rows = list(csv.DictReader(stream))
-        key = {"modules.csv": "module_id", "inverters.csv": "inverter_id", "racking.csv": "racking_id"}[filename]
+        files = [filename]
+        if include_extended and filename in ("modules.csv", "inverters.csv"):
+            ext_name = filename.replace(".csv", "_extended.csv")
+            if (CATALOG_DIR / ext_name).is_file():
+                files.append(ext_name)
+        key = {
+            "modules.csv": "module_id",
+            "inverters.csv": "inverter_id",
+            "racking.csv": "racking_id",
+            "cables.csv": "cable_id",
+        }[filename]
         result = {}
-        for row in rows:
-            identifier = row.get(key) or row.get("racking")
-            if not identifier or identifier in result or None in row:
-                raise ValueError("invalid or duplicate equipment ID")
-            for name, value in row.items():
-                try:
-                    row[name] = float(value)
-                except (TypeError, ValueError):
-                    pass
-            result[identifier] = row
+        for fname in files:
+            with (CATALOG_DIR / fname).open(encoding="utf-8-sig", newline="") as stream:
+                rows = list(csv.DictReader(stream))
+            for row in rows:
+                identifier = row.get(key) or row.get("racking")
+                if not identifier or identifier in result or None in row:
+                    raise ValueError("invalid or duplicate equipment ID")
+                for name, value in row.items():
+                    try:
+                        row[name] = float(value)
+                    except (TypeError, ValueError):
+                        pass
+                if filename == 'inverters.csv':
+                    row['manufacturer_display'] = row['manufacturer']
+                    row['manufacturer'] = normalize_inverter_brand(row['manufacturer'])
+                result[identifier] = row
         if not result:
             raise ValueError("empty catalog")
         return result
@@ -37,8 +51,27 @@ def load_catalog(filename):
         raise GzError("EQUIPMENT_CATALOG_INVALID", "设备规格目录缺失或格式不正确", "检查厂家规格CSV及唯一设备编号") from error
 
 
-def equipment_catalog():
-    return {kind: load_catalog(kind + ".csv") for kind in ("modules", "inverters", "racking")}
+def equipment_catalog(*, include_extended=False):
+    return {kind: load_catalog(kind + ".csv", include_extended=include_extended) for kind in ("modules", "inverters", "racking")}
+
+
+def resolve_catalog_for_project(project, base_catalog=None):
+    """Return equipment catalog, merging extended modules/inverters when referenced by project."""
+    catalog = base_catalog if base_catalog is not None else equipment_catalog()
+    need_ext_mod = project.equipment.module_id not in catalog["modules"]
+    need_ext_inv = (
+        (project.equipment.inverter_id and project.equipment.inverter_id not in catalog["inverters"])
+        or (project.equipment.inverter_brand and project.equipment.inverter_brand not in ("Sungrow", "Huawei"))
+    )
+    if need_ext_mod or need_ext_inv:
+        catalog = dict(catalog)
+        if need_ext_mod:
+            ext_mods = load_catalog("modules.csv", include_extended=True)
+            catalog["modules"] = {**ext_mods, **catalog["modules"]}
+        if need_ext_inv:
+            ext_invs = load_catalog("inverters.csv", include_extended=True)
+            catalog["inverters"] = {**ext_invs, **catalog["inverters"]}
+    return catalog
 
 
 def labels(result):
@@ -309,7 +342,7 @@ def calculate(project, design, *, offline=False, shadows=None, options=False, se
     from .personal import phase_electrical, transformer_limit
     if not options and selected is None and any(m.phase is not None for m in design.modules):
         return phase_electrical(project, design, offline=offline, shadows=shadows)
-    catalog = equipment_catalog()
+    catalog = resolve_catalog_for_project(project, equipment_catalog())
     try:
         module = catalog["modules"][project.equipment.module_id]
         candidates = ([catalog["inverters"][project.equipment.inverter_id]] if project.equipment.inverter_id
@@ -343,6 +376,12 @@ def calculate(project, design, *, offline=False, shadows=None, options=False, se
                                     f"优先硬失败最少，再取容配比最接近示意目标{DC_AC_TARGET:g}，再取台数少、编号顺序")
     selected["metadata"] = dict(module_source=_source(module),
                                 inverter_source='；'.join(_source(catalog['inverters'][row['inverter_id']]) for row in selected['inverters']),
+                                module_parameter_status=module.get('parameter_status', 'referenced_datasheet'),
+                                inverter_parameter_status={row['inverter_id']: catalog['inverters'][row['inverter_id']].get('parameter_status', 'referenced_datasheet')
+                                                           for row in selected['inverters']},
+                                equipment_limitations=[r['model'] + '：' + r['assumptions_note'] for r in
+                                    [module, *[catalog['inverters'][row['inverter_id']] for row in selected['inverters']]]
+                                    if r.get('parameter_status') == 'unverified'],
                                 standard_ref=STANDARD_REF,
                                 standard_revision="2024修订附件PDF第26页（印刷20）：6.4.2删除旧Vmpptmax上界，E04另按厂家规格书校核MPPT范围",
                                 working_voltage_coefficient="功率温度系数近似工作电压温度系数", dc_capacity_basis="整体按全部排板组件，含未接入剩余；每台按实际接入组件；另列connected_dc_kw")

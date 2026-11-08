@@ -105,13 +105,19 @@ def test_cleaning_none_only_and_plain_serialization_unchanged():
                                    design=design, load=load, electric=electric, sensitivity=False)
         assert cash['operating_costs']['cleaning_times'] == expected
     for path in (ROOT / 'data/demo/projects').glob('*/project.json'):
-        if path.parent.name in ('barn-demo', 'grazing-demo'):
+        if path.parent.name in ('barn-demo', 'grazing-demo', 'taizhou-lixiahe-poultry'):
             continue
         original = json.loads(path.read_text(encoding='utf-8'))
         model = Project.model_validate(original).model_dump(mode='json')
         assert 'use' not in model['roof']
         assert 'animal' not in model['roof']
-        assert all('preset' not in k and 'clearance_m' not in k for k in model['roof']['keepouts'])
+        for source, saved in zip(original['roof'].get('keepouts', []), model['roof']['keepouts'], strict=True):
+            assert saved['id'] == source['id']
+            for field in ('preset', 'clearance_m'):
+                if source.get(field) is None:
+                    assert field not in saved, (path.parent.name, source['id'], field)
+                else:
+                    assert saved[field] == source[field], (path.parent.name, source['id'], field)
 
 
 def test_actual_low_g08_failed_g10_edit_and_no_hourly_payload():

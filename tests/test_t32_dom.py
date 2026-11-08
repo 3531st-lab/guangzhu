@@ -113,7 +113,7 @@ def test_real_whole_building_scenes_and_pdf_tables(pitched_flow, tmp_path):
             if (!object.geometry?.attributes.normal) return;
             const position=object.geometry.attributes.position, normal=object.geometry.attributes.normal;
             if (object.userData.roofPlane) result.roofs.push(normal.getY(0));
-            if (position.count===6 && Math.abs(normal.getY(0))<1e-7 && !object.userData.roofPlane) {
+            if (object.userData.buildingWall && position.count===6 && Math.abs(normal.getY(0))<1e-7) {
               const x=(position.getX(0)+position.getX(1)+position.getX(2))/3;
               const z=(position.getZ(0)+position.getZ(1)+position.getZ(2))/3;
               result.walls.push(x*normal.getX(0)+z*normal.getZ(0));

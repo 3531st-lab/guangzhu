@@ -62,11 +62,24 @@ REQUIREMENTS.update(export_allowed=dict(type=['boolean', 'null']), ballast_only=
 OPS = [obj(dict(op=dict(type="string", const="remove_modules"), **props), ["op", *props]) for props in
        (dict(module_ids=dict(type="array", items=STRING)), dict(where=dict(oneOf=list(WHERE.values()))))]
 parameter_op = obj(dict(op=dict(type='string', const='set_param'), name=dict(type='string'), value={}), ['op', 'name', 'value'])
-parameter_op['oneOf'] = [dict(properties=dict(name=dict(const=name), value=value)) for name, value in PARAMS.items()]
+parameter_groups = {}
+for name, value in PARAMS.items():
+    parameter_groups.setdefault(json.dumps(value, sort_keys=True), []).append(name)
+parameter_op['oneOf'] = [dict(properties=dict(name=dict(enum=names), value=json.loads(value)))
+                         for value, names in parameter_groups.items()]
 OPS.append(parameter_op)
 OPS += [obj(dict(op=dict(type="string", const="set_string_size"), modules_per_string=VERSION), ["op", "modules_per_string"]),
         obj(dict(op=dict(type="string", const="add_keepout"), polygon=dict(type="array", items=pair(dict(type="number")), minItems=3),
                  label=STRING, preset=dict(type='string', enum=['vent','skylight']), clearance_m=number()), ["op", "polygon", "label"])]
+OPS += [obj(dict(op=dict(type='string', enum=['lock_modules', 'unlock_modules']),
+                 module_ids=dict(type='array', items=STRING, minItems=1)), ['op', 'module_ids']),
+        obj(dict(op=dict(type='string', enum=['lock_plane', 'unlock_plane']), plane_id=VERSION), ['op', 'plane_id'])]
+OPS += [obj(dict(op=dict(type='string', const='lock_region'), id=STRING,
+                 polygon=dict(type='array', items=pair(dict(type='number')), minItems=3)), ['op', 'id', 'polygon']),
+        obj(dict(op=dict(type='string', const='unlock_region'), id=STRING), ['op', 'id']),
+        obj(dict(op=dict(type='string', const='reflow_unlocked'), params=obj({key: PARAMS[key] for key in
+            ('orientation', 'plane_ids', 'edge_setback_m', 'obstacle_clearance_m', 'keepout_clearance_m',
+             'walkway_every_n_rows', 'walkway_width_m', 'fill_landscape')})), ['op', 'params'])]
 SCHEMAS = {
     "gz_wait": obj(dict(job_id=STRING), ["job_id"]),
     "gz_project_summary": obj(dict(project_id=PID), ["project_id"]),
@@ -78,7 +91,9 @@ SCHEMAS = {
         capex_change_pct=number(-50, 50), price_change_pct=number(-50, 50), self_use_ratio=number(0, 1),
         price_export_cny_kwh=number(0, 2)))), ["project_id", "version"]),
     "gz_edit_design": obj(dict(project_id=PID, version=VERSION, reason=dict(type="string", minLength=1),
-                               ops=dict(type="array", minItems=1, items=dict(oneOf=OPS))), ["project_id", "version", "reason", "ops"]),
+                               ops=dict(type="array", minItems=1, items=dict(oneOf=OPS)), preview=dict(type='boolean'),
+                               expected_fingerprint=dict(type='string', pattern='^[a-f0-9]{64}$')),
+                          ["project_id", "version", "reason", "ops"]),
     "gz_compare_options": obj(dict(project_id=PID, base_version=VERSION, offline=OFFLINE), ["project_id", "base_version"]),
     "gz_crosscheck_yield": obj(dict(project_id=PID, version=VERSION, offline=OFFLINE, group_offset=number(integer=True)), ["project_id", "version"]),
     "gz_record_review": obj(dict(project_id=PID, version=VERSION, reviewer_model=dict(type="string", minLength=1),
@@ -87,7 +102,7 @@ SCHEMAS = {
             ["severity", "item", "evidence", "suggestion"]))), ["project_id", "version", "reviewer_model", "verdict", "findings"]),
     "gz_export": obj(dict(project_id=PID, version=VERSION, offline=OFFLINE), ["project_id", "version"]),
     "gz_new_project": obj(dict(project_id=PID, template=PID, equipment=obj(dict(module_id=STRING, inverter_id=STRING,
-        inverter_brand=dict(type='string', enum=['Sungrow', 'Huawei']))), economics=obj(dict(
+        inverter_brand=dict(type='string', enum=['Sungrow', 'Huawei', 'GoodWe', 'Ginlong', 'Sineng', 'Chint']))), economics=obj(dict(
         price_self_cny_kwh=number(.1, 2), self_use_ratio=number(0, 1), capex_cny_per_w=number(1, 6),
         price_export_cny_kwh=number(0, 1), monthly_kwh=number(1), shifts=dict(type="integer", minimum=1, maximum=4)))),
         ["project_id", "template"]),
@@ -106,16 +121,16 @@ DESCRIPTIONS = {
     "gz_fetch_weather": "分析前取天气，返回条数、缺失、辐射、气温和来源。只读（只写可重算的缓存）。",
     "gz_generate_layout": "首次/重新排板，返回新增版本、组件数、装机和行距。",
     "gz_analyze": "分析/what_if（未保存）；返回规则及建议，rules.met是已满足的业主要求及实际值，yield_kwh.p50是基准年发电估算（NASA POWER 2023天气b链），不是概率P50。按suggestions_format完整展开区间为module_ids。只读（只写可重算的缓存）。",
-    "gz_edit_design": "按分析建议修正时用；返回新增版本及变化，reason填写规则编号。",
+    "gz_edit_design": "按分析建议修正或保锁局部重排；preview=true仅预览，再传expected_fingerprint确认。锁定组件、坡面及区域不得改变；解除锁定只能由用户在工作台操作。返回新增版本及变化，reason填写规则编号或修改原因。",
     "gz_compare_options": "保存三方案；current是已有分析的当前方案；recommended按偏好给版本和理由。保留各方案违反要求；"
                           "tilt_trials仅挑最快回本倾角，不是方案指标；site_tilt是按当地天气算的最佳、多装、折中倾角及每千瓦损失；"
                           "kwh_per_kw单位kWh/kW。",
     "gz_crosscheck_yield": "复核五链；多朝向逐组及全设计合计。next_group_offset非空时用group_offset续取，数字照抄。只读（只写可重算的缓存）。",
-    "gz_record_review": "设计会话原样保存独立审核员JSON，只新增审核意见并返回文件。",
+    "gz_record_review": "设计会话原样保存独立审核员JSON，只新增审核意见并返回文件。只读（只写可重算的缓存）。",
     "gz_export": "硬性规则通过且用户批准后用；重新分析并导出JSON，返回文件及sha256。",
     "gz_new_project": "一键开始按模板建空项目并写经济参数，返回摘要与代码身份；已有编号拒绝覆盖。",
 }
-READONLY = {"gz_project_summary", "gz_fetch_weather", "gz_analyze", "gz_crosscheck_yield", "gz_wait"}
+READONLY = {"gz_project_summary", "gz_fetch_weather", "gz_analyze", "gz_crosscheck_yield", "gz_record_review", "gz_wait"}
 VALIDATORS = {name: Draft202012Validator(schema) for name, schema in SCHEMAS.items()}
 TOOLS = [types.Tool(name=name, description=DESCRIPTIONS[name], inputSchema=schema,
          annotations=types.ToolAnnotations(readOnlyHint=name in READONLY, destructiveHint=False)) for name, schema in SCHEMAS.items()]

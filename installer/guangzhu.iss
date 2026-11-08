@@ -1,7 +1,7 @@
 [Setup]
 AppId=Guangzhu.Desktop
 AppName=光筑
-AppVersion=0.2.0
+AppVersion=0.3.0
 AppPublisher=验形工坊
 PrivilegesRequired=lowest
 DefaultDirName={localappdata}\Programs\guangzhu

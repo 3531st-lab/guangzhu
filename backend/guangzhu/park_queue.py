@@ -128,3 +128,30 @@ def action(identifier, operation, payload, verify, root=ROOT):
         result = queue.model_dump(mode='json')
         store.write(store.folder(identifier, root) / 'queue.json', result)
         return result
+
+
+def force_reset_all(root=ROOT):
+    """Force-cancel and skip any non-terminal items across all parks so user is never trapped in a dead loop."""
+    with store.transaction(root):
+        store.recover(root)
+        cleared = []
+        for entry in store.listing(root):
+            pid = entry["id"]
+            path = store.folder(pid, root) / "queue.json"
+            if not path.exists():
+                continue
+            queue = Queue.model_validate(store.read(path), context={"stored": True})
+            changed = False
+            for row in queue.items:
+                if row.status not in TERMINAL:
+                    row.status = "skipped"
+                    row.reason = "已由用户手动强制停止并重置任务状态"
+                    changed = True
+            if queue.paused:
+                queue.paused = False
+                changed = True
+            if changed:
+                queue.revision += 1
+                store.write(path, queue.model_dump(mode="json"))
+                cleared.append(pid)
+        return cleared

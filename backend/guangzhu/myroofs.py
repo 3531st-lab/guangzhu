@@ -68,8 +68,32 @@ def import_drawing(name, data, page=1, root=ROOT):
     return dict(kind="image", upload=token, width=image.width, height=image.height, pages=pages)
 
 
+def _classify_dxf_layer(layer: str, is_largest: bool = False, is_circle: bool = False, aspect: float = 1.0) -> tuple[str, float, str]:
+    upper = (layer or "").upper()
+    if is_circle:
+        if any(k in upper for k in ("TREE", "PLANT", "树", "绿化")):
+            return "tree", 6.0, layer if layer and layer != "0" else "周边树木"
+        return "tank", 3.0, layer if layer and layer != "0" else "圆形设备"
+    if is_largest or any(k in upper for k in ("ROOF", "OUTLINE", "BOUNDARY", "屋面", "屋顶", "外轮廓", "轮廓")):
+        return "roof", 0.0, layer if layer and layer != "0" else "屋面外轮廓"
+    if any(k in upper for k in ("SKY", "LIGHT", "WINDOW", "GLAZ", "天窗", "采光", "气楼")):
+        return "skylight", 0.0, layer if layer and layer != "0" else "采光带"
+    if any(k in upper for k in ("VENT", "EXHAUST", "通风", "排烟", "风口")):
+        return "vent", 0.0, layer if layer and layer != "0" else "通风口"
+    if any(k in upper for k in ("KEEP", "ZONE", "WALK", "FIRE", "禁区", "通道", "消防", "天井")):
+        return "keepout", 0.0, layer if layer and layer != "0" else "禁区"
+    if any(k in upper for k in ("BLDG", "SURROUND", "NEIGH", "周边", "邻楼", "配楼")):
+        return "building", 12.0, layer if layer and layer != "0" else "周边楼"
+    if any(k in upper for k in ("OBSTACLE", "EQUIP", "HVAC", "MEP", "AHU", "DEV", "设备", "机房", "空调", "风机", "基础")):
+        return "device", 2.5, layer if layer and layer != "0" else "屋面设备"
+    if aspect >= 3.8:
+        return "skylight", 0.0, "采光带"
+    return "device", 2.5, layer if layer and layer != "0" else "屋面设备"
+
+
 def dxf_outlines(data):
     from ezdxf import path, recover
+    from shapely.ops import polygonize
     document, _ = recover.read(io.BytesIO(data))
     rows = []
     for entity in document.modelspace().query("LWPOLYLINE POLYLINE"):
@@ -86,8 +110,118 @@ def dxf_outlines(data):
         if closed and shape.is_valid and shape.area > 0:
             rows.append(dict(points=[[round(x, 4), round(y, 4)] for x, y in points], area=shape.area, layer=entity.dxf.layer))
     if not rows:
+        lines_by_layer: dict[str, list] = {}
+        for entity in document.modelspace().query("LINE"):
+            start, end = entity.dxf.start, entity.dxf.end
+            if math.hypot(end.x - start.x, end.y - start.y) > 1e-6:
+                lines_by_layer.setdefault(entity.dxf.layer, []).append(LineString([(start.x, start.y), (end.x, end.y)]))
+        for layer_name, segs in lines_by_layer.items():
+            if len(segs) >= 3:
+                for poly in polygonize(segs):
+                    if poly.is_valid and poly.area > 0:
+                        pts = list(poly.exterior.coords)[:-1]
+                        rows.append(dict(points=[[round(x, 4), round(y, 4)] for x, y in pts], area=poly.area, layer=layer_name))
+    if not rows:
         raise GzError("DXF_NO_OUTLINE", "DXF 里没有找到闭合的多段线", "在 CAD 里用 BOUNDARY（边界）或 PEDIT 合并命令把屋顶外轮廓变成闭合多段线再导出")
-    return dict(scale=DXF_UNITS.get(document.header.get("$INSUNITS", 0)), outlines=sorted(rows, key=lambda r: -r["area"])[:30])
+    sorted_rows = sorted(rows, key=lambda r: -r["area"])[:30]
+    for idx, row in enumerate(sorted_rows):
+        xs = [p[0] for p in row["points"]]
+        ys = [p[1] for p in row["points"]]
+        w, h = max(xs) - min(xs), max(ys) - min(ys)
+        aspect = max(w, h) / max(min(w, h), 1e-6)
+        role_hint, height_hint, label_hint = _classify_dxf_layer(row["layer"], is_largest=(idx == 0), is_circle=False, aspect=aspect)
+        row.update(role_hint=role_hint, height_hint=height_hint, label_hint=label_hint)
+    circles = []
+    for entity in document.modelspace().query("CIRCLE"):
+        center = entity.dxf.center
+        radius = float(entity.dxf.radius)
+        if radius > 0:
+            role_hint, height_hint, label_hint = _classify_dxf_layer(entity.dxf.layer, is_largest=False, is_circle=True)
+            circles.append(dict(
+                center=[round(center.x, 4), round(center.y, 4)],
+                radius=round(radius, 4),
+                area=round(math.pi * radius * radius, 4),
+                layer=entity.dxf.layer,
+                role_hint=role_hint,
+                height_hint=height_hint,
+                label_hint=label_hint,
+            ))
+    return dict(
+        scale=DXF_UNITS.get(document.header.get("$INSUNITS", 0)),
+        outlines=sorted_rows,
+        circles=circles[:20],
+    )
+
+
+def sample_dxf_bytes(preset: str = "cmc") -> tuple[str, bytes]:
+    """Generate a standard multi-layer AutoCAD DXF sample drawing for Taizhou industrial scenarios."""
+    import ezdxf
+    doc = ezdxf.new("R2010")
+    doc.header["$INSUNITS"] = 6  # metres
+    msp = doc.modelspace()
+    if preset == "shipyard":
+        filename = "泰州靖江海工分段车间_标准CAD.dxf"
+        msp.add_lwpolyline([(0, 0), (96, 0), (96, 36), (0, 36)], close=True, dxfattribs={"layer": "ROOF_屋面外轮廓"})
+        msp.add_lwpolyline([(18, 16.5), (44, 16.5), (44, 19.5), (18, 19.5)], close=True, dxfattribs={"layer": "SKYLIGHT_屋脊采光气楼"})
+        msp.add_lwpolyline([(52, 16.5), (78, 16.5), (78, 19.5), (52, 19.5)], close=True, dxfattribs={"layer": "SKYLIGHT_屋脊采光气楼"})
+        msp.add_lwpolyline([(12, 27), (17, 27), (17, 31), (12, 31)], close=True, dxfattribs={"layer": "EQUIP_焊接除尘机组"})
+        msp.add_lwpolyline([(79, 27), (84, 27), (84, 31), (79, 31)], close=True, dxfattribs={"layer": "EQUIP_焊接除尘机组"})
+        msp.add_circle((32, 29), 1.8, dxfattribs={"layer": "TANK_RTO排气筒"})
+        msp.add_circle((64, 29), 1.8, dxfattribs={"layer": "TANK_RTO排气筒"})
+    elif preset == "watertown":
+        filename = "泰州凤城河三水湾展馆_标准CAD.dxf"
+        msp.add_lwpolyline([(0, 0), (44, 0), (44, 24), (0, 24)], close=True, dxfattribs={"layer": "ROOF_屋面外轮廓"})
+        msp.add_lwpolyline([(17, 8), (27, 8), (27, 16), (17, 16)], close=True, dxfattribs={"layer": "KEEPOUT_水乡采光天井"})
+        msp.add_lwpolyline([(6, 17), (10, 17), (10, 20), (6, 20)], close=True, dxfattribs={"layer": "EQUIP_青砖排风亭"})
+        msp.add_lwpolyline([(34, 17), (38, 17), (38, 20), (34, 20)], close=True, dxfattribs={"layer": "EQUIP_青砖排风亭"})
+        msp.add_circle((-3.5, 6), 2.5, dxfattribs={"layer": "TREE_三水湾古银杏"})
+        msp.add_circle((47.5, 6), 2.5, dxfattribs={"layer": "TREE_三水湾古银杏"})
+    else:
+        filename = "泰州中国医药城洁净厂房_标准CAD.dxf"
+        msp.add_lwpolyline([(0, 0), (76, 0), (76, 20), (54, 20), (54, 30), (0, 30)], close=True, dxfattribs={"layer": "ROOF_屋面外轮廓"})
+        msp.add_lwpolyline([(10, 20), (18, 20), (18, 24), (10, 24)], close=True, dxfattribs={"layer": "EQUIP_GMP洁净空调机组"})
+        msp.add_lwpolyline([(26, 20), (34, 20), (34, 24), (26, 24)], close=True, dxfattribs={"layer": "EQUIP_GMP洁净空调机组"})
+        msp.add_lwpolyline([(12, 8), (24, 8), (24, 10.2), (12, 10.2)], close=True, dxfattribs={"layer": "SKYLIGHT_洁净走廊采光天窗"})
+        msp.add_lwpolyline([(30, 8), (42, 8), (42, 10.2), (30, 10.2)], close=True, dxfattribs={"layer": "SKYLIGHT_洁净走廊采光天窗"})
+        msp.add_lwpolyline([(2, 14), (52, 14), (52, 15.2), (2, 15.2)], close=True, dxfattribs={"layer": "KEEPOUT_消防主检修通道"})
+        msp.add_circle((44, 22), 1.6, dxfattribs={"layer": "TANK_酸雾洗涤塔"})
+        msp.add_circle((64, 13), 1.5, dxfattribs={"layer": "TANK_纯化水膨胀罐"})
+    stream = io.StringIO()
+    doc.write(stream)
+    return filename, stream.getvalue().encode("utf-8")
+
+
+def export_roof_dxf_bytes(payload: dict) -> tuple[str, bytes]:
+    """Export a roof editor payload (outline, obstacles, keepouts, surroundings) to a layered AutoCAD DXF."""
+    import ezdxf
+    name = (payload.get("name") or "屋顶CAD底图").strip()
+    roof = payload.get("roof") or {}
+    doc = ezdxf.new("R2010", setup=["linetypes"])
+    doc.header["$INSUNITS"] = 6
+    msp = doc.modelspace()
+    for lname in ("ROOF", "OBSTACLE", "SKYLIGHT", "KEEPOUT", "SURROUNDING"):
+        doc.layers.new(lname, dxfattribs={"linetype": "DASHED" if lname in ("KEEPOUT", "SKYLIGHT") else "CONTINUOUS"})
+    outline = roof.get("outline") or []
+    if len(outline) >= 3:
+        msp.add_lwpolyline([p[:2] for p in outline], close=True, dxfattribs={"layer": "ROOF"})
+    for obs in roof.get("obstacles") or []:
+        if obs.get("kind") == "cylinder" and obs.get("center"):
+            msp.add_circle(obs["center"][:2], float(obs.get("radius_m") or 1.0), dxfattribs={"layer": "OBSTACLE"})
+        elif obs.get("footprint"):
+            msp.add_lwpolyline([p[:2] for p in obs["footprint"]], close=True, dxfattribs={"layer": "OBSTACLE"})
+    for kp in roof.get("keepouts") or []:
+        layer = "SKYLIGHT" if kp.get("preset") == "skylight" or "天窗" in (kp.get("label") or "") or "采光" in (kp.get("label") or "") else "KEEPOUT"
+        if kp.get("polygon"):
+            msp.add_lwpolyline([p[:2] for p in kp["polygon"]], close=True, dxfattribs={"layer": layer})
+    for sur in roof.get("surroundings") or []:
+        if sur.get("kind") == "cylinder" and sur.get("center"):
+            msp.add_circle(sur["center"][:2], float(sur.get("radius_m") or 2.0), dxfattribs={"layer": "SURROUNDING"})
+        elif sur.get("footprint"):
+            msp.add_lwpolyline([p[:2] for p in sur["footprint"]], close=True, dxfattribs={"layer": "SURROUNDING"})
+    stream = io.StringIO()
+    doc.write(stream)
+    safe_name = re.sub(r'[\\/:*?"<>|]+', "_", name) or "roof"
+    return f"{safe_name}.dxf", stream.getvalue().encode("utf-8")
 
 
 def save(payload, root=ROOT, validate_only=False, create=False):
@@ -120,7 +254,7 @@ def save(payload, root=ROOT, validate_only=False, create=False):
     if project['roof'].get('type') == 'pitched':
         from .roofplane import generate
         project['equipment'] = dict(base['equipment'], racking='plane_flush')
-        if not project['roof'].get('planes'):
+        if not project['roof'].get('planes') and not project['roof'].get('parts'):
             project['roof']['planes'] = generate(project['roof']['outline'], project['roof'].get('pitched', {}))['planes']
     if underlay:
         project["roof"]["underlay"] = dict(image="underlay.png", calibration=underlay.get("calibration"))
@@ -150,6 +284,9 @@ def save(payload, root=ROOT, validate_only=False, create=False):
 def save_gable(payload, root):
     """Validate both complete roof records before creating either directory."""
     roof = dict(payload.get("roof") or {})
+    if roof.get('parapet_segments'):
+        raise GzError('PARAPET_SPLIT_UNSUPPORTED', '旧式双坡拆分不能保留分段女儿墙的外边编号',
+                      '改用整栋坡面编辑，或先恢复统一女儿墙模式')
     save(dict(payload, roof_mode="metal-single"), root, validate_only=True)
     shape = Polygon(roof.get("outline", []))
     ridge = payload.get("ridge")

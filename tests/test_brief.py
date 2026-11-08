@@ -40,7 +40,8 @@ def test_three_roofs_have_known_data_and_exact_task_text(template,text,structure
                 '空地和车棚称新建安装面；空地核对G08，车棚核对G09，L01不适用且基础/钢结构须厂家设计。'
                 '空地离地、road_every/road_width_m/fence_setback_m可传排板工具；车棚clear_height_m和0–15°倾角可改。\n'
                 '最终选定版本须串行：先单独调用 gz_analyze，等待成功结果；再单独调用 gz_crosscheck_yield，等待成功结果；之后才按任务书模式审核或申请 gz_export。不得在同一轮回复并发或批量调用这些工具。\n'
-                '检查点：gz_set_requirements 返回 contradictions 非空，立即结束本轮工具调用，禁止再调用任何工具；不能用 gz_set_requirements 试写候选。只在文字里依据本次矛盾提出能解除整组冲突的单项建议，不编数值。取消冲突下限是合法单项，无需先试保存；依赖该下限的预算不足、屋顶上限冲突同时不成立，其他要求不变。仍有矛盾的候选不得编号为建议；唯一可行候选必须列为建议①，不凑建议②③，无则只说明。建议置前，每条一行、最多三条、合计不超过200字，写原值/单位；说明后置。工具审批不等于同意放宽要求；只有用户明确同意后才改该项、同步原文和结构化值并重存需求，仍有矛盾必须再停。\n'
+                '检查点：gz_set_requirements 返回 contradictions 非空，立即结束本轮工具调用，禁止再调用任何工具；不能用 gz_set_requirements 试写候选。只在文字里依据本次矛盾提出待验证的放宽方向，不编数值。逻辑消冲不代表非空可用方案；未经非空排布和全部硬规则复算只能称待验证方向，不得取消装机下限或用零组件冒称可行。仍有已知矛盾的方向不推荐；只列有依据的方向，不凑建议②③，无则只说明。方向置前，每条一行、最多三条、合计不超过200字，写原值/单位；说明后置。工具审批不等于同意放宽要求；只有用户明确同意后才改该项、同步原文和结构化值并重存需求，仍有矛盾必须再停。\n'
+                '局部修改先读摘要locks；锁定数量包含组件、坡面和区域，truncated为真表示编号列表不全。AI不得解锁或撤销；带锁比较用gz_edit_design的reflow_unlocked并先preview=true，核对后用同一ops和expected_fingerprint确认。几何预览不代表发电、造价、回本或硬规则已通过，保存后须重新分析；锁定冲突时停下说明，不能改用全屋重排绕过。\n'
                 f'新项目：{identifier}（屋顶模板 {template}）\n我的要求：{text}\n'
                 '建项目时将facts里已填的roof_age_years、transformer_kva传给gz_new_project.facts。峰谷、税和贷款已由工具计算。\n'
                 '任务书数据（以此为准）：\n'
@@ -176,7 +177,7 @@ def test_documented_samples_are_current_cli_default_output(template, identifier,
     assert payload(sample)['run']['review']['mode'] == 'independent'
 
 
-def test_legacy_brief_evidence_retains_only_documented_t25_t30_t31_t33_prompt_additions():
+def test_legacy_brief_evidence_retains_user_inputs_after_instruction_revision():
     path = Path(__file__).resolve().parents[1] / 'reports/assets/T14-r1/kernel/brief-before.json'
     for row in json.loads(path.read_text(encoding='utf-8')):
         actual = brief.render_brief(row['spec'])
@@ -186,7 +187,8 @@ def test_legacy_brief_evidence_retains_only_documented_t25_t30_t31_t33_prompt_ad
         actual = actual.replace('风荷载参数未核验时必须照抄示意说明；L01按最不利区，W01按夹具实际布点；不能减小抗风所需压块来消除承重失败。\n', '')
         actual = actual.replace('空地和车棚称新建安装面；空地核对G08，车棚核对G09，L01不适用且基础/钢结构须厂家设计。'
                                 '空地离地、road_every/road_width_m/fence_setback_m可传排板工具；车棚clear_height_m和0–15°倾角可改。\n', '')
-        assert actual == row['output']
+        # Historical instructions are evidence, not a template for the corrected feasibility guidance.
+        assert payload(actual) == payload(row['output'])
 
 
 @pytest.mark.parametrize('mode', ['subagent', 'independent'])
@@ -195,9 +197,10 @@ def test_checkpoint_filters_whole_constraint_set_before_numbering_without_changi
     rendered = brief.render_brief(brief.BriefSpec(template=template,id='checkpoint-generic',text=text,
                                                 structured=structured,review_mode=mode))
     instruction = rendered.split('新项目：')[0]
-    for requirement in ('能解除整组冲突', '依赖该下限的预算不足、屋顶上限冲突同时不成立',
-                        '不得编号为建议', '唯一可行候选必须列为建议①', '不凑建议②③', '仍有矛盾必须再停'):
+    for requirement in ('逻辑消冲不代表非空可用方案', '未经非空排布和全部硬规则复算只能称待验证方向',
+                        '不得取消装机下限或用零组件冒称可行', '仍有已知矛盾的方向不推荐', '不凑建议②③', '仍有矛盾必须再停'):
         assert requirement in instruction
+    assert '取消冲突下限是合法单项' not in instruction
     assert payload(rendered)['requirements'] == {'text':text,'structured':structured}
     assert not any(test_value in instruction for test_value in ('50000', '777000', '300 千瓦', '154 千瓦', 'l-shape'))
 
@@ -211,10 +214,21 @@ def test_checkpoint_ends_tool_phase_until_explicit_requirement_consent(mode):
     checkpoint=skill.split('3. ',1)[1].split('\n4. ',1)[0]
     for content in (instruction,checkpoint):
         for constraint in ('contradictions 非空', '立即结束本轮工具调用', '禁止再调用任何工具',
-                           '不能用 gz_set_requirements 试写候选', '只在文字里', '无需先试保存',
+                           '不能用 gz_set_requirements 试写候选', '只在文字里', '待验证方向',
                            '用户明确同意后', '工具审批不等于同意放宽要求'):
             assert constraint in content
     assert payload(rendered)['requirements']['structured']=={}
+
+
+def test_skill_and_task_text_require_lock_preview_and_do_not_claim_zero_capacity_is_feasible():
+    from guangzhu.config import ROOT
+    rendered = brief.render_brief(brief.BriefSpec(template='rotated', id='locked-flow', text='保留原要求'))
+    skill = (ROOT / '.agh/skills/pv-rooftop-design/SKILL.md').read_text(encoding='utf-8')
+    for content in (rendered, skill):
+        for requirement in ('AI不得解锁或撤销', 'reflow_unlocked', 'preview=true', 'expected_fingerprint',
+                            '几何预览不代表发电、造价、回本或硬规则已通过', '不得取消装机下限或用零组件冒称可行'):
+            assert requirement in content
+        assert '取消冲突下限是合法单项' not in content
 
 
 @pytest.mark.parametrize('mode', ['subagent', 'independent'])

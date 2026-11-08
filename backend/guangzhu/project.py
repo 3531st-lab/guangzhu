@@ -1,6 +1,7 @@
 """Local project storage and append-only design versions."""
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
@@ -78,7 +79,16 @@ def load(project_id):
 
 def save(project):
     project = validate_project(project)
-    _write(_path(project.id, "project.json"), project)
+    from .park_store import transaction
+    with transaction(_path(project.id)):
+        if _path(project.id, 'project.json').exists():
+            from .design_locks import geometry_signature, has_locks
+            latest = next_version(project.id) - 1
+            if latest and has_locks(load_design(project.id, latest)):
+                if geometry_signature(load(project.id)) != geometry_signature(project):
+                    raise GzError('DESIGN_LOCK_GEOMETRY_CHANGED', '已有锁定方案，不能覆盖屋面几何或组件安装规格',
+                                  '先由用户解除锁定，再修改屋面高度、坡面、组件或支架')
+        _write(_path(project.id, "project.json"), project)
     return project
 
 
@@ -98,7 +108,13 @@ def next_version(project_id):
     return max(versions, default=0) + 1
 
 
-def save_design(project_id, design, *, offline=False, shadows=None):
+def save_design(project_id, design, *, offline=False, shadows=None, _allow_lock_changes=False):
+    from .park_store import transaction
+    with transaction(_path(project_id)):
+        return _save_design(project_id, design, offline=offline, shadows=shadows, _allow_lock_changes=_allow_lock_changes)
+
+
+def _save_design(project_id, design, *, offline=False, shadows=None, _allow_lock_changes=False):
     version = _version(design.version if isinstance(design, Design) else design.get("version") if isinstance(design, dict) else None)
     path = _path(project_id, f"designs/v{version}.json")
     if path.exists():
@@ -107,26 +123,106 @@ def save_design(project_id, design, *, offline=False, shadows=None):
     project = load(project_id)
     if version != next_version(project_id):
         raise GzError("DESIGN_VERSION_INVALID", "新方案版本号须接在已有版本之后", "用next_version获取下一个版本号")
+    from .design_locks import has_locks, geometry_signature, verify_geometry
+    from .installation import effective
+    active = effective(project, design)
+    if has_locks(design) and design.locked_geometry_sha256 is None:
+        design.locked_geometry_sha256 = geometry_signature(active)
+    verify_geometry(active, design)
     from .personal import prepare
     design = prepare(project, design, offline=offline, shadows=shadows)
+    _enforce_latest_locks(project_id, design, allow_lock_changes=_allow_lock_changes)
     _write(path, design, exclusive=True)
     project.designs.append(f"v{version}")
     save(project)
     return design
 
 
-def edit_design(project_id, version, ops, reason, author, *, offline=False):
-    from .layout import generate_layout, usable_geometry
+def _enforce_latest_locks(project_id, design, *, allow_lock_changes=False):
+    from .design_locks import enforce, has_locks
+    latest = next_version(project_id) - 1
+    if latest:
+        previous = load_design(project_id, latest)
+        if has_locks(previous):
+            if design.parent_version != latest:
+                raise GzError('DESIGN_LOCK_STALE', '存在较新的锁定方案，请先打开最新版本', '从最新版本预览并应用修改，不能用旧版本绕过锁定')
+            enforce(previous, design, allow_lock_changes=allow_lock_changes)
+
+
+def edit_fingerprint(project_id, version, ops, reason, author):
+    payload = dict(project=load(project_id).model_dump(mode='json'),
+                   source=load_design(project_id, version).model_dump(mode='json'),
+                   latest_version=next_version(project_id) - 1, ops=ops, reason=reason, author=author)
+    try:
+        contents = json.dumps(payload, ensure_ascii=False, sort_keys=True, allow_nan=False, separators=(',', ':'))
+    except (TypeError, ValueError) as error:
+        raise GzError('DESIGN_EDIT_INVALID', '修改参数必须为有限数值和合法JSON数据', '检查修改内容后重新预览') from error
+    return hashlib.sha256(contents.encode('utf-8')).hexdigest()
+
+
+def preview_edit(project_id, version, ops, reason, author='user', *, offline=False):
+    fingerprint = edit_fingerprint(project_id, version, ops, reason, author)
+    design, summary = _edited_design(project_id, version, ops, reason, author)
+    from .personal import prepare
+    from .design_locks import changes, verify_geometry
+    from .installation import effective
+    current = load(project_id)
+    verify_geometry(effective(current, design), design)
+    design = prepare(current, design, offline=offline)
+    _enforce_latest_locks(project_id, design, allow_lock_changes=True)
+    # A concurrent write or a changed project invalidates this preview immediately.
+    if fingerprint != edit_fingerprint(project_id, version, ops, reason, author):
+        raise GzError('DESIGN_PREVIEW_STALE', '预览期间项目已改变', '重新预览后再确认')
+    return dict(design=design.model_dump(mode='json'), summary=summary,
+                changes=changes(load_design(project_id, version), design), fingerprint=fingerprint)
+
+
+def edit_design(project_id, version, ops, reason, author, *, offline=False, expected_fingerprint=None):
+    # Reuse the application's reentrant OS lock: HTTP and MCP may live in separate processes.
+    from .park_store import transaction
+    with transaction(_path(project_id)):
+        return _commit_edit(project_id, version, ops, reason, author, offline=offline,
+                            expected_fingerprint=expected_fingerprint)
+
+
+def _commit_edit(project_id, version, ops, reason, author, *, offline=False, expected_fingerprint=None):
+    if expected_fingerprint is not None and expected_fingerprint != edit_fingerprint(project_id, version, ops, reason, author):
+        raise GzError('DESIGN_PREVIEW_STALE', '预览已过期或修改内容发生变化', '重新预览，核对变化后再确认')
+    result = preview_edit(project_id, version, ops, reason, author, offline=offline)
+    if (expected_fingerprint is not None and result['fingerprint'] != expected_fingerprint
+            or result['fingerprint'] != edit_fingerprint(project_id, version, ops, reason, author)):
+        raise GzError('DESIGN_PREVIEW_STALE', '确认期间项目发生变化，原预览已过期', '重新预览并确认后再保存')
+    design = validated(Design, result['design'], 'DESIGN_INVALID')
+    save_design(project_id, design, offline=offline, _allow_lock_changes=True)
+    return dict(version=design.version, summary=result['summary'])
+
+
+def _edited_design(project_id, version, ops, reason, author):
+    from .layout import usable_geometry
+    from .design_locks import apply_operation, locked_ids, reflow
     if not isinstance(reason, str) or not reason.strip() or author not in ("agent", "user", "rule"):
         raise GzError("DESIGN_EDIT_INVALID", "修改须填写原因和合法修改人", "填写原因，修改人使用agent、user或rule")
     project, design = load(project_id), load_design(project_id, version)
-    from .installation import effective, inherit_keepouts
+    from .installation import effective
     project = effective(project, design)
     original_ids = {m.id for m in design.modules}
     before, new_version, details = len(design.modules), next_version(project_id), []
     if not isinstance(ops, list) or not ops:
         raise GzError("DESIGN_EDIT_INVALID", "修改操作不能为空", "填写至少一项允许的修改操作")
-    repacked = False
+    if any(isinstance(operation, dict) and operation.get('op') == 'undo_last_edit' for operation in ops):
+        if author != 'user':
+            raise GzError('DESIGN_LOCK_USER_REQUIRED', '撤销修改需要用户操作', '请用户在局部修改中预览并确认撤销')
+        if len(ops) != 1 or set(ops[0]) != {'op'}:
+            raise GzError('DESIGN_EDIT_INVALID', '撤销必须是独立的一次操作', '单独预览撤销上次修改，再进行其他编辑')
+        if version != new_version - 1 or design.parent_version is None:
+            raise GzError('DESIGN_UNDO_UNAVAILABLE', '只有最新版本且存在父版本时才能撤销', '打开最新方案，确认它由已有方案修改而来')
+        restored = load_design(project_id, design.parent_version).model_copy(deep=True)
+        if design.statistics.get('manual_edits') or design.statistics.get('geometry_sky'):
+            restored.statistics['geometry_sky'] = True
+        restored.version, restored.parent_version = new_version, version
+        restored.reason, restored.author, restored.created_at = reason, author, datetime.now(timezone.utc)
+        return restored, f'撤销 v{version} 的修改，恢复 v{design.parent_version} 的排布与锁定；保存为 v{new_version}'
+    repacked, manual_changed = False, False
     for index, operation in enumerate(ops, 1):
         if not isinstance(operation, dict):
             raise GzError("DESIGN_EDIT_INVALID", "每项修改须是操作对象", "填写op及该操作所需字段")
@@ -134,6 +230,28 @@ def edit_design(project_id, version, ops, reason, author, *, offline=False):
         active.roof.keepouts += design.added_keepouts
         op = operation.get("op")
         where = operation.get("where", {})
+        if op in ('lock_modules', 'unlock_modules', 'lock_plane', 'unlock_plane', 'lock_region', 'unlock_region'):
+            details.append(apply_operation(active, design, operation, author))
+            continue
+        if op in ('add_modules', 'move_modules', 'rotate_modules'):
+            from .manual_modules import apply
+            design, detail = apply(active, design, operation)
+            manual_changed = True
+            details.append(detail)
+            continue
+        if manual_changed and op == 'remove_modules' and isinstance(where, dict) and (
+                'shading_loss_gt' in where or 'worst_count' in where):
+            raise GzError('DESIGN_EDIT_DEPENDENCY', '手动位置已改变，不能按旧遮挡结果继续删除组件',
+                          '先保存新版本并重新分析，再按该版本的遮挡结果编辑')
+        if op == 'reflow_unlocked':
+            updates = operation.get('params', {})
+            if not isinstance(updates, dict):
+                raise GzError('LAYOUT_PARAMS_INVALID', '重排参数须为对象', '填写params中的排布参数')
+            params = validated(LayoutParams, design.params.model_dump() | updates, 'LAYOUT_PARAMS_INVALID')
+            design = reflow(active, design, params)
+            repacked = True
+            details.append('保留锁定组件与区域，对未锁定部分重新排板')
+            continue
         if repacked and op == "remove_modules" and ("module_ids" in operation or isinstance(where, dict)
                 and ("shading_loss_gt" in where or "worst_count" in where)):
             raise GzError("DESIGN_EDIT_DEPENDENCY", "改参数会重新排板，请先单独改参数并重新分析，再删组件", "先仅执行set_param，再分析新版本并按新建议删除组件")
@@ -149,11 +267,11 @@ def edit_design(project_id, version, ops, reason, author, *, offline=False):
             arguments = params
             if project.roof.type == 'carport':
                 arguments = params.model_dump(exclude={'tilt_deg', 'clear_height_m'} - {name})
-            fresh = inherit_keepouts(generate_layout(active, arguments), design)
-            fresh.modules_per_string = design.modules_per_string
+            fresh = reflow(active, design, arguments)
             design = fresh
             repacked = True
-            details.append(f"重新排板，之前删除的组件和删除记录已重置（{name}）")
+            details.append(f"重新排板，保留锁定部分（{name}）" if locked_ids(design)
+                           else f"重新排板，之前删除的组件和删除记录已重置（{name}）")
             continue
         if op == "set_string_size":
             value = operation.get("modules_per_string")
@@ -223,6 +341,8 @@ def edit_design(project_id, version, ops, reason, author, *, offline=False):
             raise GzError("DESIGN_EDIT_INVALID", "不支持该修改操作", "使用remove_modules、set_param、set_string_size或add_keepout")
         previous = len(design.modules)
         removed = [m for m in design.modules if select(m)]
+        if {module.id for module in removed} & locked_ids(design):
+            raise GzError('DESIGN_LOCK_CONFLICT', '此次修改会删除已锁定组件', '调整删除范围，或由用户先解除相关锁定')
         design.modules = [m for m in design.modules if not select(m)]
         design.removed_modules += [RemovedModule(**m.model_dump(), reason=removal_reason) for m in removed]
         fraction = len(design.modules) / previous if previous else 0
@@ -234,8 +354,7 @@ def edit_design(project_id, version, ops, reason, author, *, offline=False):
         details.append(f"删除{len(removed)}块，原因：{removal_reason}")
     design.version, design.parent_version = new_version, version
     design.reason, design.author, design.created_at = reason, author, datetime.now(timezone.utc)
-    save_design(project_id, design, offline=offline)
-    return dict(version=new_version, summary=f"组件 {before} → {len(design.modules)}；" + "；".join(details))
+    return design, f"组件 {before} → {len(design.modules)}；" + "；".join(details)
 
 
 def main(argv=None):

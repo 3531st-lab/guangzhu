@@ -98,6 +98,23 @@ def test_exact_installation_required_on_our_port(monkeypatch):
         with pytest.raises(RuntimeError): launcher.backend_ready()
 
 
+def test_startup_identity_probe_never_waits_for_agh(monkeypatch):
+    from fastapi.testclient import TestClient
+    from guangzhu import api
+    monkeypatch.setattr(api, 'reachable', lambda: pytest.fail('startup identity must not probe AGH'))
+    with TestClient(api.app) as client:
+        response = client.get('/api/identity')
+        assert response.status_code == 200
+        assert response.json() == {'app': 'guangzhu', 'version': '0.3.0',
+                                   'installation': launcher.installation(launcher.ROOT)}
+        def identity_only(url, timeout):
+            assert url == launcher.API_ORIGIN + '/api/identity'
+            assert timeout >= 2
+            return io.StringIO(response.text)
+        monkeypatch.setattr(launcher, 'urlopen', identity_only)
+        assert launcher.backend_ready() is True
+
+
 def test_absent_backend_is_distinct_from_invalid_service(monkeypatch):
     monkeypatch.setattr(launcher, 'urlopen', lambda *a, **kw: (_ for _ in ()).throw(OSError()))
     class Socket:

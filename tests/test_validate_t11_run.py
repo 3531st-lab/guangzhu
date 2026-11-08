@@ -103,27 +103,46 @@ def test_geometry_tolerance_checks_every_coordinate_and_vertex_count():
 @pytest.mark.parametrize("change", [None, "dc_length", "ac_length", "dc_section", "ac_section", "unit",
                                     "missing", "duplicate", "extra", "invented_power", "missing_note", "boolean"])
 def test_calculated_cable_audit_checks_every_section_and_rejects_tampering(tmp_path, change):
-    audit = Audit(tmp_path)
-    audit.electrical = dict(cables=dict(summary=[dict(kind="dc", section_mm2=4, length_m=12.5),
-                                               dict(kind="dc", section_mm2=6, length_m=27),
-                                               dict(kind="ac", section_mm2=10, length_m=4.75)]))
-    rows = [["直流电缆", None, "4 mm²", None, 12.5, "m", None, "示意"],
-            ["直流电缆", None, "6 mm²", None, 27, "m", None, "示意"],
-            ["交流电缆", None, "4×10 mm²", None, 4.75, "m", None, "示意"]]
-    edits = {"dc_length": (0, 4, 13), "ac_length": (2, 4, 19), "dc_section": (0, 2, "10 mm²"),
-             "ac_section": (2, 2, "10 mm²"), "unit": (0, 5, "km"), "invented_power": (0, 6, 5),
-             "missing_note": (0, 7, None), "boolean": (0, 4, True)}
-    if change in edits:
-        row, column, value = edits[change]
-        rows[row][column] = value
-    elif change == "missing":
-        rows.pop(0)
-    elif change == "duplicate":
-        rows[0] = rows[1].copy()
-    elif change == "extra":
-        rows.append(rows[0].copy())
-    audit.xlsx_cables([tuple(row) for row in reversed(rows)])
-    assert audit.checks[-1]["status"] == ("pass" if change is None else "fail")
+    for catalog in (False, True):
+        audit = Audit(tmp_path)
+        summary = [dict(kind="dc", section_mm2=4, length_m=12.5),
+                   dict(kind="dc", section_mm2=6, length_m=27),
+                   dict(kind="ac", section_mm2=10, length_m=4.75)]
+        audit.electrical = dict(cables=dict(summary=summary))
+        rows = [["直流电缆", None, "4 mm²", None, 12.5, "m", None, "示意"],
+                ["直流电缆", None, "6 mm²", None, 27, "m", None, "示意"],
+                ["交流电缆", None, "4×10 mm²", None, 4.75, "m", None, "示意"]]
+        sections = [row[2] for row in rows]
+        if catalog:
+            identities = [("PV1-F 1×4 mm² 铜芯电缆", "PV1-F-1x4"),
+                          ("PV1-F 1×6 mm² 铜芯电缆", "PV1-F-1x6"),
+                          ("ZR-YJV 4×10 mm² 铜芯电缆", "ZR-YJV-4x10")]
+            for row, saved, (model, cable_id) in zip(rows, summary, identities):
+                saved.update(cable_model=model, cable_id=cable_id)
+                row[2] = model
+                row.extend([None, None, None, cable_id])
+        edits = {"dc_length": (0, 4, 13), "ac_length": (2, 4, 19), "dc_section": (0, 2, "10 mm²"),
+                 "ac_section": (2, 2, "10 mm²"), "unit": (0, 5, "km"), "invented_power": (0, 6, 5),
+                 "missing_note": (0, 7, None), "boolean": (0, 4, True)}
+        if change in edits:
+            row, column, value = edits[change]
+            rows[row][column] = value
+        elif change == "missing":
+            rows.pop(0)
+        elif change == "duplicate":
+            rows[0] = rows[1].copy()
+        elif change == "extra":
+            rows.append(rows[0].copy())
+        audit.xlsx_cables([tuple(row) for row in reversed(rows)])
+        assert audit.checks[-1]["status"] == ("pass" if change is None else "fail"), catalog
+        if catalog and change is None:
+            for index, row in enumerate(rows):
+                for column, value in [(2, sections[index]), (2, "other " + row[2]),
+                                      (11, "other-" + row[11]), (11, None)]:
+                    tampered = [item.copy() for item in rows]
+                    tampered[index][column] = value
+                    audit.xlsx_cables([tuple(item) for item in tampered])
+                    assert audit.checks[-1]["status"] == "fail", (index, column, value)
 
 
 @pytest.mark.parametrize("column", [None, 1, 2, 3, 4, 5, 6, "extra_ac"])

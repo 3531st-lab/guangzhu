@@ -9,7 +9,7 @@ import sys
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 from .config import ROOT
-from .models import Economics, GzError, SiteFacts, StructuredRequirements, project_id
+from .models import Economics, GzError, SiteFacts, StructuredRequirements, normalize_inverter_brand, project_id
 from .sitecheck import flags
 from .templates import read_template
 from .economic_fields import LABELS, BOOLEANS, RANGES
@@ -23,9 +23,10 @@ BRIEF_TEMPLATE = (
     '空地和车棚称新建安装面；空地核对G08，车棚核对G09，L01不适用且基础/钢结构须厂家设计。'
     '空地离地、road_every/road_width_m/fence_setback_m可传排板工具；车棚clear_height_m和0–15°倾角可改。\n'
     '最终选定版本须串行：先单独调用 gz_analyze，等待成功结果；再单独调用 gz_crosscheck_yield，等待成功结果；之后才按任务书模式审核或申请 gz_export。不得在同一轮回复并发或批量调用这些工具。\n'
-    '检查点：gz_set_requirements 返回 contradictions 非空，立即结束本轮工具调用，禁止再调用任何工具；不能用 gz_set_requirements 试写候选。只在文字里依据本次矛盾提出能解除整组冲突的单项建议，不'
-    '编数值。取消冲突下限是合法单项，无需先试保存；依赖该下限的预算不足、屋顶上限冲突同时不成立，其他要求不变。仍有矛盾的候选不得编号为建议；唯一可行候选必须列为建议①，不凑建议②③，无则只说明。建议置前，每条一行、最多三条、合计不超过200字，写原'
+    '检查点：gz_set_requirements 返回 contradictions 非空，立即结束本轮工具调用，禁止再调用任何工具；不能用 gz_set_requirements 试写候选。只在文字里依据本次矛盾提出待验证的放宽方向，不'
+    '编数值。逻辑消冲不代表非空可用方案；未经非空排布和全部硬规则复算只能称待验证方向，不得取消装机下限或用零组件冒称可行。仍有已知矛盾的方向不推荐；只列有依据的方向，不凑建议②③，无则只说明。方向置前，每条一行、最多三条、合计不超过200字，写原'
     '值/单位；说明后置。工具审批不等于同意放宽要求；只有用户明确同意后才改该项、同步原文和结构化值并重存需求，仍有矛盾必须再停。\n'
+    '局部修改先读摘要locks；锁定数量包含组件、坡面和区域，truncated为真表示编号列表不全。AI不得解锁或撤销；带锁比较用gz_edit_design的reflow_unlocked并先preview=true，核对后用同一ops和expected_fingerprint确认。几何预览不代表发电、造价、回本或硬规则已通过，保存后须重新分析；锁定冲突时停下说明，不能改用全屋重排绕过。\n'
     '新项目：{project_id}（屋顶模板 {template}）\n'
     '我的要求：{text}\n'
     '{facts}'
@@ -68,14 +69,16 @@ FIELD_RANGES.update(curtail_pct_max=(0, 100), transformer_kva=(.01, 100000), tra
 def check_equipment(value):
     """The chosen module, inverter and brand exist in the catalogue and agree; also used when a project is created."""
     from .electrical import load_catalog
+    if 'inverter_brand' in value:
+        value['inverter_brand'] = normalize_inverter_brand(value['inverter_brand'])
     if set(value) - {'module_id', 'inverter_id', 'inverter_brand'}:
         raise ValueError('设备字段不支持')
     for key, file in [('module_id', 'modules.csv'), ('inverter_id', 'inverters.csv')]:
-        if key in value and value[key] not in load_catalog(file):
+        if key in value and value[key] not in load_catalog(file, include_extended=True):
             raise ValueError('设备型号不在目录中')
     brand = value.get('inverter_brand')
-    if brand and (brand not in ('Sungrow', 'Huawei') or value.get('inverter_id') and
-                  load_catalog('inverters.csv')[value['inverter_id']]['manufacturer'] != brand):
+    if brand and (brand not in ('Sungrow', 'Huawei', 'Ginlong', 'GoodWe') or value.get('inverter_id') and
+                  load_catalog('inverters.csv', include_extended=True)[value['inverter_id']]['manufacturer'] != brand):
         raise ValueError('逆变器品牌与型号不匹配')
 
 

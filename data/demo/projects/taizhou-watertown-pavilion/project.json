@@ -1,0 +1,232 @@
+{
+  "schema": "guangzhu.project/1",
+  "id": "taizhou-watertown-pavilion",
+  "name": "泰州产业演示·文旅坡屋面",
+  "collection": null,
+  "site": {
+    "lat": 32.46,
+    "lon": 119.92,
+    "timezone": "Asia/Shanghai",
+    "albedo": 0.2,
+    "design_temp_min_c": null,
+    "design_temp_max_c": null,
+    "wind_city": "泰州"
+  },
+  "roof": {
+    "planes": [
+      {
+        "id": 1,
+        "outline": [
+          [
+            44.0,
+            11.0
+          ],
+          [
+            0.0,
+            11.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            44.0,
+            0.0
+          ]
+        ],
+        "slope_deg": 18.0,
+        "slope_azimuth_deg": 180.0,
+        "offset_m": 0.0,
+        "material": "concrete",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      },
+      {
+        "id": 2,
+        "outline": [
+          [
+            0.0,
+            11.0
+          ],
+          [
+            44.0,
+            11.0
+          ],
+          [
+            44.0,
+            22.0
+          ],
+          [
+            0.0,
+            22.0
+          ]
+        ],
+        "slope_deg": 18.0,
+        "slope_azimuth_deg": 0.0,
+        "offset_m": 0.0,
+        "material": "concrete",
+        "load_capacity_kn_m2": null,
+        "load_verified": null
+      }
+    ],
+    "facade": {
+      "enabled": true,
+      "wall_material": "brick",
+      "wall_color": "#6e767d",
+      "trim_color": "#2f353b",
+      "base_color": "#454c52",
+      "door_color": "#5c3a2e",
+      "bay_width_m": 5.0,
+      "base_height_m": 0.6,
+      "columns": true,
+      "window_rows": 1,
+      "window_width_m": 2.0,
+      "window_height_m": 1.5,
+      "window_sill_m": 3.2,
+      "front_edge": 0,
+      "doors": 2,
+      "door_width_m": 3.2,
+      "door_height_m": 3.0,
+      "canopy_depth_m": 1.5,
+      "loading_docks": 0,
+      "dock_height_m": 1.1,
+      "personnel_door": true
+    },
+    "pitched": {
+      "kind": "gable",
+      "slope_deg": 18.0,
+      "azimuth_deg": 180.0,
+      "material": "concrete",
+      "ridge_mode": "long",
+      "ridge": null,
+      "teeth": 4,
+      "tooth_width_m": null,
+      "glass_deg": 70.0
+    },
+    "seam_setback_m": 0.5,
+    "inverter_positions": [
+      [
+        2.0,
+        2.0
+      ]
+    ],
+    "grid_point": [
+      42.0,
+      2.0
+    ],
+    "type": "pitched",
+    "outline": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        44.0,
+        0.0
+      ],
+      [
+        44.0,
+        22.0
+      ],
+      [
+        0.0,
+        22.0
+      ]
+    ],
+    "height_m": 7.5,
+    "parapet_height_m": 0.0,
+    "load_capacity_kn_m2": 0.65,
+    "obstacles": [],
+    "keepouts": [
+      {
+        "id": "atrium-skylight-1",
+        "label": "戏曲茶社中庭天窗",
+        "polygon": [
+          [
+            19.0,
+            4.0
+          ],
+          [
+            25.0,
+            4.0
+          ],
+          [
+            25.0,
+            7.5
+          ],
+          [
+            19.0,
+            7.5
+          ]
+        ],
+        "preset": "skylight",
+        "clearance_m": 0.4,
+        "plane_id": 1
+      }
+    ],
+    "underlay": null,
+    "surroundings": [
+      {
+        "id": "willow-river-1",
+        "label": "凤城河畔垂柳",
+        "kind": "cylinder",
+        "height_m": 2.0,
+        "footprint": null,
+        "center": [
+          -4.5,
+          6.0
+        ],
+        "radius_m": 2.2
+      },
+      {
+        "id": "ginkgo-ancient-1",
+        "label": "庭院古银杏",
+        "kind": "cylinder",
+        "height_m": 2.8,
+        "footprint": null,
+        "center": [
+          48.5,
+          14.0
+        ],
+        "radius_m": 2.5
+      }
+    ]
+  },
+  "requirements": {
+    "text": "产业场景示例，非实测或客户工程。顺坡平铺；比较不同退距后的容量与遮挡，展示未核实承载力提示。 按下列结构化要求计算；不能满足时保留失败原因，不得伪报通过。",
+    "structured": {
+      "budget_cny_max": null,
+      "payback_years_max": 7.0,
+      "capacity_kw_min": null,
+      "capacity_kw_max": null,
+      "walkway_m_min": 0.8,
+      "obstacle_clearance_m_min": null,
+      "edge_setback_m_min": null,
+      "keep_clear_ids": [
+        "atrium-skylight-1"
+      ],
+      "tilt_deg_range": null,
+      "notes": null
+    }
+  },
+  "equipment": {
+    "module_id": "trina-tsm-550de19",
+    "inverter_id": null,
+    "racking": "plane_flush"
+  },
+  "economics": {
+    "capex_cny_per_w": null,
+    "self_use_ratio": null,
+    "price_self_cny_kwh": 0.68,
+    "price_export_cny_kwh": null,
+    "om_cny_per_w_year": null,
+    "lifetime_years": 25,
+    "discount_rate": 0.06,
+    "degradation_annual_pct": null,
+    "emission_factor_kgco2_kwh": null,
+    "assumptions_note": "本例全部屋面尺寸、障碍物、承载力、用电及经济条件为演示输入，不代表对应企业或实测工程。月用电量假设20000kWh、1班，自用比例由模拟逐时发电与示意负荷曲线计算，不预设高自用率。自用平段电价假设0.68元/kWh，计算期25年，折现率0.06。造价按实际工程量及当前目录的示意报价汇总；未填参数取data/catalog/assumptions.csv，并保留各自来源及限制。余电价格、峰谷电价、荷载能力和并网条件均待真实项目核实；不承诺回本。天气使用泰州区域坐标32.46N/119.92E的已标注来源数据，坐标用于区域气象，不是该建筑测绘坐标。所有输出为模型计算，不能替代现场测量和专业复核。",
+    "monthly_kwh": 20000.0,
+    "shifts": 1
+  },
+  "designs": []
+}

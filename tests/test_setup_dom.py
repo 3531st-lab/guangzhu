@@ -59,6 +59,25 @@ def test_saving_a_key_sends_it_once_clears_the_box_and_reports_the_result(browse
     assert polls >= 0 and errors == []
 
 
+def test_saving_a_key_with_custom_base_url_passes_url_and_persists_it(browser_app):
+    page, errors = browser_app
+    status = setup_status('waiting_models')
+    installed(page, status)
+    custom_url = 'https://zhenze-huhehaote.cmecloud.cn/tokenplan/v1'
+    page.locator('input[data-key-url="deepseek"]').fill(custom_url + '/')
+    page.locator('input[data-key="deepseek"]').fill('i5i_n0yojFPeV3_uf-OG0pfdFx_SV4q91BAbjlMd3A8')
+    page.locator('[data-save-key="deepseek"]').click()
+    sent = page.evaluate("testApp.bridge.logs.filter(row => row.type==='gz.saveKey')")
+    assert len(sent) == 1
+    assert sent[0]['provider'] == 'deepseek'
+    assert sent[0]['baseUrl'] == custom_url
+    page.evaluate(f"testApp.bridge.onMessage({{type:'gz.keySaved',provider:'deepseek',model:'qwen/deepseek-v4-pro',baseUrl:'{custom_url}'}},"
+                  f"{{keySave:'deepseek',field:'deepseek',baseUrl:'{custom_url}'}})")
+    page.wait_for_function("document.getElementById('notice').textContent.includes('自定义接口')")
+    assert page.evaluate("JSON.parse(localStorage.getItem('gz-key-urls')).deepseek") == custom_url
+    assert errors == []
+
+
 def test_a_half_typed_key_survives_background_status_polls(browser_app):
     page, errors = browser_app
     status = setup_status()

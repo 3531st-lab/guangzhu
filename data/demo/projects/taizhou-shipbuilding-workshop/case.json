@@ -1,0 +1,19 @@
+{
+  "id": "taizhou-shipbuilding-workshop",
+  "name": "泰州产业演示·船舶海工车间",
+  "synthetic": true,
+  "focus": "彩钢瓦顺坡与设备选型",
+  "demonstration": "避开屋脊通风气楼、采光带与除尘塔；比较铜铝线缆并检查夹具荷载。",
+  "geometry_source": "由示意尺寸构建，非航测/测绘/客户CAD",
+  "weather_basis": "区域坐标32.46N/119.92E；快照来源见data/demo/weather元数据",
+  "monthly_load_kwh": 100000.0,
+  "shifts": 2,
+  "unresolved": [
+    "屋面承载力",
+    "实际用电曲线",
+    "接网容量和价格",
+    "设备与施工报价",
+    "客户授权及落地成效"
+  ],
+  "expected": "可重新计算并检查结果；失败和未核实项必须保留，规则通过不等于工程批准"
+}

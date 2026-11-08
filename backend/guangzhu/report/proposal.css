@@ -1,6 +1,6 @@
 @page {
   size: A4;
-  margin: 19mm 18mm 20mm;
+  margin: 16mm 17mm 17mm;
   @top-left {
     color: #526071;
     font: 8pt 'Microsoft YaHei', sans-serif;
@@ -39,24 +39,32 @@ body {
   margin: 0;
   color: #202d3b;
   background: #e9edf1;
-  font: 10pt/1.65 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font: 9.6pt/1.58 'Microsoft YaHei', 'PingFang SC', sans-serif;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 section {
-  margin-top: 7mm;
+  margin-top: 5mm;
 }
-.compact, .short-table, .shading {
+.compact, .short-table, .shading, .options, .wind-sources {
   break-inside: avoid;
 }
 .newpage {
   break-before: page;
   margin-top: 0;
 }
+section.cables.newpage,
+section.allocation.newpage,
+section.business.newpage,
+section.wind-sources.newpage {
+  break-before: auto;
+  margin-top: 5.5mm;
+  break-inside: avoid;
+}
 h1 {
-  font-size: 20pt;
-  line-height: 1.35;
-  margin: 2mm 0 5mm;
+  font-size: 18pt;
+  line-height: 1.3;
+  margin: 1.5mm 0 3.5mm;
   font-weight: 700;
   color: #1f3a56;
 }
@@ -64,7 +72,7 @@ h1, .section-heading, caption, th {
   break-after: avoid;
 }
 p {
-  margin: 2.5mm 0;
+  margin: 1.6mm 0;
   overflow-wrap: anywhere;
   orphans: 3;
   widows: 3;
@@ -76,12 +84,12 @@ a {
 }
 .section-heading {
   border-bottom: 1.2pt solid #1f3a56;
-  margin-bottom: 4mm;
+  margin-bottom: 3mm;
   padding-bottom: 1mm;
 }
 .section-heading h1 {
-  margin-bottom: 2mm;
-  font-size: 17pt;
+  margin-bottom: 1.5mm;
+  font-size: 15.5pt;
 }
 .section-number {
   color: #98633d;
@@ -265,24 +273,25 @@ a {
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 3mm;
-  margin: 5mm 0;
+  gap: 2.8mm;
+  margin: 3.2mm 0;
   break-inside: avoid;
 }
 .metric {
-  border-top: 1pt solid #b5bfca;
-  background: #f3f5f7;
-  padding: 3mm;
+  border-top: 1.4pt solid #1f3a56;
+  background: #f4f7f9;
+  border-radius: 1mm;
+  padding: 2.4mm 3mm;
   min-width: 0;
 }
 .metric > span {
-  font-size: 8pt;
-  color: #697583;
+  font-size: 7.8pt;
+  color: #5b6978;
 }
 .metric strong {
   display: block;
-  font-size: 15pt;
-  font-weight: 500;
+  font-size: 13.5pt;
+  font-weight: 600;
   color: #1f3a56;
 }
 .num {
@@ -291,24 +300,28 @@ a {
   white-space: nowrap;
 }
 figure {
-  margin: 4mm 0;
+  margin: 2.8mm 0;
   break-inside: avoid;
+  background: #fafbfc;
+  border: .35pt solid #dde3e9;
+  border-radius: 1.2mm;
+  padding: 2mm 2.5mm;
 }
 svg {
   display: block;
   width: 100%;
-  max-height: 95mm;
+  max-height: 86mm;
   margin: 0 auto;
 }
 figcaption, caption {
-  font-size: 8.5pt;
+  font-size: 8.2pt;
   font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.45;
   color: #526071;
 }
 figcaption {
   text-align: center;
-  margin-top: 2mm;
+  margin-top: 1.5mm;
 }
 .cover-plan {
   margin: 3mm 0;
@@ -317,55 +330,114 @@ figcaption {
   background: #fafbfc;
 }
 .cover-plan svg {
-  max-height: 62mm;
+  max-height: 64mm;
 }
 .cover-plan figcaption {
   font-size: 7.5pt;
   font-weight: 400;
 }
+.options svg {
+  max-height: 28mm;
+}
 .layout svg {
-  max-height: 113mm;
+  max-height: 98mm;
+}
+.park svg#park-map {
+  max-height: 74mm;
 }
 .wind svg {
-  max-height: 57mm;
+  max-height: 44mm;
 }
-.wind p {
-  font-size: 9pt;
+.wind figure {
   margin: 2mm 0;
 }
+.wind p, .wind-sources p {
+  font-size: 8.2pt;
+  line-height: 1.45;
+  margin: 1.1mm 0;
+}
+.wind-sources {
+  margin-top: 3.5mm;
+}
 .economics svg {
+  max-height: 32mm;
+}
+.economics figure {
+  margin: 1.5mm 0;
+  padding: 1.5mm 2mm;
+}
+.economics th, .economics td {
+  padding: 1.0mm 1.4mm;
+}
+svg[aria-label="全年电价与出力"] {
   max-height: 50mm;
 }
 .calculation-notes {
   break-inside: avoid;
-  margin-top: 5mm;
-  font-size: 8.5pt;
+  margin-top: 2mm;
+  font-size: 7.4pt;
+  line-height: 1.32;
   color: #526071;
   border-left: 1.5pt solid #cdd4db;
-  padding-left: 3mm;
+  padding-left: 2.5mm;
 }
 .calculation-notes h2 {
-  font-size: 9pt;
+  font-size: 8pt;
   font-weight: 600;
-  margin: 0 0 2mm;
+  margin: 0 0 0.8mm;
   break-after: avoid;
 }
 .calculation-notes p {
-  margin: 1.5mm 0;
+  margin: 0.5mm 0;
+}
+section:has(> .section-heading > h1[data-topic="造价明细"]) {
+  break-before: page;
+  margin-top: 0;
+}
+section:has(> .section-heading > h1[data-topic="造价明细"]) p {
+  margin: 1.1mm 0;
+  font-size: 8.6pt;
+  line-height: 1.42;
+}
+section:has(> .section-heading > h1[data-topic="造价明细"]) th,
+section:has(> .section-heading > h1[data-topic="造价明细"]) td {
+  padding: 1.05mm 1.4mm;
+  font-size: 8pt;
+}
+section:has(> .section-heading > h1[data-topic="税和贷款"]) p,
+section.business p,
+section:has(> .section-heading > h1[data-topic="减碳估算"]) p {
+  margin: 1.0mm 0;
+  font-size: 8.6pt;
+  line-height: 1.42;
+}
+section:has(> .section-heading > h1[data-topic="税和贷款"]) th,
+section:has(> .section-heading > h1[data-topic="税和贷款"]) td,
+section.business th,
+section.business td,
+section:has(> .section-heading > h1[data-topic="减碳估算"]) th,
+section:has(> .section-heading > h1[data-topic="减碳估算"]) td {
+  padding: 1.05mm 1.4mm;
+}
+section.business.newpage,
+section:has(> .section-heading > h1[data-topic="减碳估算"]) {
+  break-before: auto;
+  margin-top: 3.5mm;
+  break-inside: avoid;
 }
 .wiring td {
-  padding: 1.2mm 1.8mm;
+  padding: 1.1mm 1.6mm;
 }
 table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 8.5pt;
+  font-size: 8.3pt;
   table-layout: fixed;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 caption {
   text-align: left;
-  padding: 0 0 2mm;
+  padding: 0 0 1.5mm;
 }
 thead {
   display: table-header-group;
@@ -376,7 +448,7 @@ tr {
   break-inside: avoid;
 }
 th, td {
-  padding: 1.6mm 1.8mm;
+  padding: 1.35mm 1.6mm;
   border-bottom: .3pt solid #cdd4db;
   text-align: left;
   vertical-align: top;
@@ -386,7 +458,7 @@ th {
   background: #e9eef3;
   color: #233d56;
   border-top: .7pt solid #7e91a3;
-  font-size: 8pt;
+  font-size: 7.9pt;
   font-weight: 600;
 }
 tbody tr:nth-child(even) {
@@ -402,8 +474,8 @@ td small {
   color: #697583;
 }
 .electrical td, .rules td, .options td {
-  font-size: 8pt;
-  padding: 1.7mm 1.4mm;
+  font-size: 7.8pt;
+  padding: 1.25mm 1.3mm;
 }
 .electrical .num, .rules .num, .options .num {
   white-space: normal;

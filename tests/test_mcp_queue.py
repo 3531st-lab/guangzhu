@@ -15,6 +15,20 @@ def value(result):
     return json.loads(result.content[0].text)
 
 
+async def completed(queue, name, args):
+    """Real computations may legitimately return pending before their final result."""
+    with anyio.fail_after(180):
+        result = await queue.request(name, args)
+        while value(result).get("pending"):
+            result = await queue.request("gz_wait", {"job_id": value(result)["job_id"]})
+    assert not result.is_error, value(result)
+    payload = value(result)
+    # gz_wait adds transport metadata; business assertions compare the original result.
+    payload.pop("tool", None)
+    payload.pop("job_id", None)
+    return payload
+
+
 @pytest.fixture
 def queue(monkeypatch, tmp_path):
     monkeypatch.setattr(server, "WAIT_SECONDS", .02)
@@ -272,9 +286,7 @@ def real_project(queue, monkeypatch, tmp_path):
 def test_real_summary_layout_analysis_and_requirements_dependencies(queue, real_project):
     async def check():
         async def request(name, **args):
-            result = await queue.request(name, dict(project_id=real_project, **args))
-            assert not result.is_error, value(result)
-            return value(result)
+            return await completed(queue, name, dict(project_id=real_project, **args))
         first = await request("gz_project_summary")
         assert first["version"] is None and first["latest_analysis"] is None
         design = await request("gz_generate_layout", params={})
@@ -310,11 +322,11 @@ def test_real_requirements_a_b_a_matches_return_and_disk(queue, real_project):
 
 def test_real_same_version_analysis_reads_changed_requirements(queue, real_project):
     async def check():
-        design = value(await queue.request("gz_generate_layout", dict(project_id=real_project, params={})))
+        design = await completed(queue, "gz_generate_layout", dict(project_id=real_project, params={}))
         args = dict(project_id=real_project, version=design["version"], offline=True)
-        before = value(await queue.request("gz_analyze", args))
+        before = await completed(queue, "gz_analyze", args)
         await queue.request("gz_set_requirements", dict(project_id=real_project, text="one yuan", structured=dict(budget_cny_max=1)))
-        after = value(await queue.request("gz_analyze", args))
+        after = await completed(queue, "gz_analyze", args)
         assert "U03" not in [row["id"] for row in before["rules"]["failed"]]
         assert "U03" in [row["id"] for row in after["rules"]["failed"]]
     anyio.run(check)

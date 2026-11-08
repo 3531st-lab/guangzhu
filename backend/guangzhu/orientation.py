@@ -27,7 +27,7 @@ def views(design):
             continue
         legacy = identity[0] == 0 and all(key(m) == identity and m.orientation == design.params.orientation
                                         for m in [*modules, *design.removed_modules])
-        if legacy and len(grouped) == 1 and identity[1:] == (design.params.tilt_deg, design.params.azimuth_deg):
+        if legacy and not design.statistics.get('partial_reflow') and len(grouped) == 1 and identity[1:] == (design.params.tilt_deg, design.params.azimuth_deg):
             yield identity, design
             continue
         members = [m for m in [*modules, *design.removed_modules] if key(m) == identity]
@@ -44,6 +44,8 @@ def views(design):
         length = max(max(points) - min(points) for points in racks.values()) / math.cos(math.radians(identity[1]))
         rows = sorted({m.row for m in modules})
         positions = [float(np.mean([min(points) for (row, _), points in racks.items() if row == number])) for number in rows]
+        if design.statistics.get('partial_reflow'):
+            positions = sorted(set(round(value, 6) for value in positions))
         gaps = np.abs(np.diff(positions))
         pitch = float(gaps.min()) if len(gaps) and gaps.min() > 0 else length
         stats = dict(design.statistics, gcr=length / pitch, row_spacing_m=pitch, group_row_positions=positions)

@@ -34,7 +34,9 @@ def generate(run_dir, *, regenerated=False, browsers=None):
         target.write_text(contents, encoding="utf-8", newline="\n")
         state["files"].append(dict(name=target.name, sha256=hashlib.sha256(target.read_bytes()).hexdigest()))
         render_pdf(target, state, browsers)
-    except (OSError, ValueError, subprocess.SubprocessError):
+    except (OSError, ValueError, subprocess.SubprocessError, RuntimeError, TypeError, KeyError) as exc:
+        import logging
+        logging.getLogger(__name__).warning("Report generation failed: %s", exc)
         state["error"] = "方案书生成失败；已有HTML可用浏览器打印" if state["files"] else "方案书生成失败，请检查归档与公开信息"
     try:
         project = evidence.contained(ROOT / "projects", evidence.identifier(context["project_id"]))
@@ -58,20 +60,23 @@ def render_pdf(target, state, browsers=None):
     output = target.parent
     if browsers is None:
         browsers = [Path(os.environ.get(key, "")) / suffix
-                    for suffix in ("Microsoft/Edge/Application/msedge.exe", "Google/Chrome/Application/chrome.exe")
+                    for suffix in ("Google/Chrome/Application/chrome.exe", "Microsoft/Edge/Application/msedge.exe")
                     for key in ("PROGRAMFILES(X86)", "PROGRAMFILES", "LOCALAPPDATA")]
     state.update(status="html-only", hint="可用浏览器打印成 PDF")
     failed = []
     for browser in dict.fromkeys(Path(path) for path in browsers if Path(path).is_file()):
         try:  # Codex review R06: a browser that leaves no real PDF is noted and the next one is tried
-            with tempfile.TemporaryDirectory(prefix="guangzhu-report-") as temporary:
+            with tempfile.TemporaryDirectory(prefix="guangzhu-report-", ignore_cleanup_errors=True) as temporary:
                 pdf = Path(temporary) / "report.pdf"
-                command = [str(browser), "--headless=new", "--disable-gpu", "--no-first-run", "--no-pdf-header-footer",
-                           "--user-data-dir=" + str(Path(temporary) / "profile"), "--print-to-pdf=" + str(pdf), target.as_uri()]
+                attempt = 0
                 def print_once():
+                    nonlocal attempt
+                    attempt += 1
                     if pdf.exists():
                         pdf.unlink()
-                    subprocess.run(command, check=True, timeout=60, capture_output=True,
+                    command = [str(browser), "--headless", "--disable-gpu", "--no-first-run", "--no-pdf-header-footer",
+                               "--user-data-dir=" + str(Path(temporary) / f"profile-{attempt}"), "--print-to-pdf=" + str(pdf), target.as_uri()]
+                    subprocess.run(command, check=True, timeout=60, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
                 paginate(target, pdf, print_once)
                 saved = evidence.contained(output, target.with_suffix(".pdf").name)

@@ -1,0 +1,81 @@
+{
+  "schema": "guangzhu.demo-cases/1",
+  "cases": [
+    {
+      "id": "taizhou-cmc-pharma",
+      "name": "泰州产业演示·医药洁净厂房",
+      "synthetic": true,
+      "focus": "组合坡屋面与设备避让",
+      "demonstration": "主跨双坡与低跨附楼；保留天窗、净化空调、酸雾塔和水罐，检查通道与限高。",
+      "geometry_source": "由示意尺寸构建，非航测/测绘/客户CAD",
+      "weather_basis": "区域坐标32.46N/119.92E；快照来源见data/demo/weather元数据",
+      "monthly_load_kwh": 150000.0,
+      "shifts": 3,
+      "unresolved": [
+        "屋面承载力",
+        "实际用电曲线",
+        "接网容量和价格",
+        "设备与施工报价",
+        "客户授权及落地成效"
+      ],
+      "expected": "可重新计算并检查结果；失败和未核实项必须保留，规则通过不等于工程批准"
+    },
+    {
+      "id": "taizhou-shipbuilding-workshop",
+      "name": "泰州产业演示·船舶海工车间",
+      "synthetic": true,
+      "focus": "彩钢瓦顺坡与设备选型",
+      "demonstration": "避开屋脊通风气楼、采光带与除尘塔；比较铜铝线缆并检查夹具荷载。",
+      "geometry_source": "由示意尺寸构建，非航测/测绘/客户CAD",
+      "weather_basis": "区域坐标32.46N/119.92E；快照来源见data/demo/weather元数据",
+      "monthly_load_kwh": 100000.0,
+      "shifts": 2,
+      "unresolved": [
+        "屋面承载力",
+        "实际用电曲线",
+        "接网容量和价格",
+        "设备与施工报价",
+        "客户授权及落地成效"
+      ],
+      "expected": "可重新计算并检查结果；失败和未核实项必须保留，规则通过不等于工程批准"
+    },
+    {
+      "id": "taizhou-watertown-pavilion",
+      "name": "泰州产业演示·文旅坡屋面",
+      "synthetic": true,
+      "focus": "坡屋面、天窗与周边树木",
+      "demonstration": "顺坡平铺；比较不同退距后的容量与遮挡，展示未核实承载力提示。",
+      "geometry_source": "由示意尺寸构建，非航测/测绘/客户CAD",
+      "weather_basis": "区域坐标32.46N/119.92E；快照来源见data/demo/weather元数据",
+      "monthly_load_kwh": 20000.0,
+      "shifts": 1,
+      "unresolved": [
+        "屋面承载力",
+        "实际用电曲线",
+        "接网容量和价格",
+        "设备与施工报价",
+        "客户授权及落地成效"
+      ],
+      "expected": "可重新计算并检查结果；失败和未核实项必须保留，规则通过不等于工程批准"
+    },
+    {
+      "id": "taizhou-lixiahe-coldchain",
+      "name": "泰州产业演示·农业冷链仓",
+      "synthetic": true,
+      "focus": "分段女儿墙与连续用电",
+      "demonstration": "保留女儿墙吊装缺口、冷机与管桥；切换允许上网条件，核对逐月自用与限发。",
+      "geometry_source": "由示意尺寸构建，非航测/测绘/客户CAD",
+      "weather_basis": "区域坐标32.46N/119.92E；快照来源见data/demo/weather元数据",
+      "monthly_load_kwh": 100000.0,
+      "shifts": 3,
+      "unresolved": [
+        "屋面承载力",
+        "实际用电曲线",
+        "接网容量和价格",
+        "设备与施工报价",
+        "客户授权及落地成效"
+      ],
+      "expected": "可重新计算并检查结果；失败和未核实项必须保留，规则通过不等于工程批准"
+    }
+  ]
+}

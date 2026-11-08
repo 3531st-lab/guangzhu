@@ -70,6 +70,12 @@ def row_geometry(project, design):
 
 def walkway_check(project, design):
     params, walkway = design.params, project.requirements.structured.walkway_m_min
+    if design.statistics.get('manual_edits'):
+        required = walkway is not None and walkway > 0
+        return dict(status='fail' if required else 'na', value=None, limit=walkway, suggestion=None,
+                    evidence='手动散排不能用原行号及平均排距证明连续检修通道。' if required else '用户未要求检修通道宽度',
+                    note='需要按实际通行路径核对净宽；未核实前不计为通过。' if required else '',
+                    hint='核对实际连续通道；当前自动校核不支持手动散排的通行路径验证')
     if project.roof.type == 'carport':
         minimum = 5.5 if project.roof.carport.aisles else None
         passed = minimum >= walkway if minimum is not None and walkway is not None else None
@@ -131,16 +137,28 @@ def evaluate(project,design,shading,electrical,load,economics=None):
         add('G01',not bad,len(bad),0,'块',suggestion={'op':'remove_modules','module_ids':bad},hint='删除避让区域内的组件')
     metal = project.roof.type in ("metal", 'pitched', 'carport')
     mixed = len(orientation.groups(design)) > 1
+    manual = bool(design.statistics.get('manual_edits'))
+    winter_blocked = set()
+    if manual and not metal:
+        from .manual_rules import winter_module_shadows
+        winter_blocked = winter_module_shadows(project, design)
     for identity, view in orientation.views(design):
-        length, gaps, rows = row_geometry(project, view)
-        needed = (row_spacing(project.site.lat, project.site.lon, view.params.tilt_deg, length,
-                              view.params.azimuth_deg, view.params.winter_window_hours,
-                              orientation_group=mixed or 'group_row_positions' in view.statistics)
-                  ['row_spacing_m'] if length > 0 and not metal else 0)
-        actual=float(gaps.min()) if len(gaps) else None
-        add('G02',None if metal else actual is None or actual>=needed-.002,actual,needed,'m',
+        if manual:
+            actual = sum(module.id in winter_blocked for module in view.modules)
+            needed, winter_passed, winter_unit = 0, not actual, '块'
+        else:
+            length, gaps, rows = row_geometry(project, view)
+            needed = (row_spacing(project.site.lat, project.site.lon, view.params.tilt_deg, length,
+                                  view.params.azimuth_deg, view.params.winter_window_hours,
+                                  orientation_group=mixed or 'group_row_positions' in view.statistics)
+                      ['row_spacing_m'] if length > 0 and not metal else 0)
+            actual=float(gaps.min()) if len(gaps) else None
+            winter_passed, winter_unit = actual is None or actual>=needed-.002, 'm'
+        add('G02',None if metal else winter_passed,actual,needed,winter_unit,
             suggestion={'op':'set_param','name':'winter_window_hours','value':[9,15]},hint='用冬至真太阳9至15窗口重新排板',
             note='2024改为宜；屋顶旧条文删除，本项目建议级保守规则',source=STANDARD+' 7.2.2(2)')
+        if manual:
+            records[-1]['note'] += '；按真实组件几何每5分钟、每板9点采样互遮挡，排号不代表位置' if not metal else '；顺坡组件不使用普通排间距规则'
         if params.winter_window_hours != (9, 15):
             window = params.winter_window_hours
             records[-1].update(name_zh=f'冬至真太阳{window[0]:g}–{window[1]:g}时前后排不遮挡',
@@ -153,7 +171,7 @@ def evaluate(project,design,shading,electrical,load,economics=None):
             records[-1]['group'] = identity
         walkway = walkway_check(project, view)
         add('G03',None if walkway['status']=='na' else walkway['status']=='pass',walkway['value'],walkway['limit'],'m',
-            walkway['evidence'],suggestion=walkway['suggestion'],hint='设置通道排数及净宽',note=walkway['note'])
+            walkway['evidence'],suggestion=walkway['suggestion'],hint=walkway.get('hint', '设置通道排数及净宽'),note=walkway['note'])
         if mixed:
             records[-1]['group'] = identity
     zones={o.id:obstacle_polygon(o) for o in active.roof.obstacles}|{k.id:Polygon(k.polygon) for k in active.roof.keepouts}
@@ -240,7 +258,7 @@ def evaluate(project,design,shading,electrical,load,economics=None):
         add('U04',payback is not None and payback<=target if target is not None else None,payback,target,'年',
             evidence=f'现金流年内插值静态回本={payback}年；用户上限={target}年',hint='核实造价、自用比例及电价，或调整回本要求；重算比较后再决定')
     from .personal import transformer_limit, phased, tilt_bounds
-    from .electrical import equipment_catalog
+    from .electrical import resolve_catalog_for_project
     from .roofplane import elevation
     if project.roof.type == 'ground':
         lowest = min((p[2] for m in design.modules for p in m.corners), default=None)
@@ -278,7 +296,7 @@ def evaluate(project,design,shading,electrical,load,economics=None):
         add('G07', highest <= requirement.max_height_m + .001, highest, requirement.max_height_m, 'm',
             suggestion=suggestion, hint='按限高重新排板，每个斜面一排；金属屋面保持顺坡')
     limit = transformer_limit(project)
-    catalog = equipment_catalog()
+    catalog = resolve_catalog_for_project(project)
     power = catalog['modules'][project.equipment.module_id]['pmax_w'] / 1000
     if limit is not None:
         ac = sum(catalog['inverters'][u['inverter_id']]['rated_ac_kw'] for u in electrical['per_inverter'])

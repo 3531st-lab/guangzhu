@@ -45,7 +45,8 @@ def test_exported_cable_rows_and_report_page(cable_context, tmp_path):
     assert len(cables) == len(expected)
     for row, value in zip(cables, expected):
         assert row[4] == pytest.approx(value['length_m']) and row[5] == 'm'
-        assert str(value['section_mm2']) in row[2]
+        assert f"{value['section_mm2']:g}" in row[2]
+        assert row[2] == value['cable_model'] and row[11] == value['cable_id']
     html = render(c)
     assert '电缆和压降' in html and '未模拟串内失配' in html and '20000h' in html
     assert len(json.dumps(c['summary'], ensure_ascii=False, separators=(',', ':')).encode()) <= 2048
