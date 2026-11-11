@@ -79,7 +79,10 @@ def labels(result):
     for string in result.get('strings', []):
         lengths[len(string['module_ids'])] += 1
     strings = '、'.join(f'{size} 块 × {count} 串' for size, count in sorted(lengths.items(), reverse=True))
-    devices = result.get('inverters') or [dict(model=result['inverter_model'], count=result['inverter_count'])]
+    devices = result.get('inverters') or (
+        [dict(model=result['inverter_model'], count=result.get('inverter_count', 0))]
+        if 'inverter_model' in result else []
+    )
     return strings, ' + '.join(f"{row['model']} × {row['count']}" for row in devices)
 
 
@@ -95,18 +98,37 @@ def _source(row):
 
 
 def _temperatures(site, module, offline):
+    from .weather import WeatherDataError
     low, high = site.design_temp_min_c, site.design_temp_max_c
-    nasa = None if low is not None and high is not None else load_nasa_daily_extremes(
-        site.lat, site.lon, start_year=1996, end_year=2025, offline=offline)
+    proxy_used = False
+    if low is not None and high is not None:
+        nasa = None
+    else:
+        try:
+            nasa = load_nasa_daily_extremes(site.lat, site.lon, start_year=1996, end_year=2025, offline=offline)
+        except WeatherDataError:
+            p_lat = getattr(site, "weather_proxy_lat", None)
+            p_lon = getattr(site, "weather_proxy_lon", None)
+            if p_lat is not None and p_lon is not None:
+                nasa = load_nasa_daily_extremes(p_lat, p_lon, start_year=1996, end_year=2025, offline=offline)
+                nasa = dict(nasa, metadata=dict(nasa.get("metadata") or {}, weather_proxy={
+                    "requested_site": [site.lat, site.lon],
+                    "proxy_site": [p_lat, p_lon],
+                    "note": getattr(site, "weather_proxy_note", None) or "借用最近核验气象站极值",
+                }))
+                proxy_used = True
+            else:
+                raise
     low = low if low is not None else nasa["temp_min_c"]
     high = high if high is not None else nasa["temp_max_c"]
     if low > high:
         raise GzError("DESIGN_TEMPERATURE_INVALID", "覆盖值与NASA合并后的设计最低气温高于最高气温", "检查设计温度覆盖值，或同时填写有依据的最低和最高气温")
     noct = _number(module, "noct_c")
     hot = high + (noct - 20) / 800 * 1000
+    nasa_label = "NASA POWER 1996–2025（邻近代表站借用）" if proxy_used else "NASA POWER 1996–2025"
     return dict(temp_min_c=low, temp_max_c=high, cell_hot_c=hot, noct_c=noct,
-                min_source="用户覆盖" if site.design_temp_min_c is not None else "NASA POWER 1996–2025",
-                max_source="用户覆盖" if site.design_temp_max_c is not None else "NASA POWER 1996–2025",
+                min_source="用户覆盖" if site.design_temp_min_c is not None else nasa_label,
+                max_source="用户覆盖" if site.design_temp_max_c is not None else nasa_label,
                 nasa=nasa, evidence=f"t′={high:g}+({noct:g}−20)/800×1000={hot:.6f} °C；偏保守简式")
 
 

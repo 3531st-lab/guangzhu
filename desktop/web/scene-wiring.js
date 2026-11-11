@@ -66,7 +66,7 @@ export function createWiring(T, data, host) {
       ctx.strokeStyle = ring;
       ctx.stroke();
       ctx.fillStyle = '#1d2733';
-      ctx.font = `bold ${text.length > 2 ? 22 : 28}px "Microsoft YaHei UI", sans-serif`;
+      ctx.font = `bold ${text.length > 2 ? 22 : 28}px "PingFang SC", "Microsoft YaHei UI", sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(text, 32, 34);
@@ -78,7 +78,7 @@ export function createWiring(T, data, host) {
   }
   // Device names keep the same on-screen size at any zoom (sizeAttenuation off), anchored above the box.
   function nameTag(text, position) {
-    const font = 'bold 30px "Microsoft YaHei UI", sans-serif';
+    const font = 'bold 30px "PingFang SC", "Microsoft YaHei UI", sans-serif';
     const probe = document.createElement('canvas').getContext('2d');
     probe.font = font;
     const width = Math.ceil(probe.measureText(text).width) + 44;

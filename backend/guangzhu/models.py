@@ -49,6 +49,9 @@ class Site(Record):
     design_temp_min_c: float | None = Field(default=None, ge=-100, le=70)
     design_temp_max_c: float | None = Field(default=None, ge=-100, le=70)
     wind_city: str | None = None
+    weather_proxy_lat: float | None = Field(default=None, ge=0, le=55)
+    weather_proxy_lon: float | None = Field(default=None, ge=-180, le=180)
+    weather_proxy_note: str | None = None
 
     @field_validator('wind_city')
     @classmethod
@@ -63,6 +66,9 @@ class Site(Record):
         data = handler(self)
         if self.wind_city is None:
             data.pop('wind_city', None)
+        for key in ('weather_proxy_lat', 'weather_proxy_lon', 'weather_proxy_note'):
+            if getattr(self, key, None) is None:
+                data.pop(key, None)
         return data
 
     @model_validator(mode="after")

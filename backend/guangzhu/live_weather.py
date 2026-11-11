@@ -140,6 +140,7 @@ def _compute_poa_and_power_series(
     dc_kw: float,
     tilt_deg: float,
     azimuth_deg: float,
+    ac_kw: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Compute hourly/instantaneous POA (W/m2), Faiman cell temp (°C), and AC power (kW)."""
     ghi = np.clip(np.nan_to_num(np.asarray(ghi, dtype=float), nan=0.0), 0.0, 1450.0)
@@ -178,11 +179,14 @@ def _compute_poa_and_power_series(
     # bifacial/system factor, and inverter clipping at DC/AC = 1.20
     eff_poa = poa * 0.965 * 1.032  # net after IAM, soiling, and modest bifacial contribution
     temp_factor = np.clip(1.0 - 0.0030 * (t_cell - 25.0), 0.72, 1.12)
-    dc_power_kw = float(dc_kw) * (eff_poa / 1000.0) * temp_factor * 0.965
-    ac_unclipped_kw = dc_power_kw * 0.984
-    ac_cap_kw = float(dc_kw) / 1.15
-    ac_power_kw = np.clip(ac_unclipped_kw, 0.0, ac_cap_kw)
-    ac_power_kw = np.where(poa < 3.0, 0.0, ac_power_kw)
+    if float(dc_kw) <= 0.0 or (ac_kw is not None and float(ac_kw) <= 0.0):
+        ac_power_kw = np.zeros_like(poa, dtype=float)
+    else:
+        dc_power_kw = float(dc_kw) * (eff_poa / 1000.0) * temp_factor * 0.965
+        ac_unclipped_kw = dc_power_kw * 0.984
+        ac_cap_kw = float(ac_kw) if (ac_kw is not None and float(ac_kw) > 0.0) else (float(dc_kw) / 1.15)
+        ac_power_kw = np.clip(ac_unclipped_kw, 0.0, ac_cap_kw)
+        ac_power_kw = np.where(poa < 3.0, 0.0, ac_power_kw)
     return poa, t_cell, ac_power_kw
 
 
@@ -202,6 +206,7 @@ def _synthesize_offline_payload(lat: float, lon: float) -> dict[str, Any]:
     rng = np.random.default_rng(abs(hash((round(lat, 3), round(lon, 3), start_day.timetuple().tm_yday))) % (2**32))
 
     if tmy_df is not None and len(tmy_df) >= 8760:
+        midpoint_offset_min = 30
         # Map each hour in hourly_index to its corresponding hour-of-year in TMY (converted from UTC)
         tmy_sh = tmy_df.copy()
         tmy_sh.index = tmy_sh.index.tz_convert(SHANGHAI_TZ)
@@ -233,9 +238,10 @@ def _synthesize_offline_payload(lat: float, lon: float) -> dict[str, Any]:
             code_list.append(int(w_code))
             rh_list.append(round(rh, 0))
     else:
-        # Synthesize from pvlib clear-sky Ineichen model + latitude climatology
+        midpoint_offset_min = -30
+        # Synthesize from pvlib clear-sky Ineichen model + latitude climatology (Open-Meteo preceding-hour mean [t-1h, t])
         loc = pvlib.location.Location(latitude=lat, longitude=lon, tz="Asia/Shanghai", altitude=50.0)
-        cs = loc.get_clearsky(hourly_index + pd.Timedelta(minutes=30), model="ineichen")
+        cs = loc.get_clearsky(hourly_index - pd.Timedelta(minutes=30), model="ineichen")
         day_of_year = hourly_index.dayofyear.to_numpy(dtype=float)
         hour_of_day = hourly_index.hour.to_numpy(dtype=float)
 
@@ -247,7 +253,7 @@ def _synthesize_offline_payload(lat: float, lon: float) -> dict[str, Any]:
         ghi_arr = cs["ghi"].to_numpy(dtype=float) * hourly_clearness
         dhi_frac = np.clip(0.18 + 0.55 * (1.0 - hourly_clearness), 0.15, 0.85)
         dhi_arr = ghi_arr * dhi_frac
-        solar = pvlib.solarposition.get_solarposition(hourly_index + pd.Timedelta(minutes=30), lat, lon)
+        solar = pvlib.solarposition.get_solarposition(hourly_index - pd.Timedelta(minutes=30), lat, lon)
         cos_z = np.maximum(np.cos(np.radians(solar["apparent_zenith"].to_numpy(dtype=float))), 0.06)
         dni_arr = np.where(ghi_arr > 5.0, np.clip((ghi_arr - dhi_arr) / cos_z, 0.0, 1050.0), 0.0)
 
@@ -273,16 +279,15 @@ def _synthesize_offline_payload(lat: float, lon: float) -> dict[str, Any]:
         code_list = [int(x) for x in code_arr.tolist()]
         rh_list = np.round(rh_arr, 0).tolist()
 
-    # Select current hour (if night-time in offline fallback, pick midday snapshot if current GHI == 0 so UI preview is informative, or keep current hour if daytime)
+    # Keep actual current hour (including nighttime 0 W/m²) so live snapshot never fabricates midday sun at night
     cur_idx = int(np.clip(now_sh.hour, 0, 23))
-    if ghi_list[cur_idx] < 15.0:
-        cur_idx = 13  # 13:00 CST representative solar hour for offline fallback
 
     time_strs = [ts.strftime("%Y-%m-%dT%H:%M") for ts in hourly_index]
     return {
         "latitude": lat,
         "longitude": lon,
         "timezone": "Asia/Shanghai",
+        "_radiation_midpoint_offset_min": midpoint_offset_min,
         "current_units": {"wind_speed_10m": "m/s"},
         "hourly_units": {"wind_speed_10m": "m/s"},
         "current": {
@@ -339,14 +344,26 @@ def fetch_live_weather(
     lon: float,
     *,
     dc_kw: float = 100.0,
+    ac_kw: float | None = None,
     tilt_deg: float = 15.0,
     azimuth_deg: float = 180.0,
     offline: bool = False,
 ) -> dict[str, Any]:
     """Fetch official real-time & 7-day forecast weather + solar irradiance with disk cache and TMY fallback."""
     lat, lon = _validate_coords(lat, lon)
-    dc_kw = float(max(0.1, dc_kw))
-    tilt_deg = float(np.clip(tilt_deg, 0.0, 90.0))
+    dc_kw = float(dc_kw)
+    if not np.isfinite(dc_kw) or dc_kw < 0.0:
+        raise ValueError("dc_kw must be a finite number >= 0.")
+    if ac_kw is not None:
+        ac_kw = float(ac_kw)
+        if not np.isfinite(ac_kw) or ac_kw < 0.0:
+            raise ValueError("ac_kw must be a finite number >= 0.")
+    tilt_deg = float(tilt_deg)
+    if not np.isfinite(tilt_deg) or not (0.0 <= tilt_deg <= 90.0):
+        raise ValueError("tilt_deg must be within [0, 90].")
+    azimuth_deg = float(azimuth_deg)
+    if not np.isfinite(azimuth_deg):
+        raise ValueError("azimuth_deg must be finite.")
     azimuth_deg = float(azimuth_deg % 360.0)
 
     payload: dict[str, Any] | None = None
@@ -398,8 +415,11 @@ def fetch_live_weather(
     h_cloud = np.asarray(hourly.get("cloud_cover", [25.0] * len(h_times)), dtype=float)
     h_wind = np.asarray(hourly.get("wind_speed_10m", [2.0] * len(h_times)), dtype=float) * hr_wind_scale
 
+    # Open-Meteo hourly shortwave_radiation is preceding-hour average [t-1h, t] (midpoint t - 30 min);
+    # PVGIS TMY start-of-hour fallback explicitly tags _radiation_midpoint_offset_min = +30 min.
+    offset_min = int(payload.get("_radiation_midpoint_offset_min", -30))
     h_poa, h_tcell, h_ac_kw = _compute_poa_and_power_series(
-        h_times + pd.Timedelta(minutes=30),
+        h_times + pd.Timedelta(minutes=offset_min),
         lat,
         lon,
         h_ghi,
@@ -410,6 +430,7 @@ def fetch_live_weather(
         dc_kw=dc_kw,
         tilt_deg=tilt_deg,
         azimuth_deg=azimuth_deg,
+        ac_kw=ac_kw,
     )
 
     # Current conditions
@@ -434,8 +455,9 @@ def fetch_live_weather(
     cur_dni = float(max(0.0, cur.get("direct_normal_irradiance", 0.0)))
     cur_dhi = float(max(0.0, cur.get("diffuse_radiation", 0.0)))
 
+    cur_eval_ts = (cur_ts + pd.Timedelta(minutes=offset_min)) if (cur_ts.minute == 0 and offset_min > 0) else cur_ts
     cur_poa_arr, cur_tcell_arr, cur_ac_arr = _compute_poa_and_power_series(
-        pd.DatetimeIndex([cur_ts]),
+        pd.DatetimeIndex([cur_eval_ts]),
         lat,
         lon,
         np.array([cur_ghi]),
@@ -446,6 +468,7 @@ def fetch_live_weather(
         dc_kw=dc_kw,
         tilt_deg=tilt_deg,
         azimuth_deg=azimuth_deg,
+        ac_kw=ac_kw,
     )
     cur_poa = float(cur_poa_arr[0])
     cur_tcell = float(cur_tcell_arr[0])

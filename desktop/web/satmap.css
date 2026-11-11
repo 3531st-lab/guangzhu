@@ -1,6 +1,6 @@
 /* ============================================================================
  * 光筑 (Guangzhu) — 卫星图设计工作台样式 (satmap.css)
- * 1:1 对标视频一 (鹧鸪云光伏设计软件) · 视频二 (PVLANE) · PVsyst 7.x
+ * 屋面二维/三维建模 · 组串与电气设计 · 8760h物理仿真 · 实景四点透视 · 16张施工CAD图纸
  * 采用纯块级滚动容器 (display: block + overflow-anchor: none)，彻底杜绝下滑回弹/跳顶
  * ============================================================================ */
 
@@ -32,44 +32,49 @@
 }
 
 .satmap-shell > * + * {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 /* 1. 顶部工作台标题与步骤切换栏 (吸顶保留，方便随时切换 5 个页面) */
 .satmap-topbar {
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 45;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: 10px;
+  padding: 7px 14px;
   background: var(--card, #ffffff);
   border: 1px solid var(--line, #e2e8f0);
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
 }
 
 .satmap-brand h2 {
   margin: 0;
-  font-size: 15.5px;
+  font-size: 15px;
   font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--ink, #0f172a);
 }
 
 .satmap-brand small {
   display: block;
-  margin-top: 2px;
-  font-size: 11.5px;
+  margin-top: 1px;
+  font-size: 11px;
   color: var(--muted, #64748b);
 }
 
 .satmap-steps {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--well, #f1f5f9);
+  border: 1px solid var(--line, #e2e8f0);
   flex-wrap: wrap;
 }
 
@@ -77,36 +82,38 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 5px 11px;
   border-radius: 6px;
-  border: 1px solid var(--line-2, #cbd5e1);
-  background: var(--well, #f8fafc);
-  color: var(--ink-2, #334155);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-2, #475569);
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.14s ease;
 }
 
 .satmap-step-btn:hover {
-  border-color: #2563eb;
-  color: #1d4ed8;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.06);
 }
 
 .satmap-step-btn.active {
   background: #2563eb;
   color: #ffffff;
   border-color: #2563eb;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.24);
 }
 
 .satmap-step-num {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   background: rgba(15, 23, 42, 0.08);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
 }
 
@@ -118,14 +125,14 @@
 .satmap-top-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* 2. 顶部 6 项工程核心指标条 */
 .satmap-kpi-strip {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 @media (max-width: 1280px) {
@@ -135,13 +142,26 @@
 }
 
 .satmap-kpi-card {
-  padding: 5px 10px;
+  padding: 6px 11px;
   background: var(--card, #ffffff);
   border: 1px solid var(--line, #e2e8f0);
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+}
+
+.satmap-kpi-strip.is-compact .satmap-kpi-card {
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 5px 10px;
+  gap: 6px;
+}
+
+.satmap-kpi-strip.is-compact .satmap-kpi-card > small {
+  display: none;
 }
 
 .satmap-kpi-card > span {
@@ -170,7 +190,7 @@
   text-overflow: ellipsis;
 }
 
-/* 3. 视频一(鹧鸪云)顶部项目地址与经纬度定位栏 */
+/* 3. 顶部项目地址与经纬度定位栏 */
 .satmap-searchbar {
   display: flex;
   align-items: center;
@@ -203,7 +223,7 @@
   border: 1px solid var(--line-2, #cbd5e1);
   border-radius: 5px;
   font-size: 12px;
-  background: #ffffff;
+  background: var(--well, #f8fafc);
   color: var(--ink, #0f172a);
 }
 
@@ -215,7 +235,7 @@
   border-radius: 5px;
   font-size: 12px;
   font-family: var(--f-mono, monospace);
-  background: #ffffff;
+  background: var(--well, #f8fafc);
   color: var(--ink, #0f172a);
 }
 
@@ -225,7 +245,7 @@
   border: 1px solid var(--line-2, #cbd5e1);
   border-radius: 5px;
   font-size: 12px;
-  background: #ffffff;
+  background: var(--well, #f8fafc);
   color: var(--ink, #0f172a);
   max-width: 175px;
 }
@@ -236,8 +256,8 @@
   gap: 8px;
   flex-wrap: wrap;
   padding: 6px 10px;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
+  background: var(--well, #f8fafc);
+  border: 1px solid var(--line-2, #cbd5e1);
   border-radius: 6px;
 }
 
@@ -261,11 +281,17 @@
   border: 1px solid var(--line-2, #cbd5e1);
   border-radius: 5px;
   font-size: 12px;
-  background: #ffffff;
+  background: var(--well, #f8fafc);
   color: var(--ink, #0f172a);
 }
 
-/* 5. 三栏主工作台 (左：PVLANE底图校准与屋面/禁区建模 | 中：真实卫星地图画布 | 右：鹧鸪云组件设置与排布设置) */
+.satmap-ai-bar select {
+  background: var(--well, #f8fafc);
+  color: var(--ink, #0f172a);
+  border: 1px solid var(--line-2, #cbd5e1);
+}
+
+/* 5. 三栏主工作台 (左：底图校准与屋面/禁区建模 | 中：真实卫星地图画布 | 右：组件设置与电气排布设置) */
 .satmap-workbench {
   display: grid;
   grid-template-columns: 268px minmax(0, 1fr) 296px;
@@ -294,11 +320,12 @@
   margin: 0;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line, #e2e8f0);
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 6px;
 }
 
 .satmap-tool-list {
@@ -328,9 +355,9 @@
 }
 
 .satmap-tool-btn.active {
-  background: #eff6ff;
-  border-color: #2563eb;
-  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.14);
+  border-color: #3b82f6;
+  color: var(--ink, #1d4ed8);
 }
 
 .satmap-tool-btn small {
@@ -367,12 +394,16 @@
   padding: 0 6px;
   border: 1px solid var(--line-2, #cbd5e1);
   border-radius: 4px;
-  background: #ffffff;
+  background: var(--card, #ffffff);
   color: var(--ink, #0f172a);
   font-size: 12px;
 }
 
-/* 视频一(鹧鸪云)竖放/横放分段切换按钮 & 底部组件数量/容量汇总框 */
+.satmap-field-row select {
+  width: 138px;
+}
+
+/* 竖放/横放分段切换按钮 & 底部组件数量/容量汇总框 */
 .satmap-orient-toggle {
   display: inline-grid;
   grid-template-columns: 1fr 1fr;
@@ -381,13 +412,13 @@
   border: 1px solid var(--line-2, #cbd5e1);
   border-radius: 4px;
   overflow: hidden;
-  background: #f8fafc;
+  background: var(--track, #f8fafc);
 }
 
 .satmap-orient-btn {
   border: none;
   background: transparent;
-  color: #475569;
+  color: var(--ink-2, #475569);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -401,13 +432,14 @@
 
 .satmap-right-summary {
   padding: 10px 12px;
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
+  background: rgba(14, 165, 233, 0.11);
+  border: 1px solid rgba(56, 189, 248, 0.35);
   border-radius: 6px;
   display: flex;
   flex-direction: column;
   gap: 5px;
   font-size: 12.5px;
+  color: var(--ink, #0f172a);
 }
 
 .satmap-right-summary-row {
@@ -418,7 +450,7 @@
 
 .satmap-right-summary-row b {
   font-size: 15px;
-  color: #0369a1;
+  color: #0284c7;
   font-family: var(--f-mono, monospace);
 }
 
@@ -455,18 +487,67 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  right: 68px;
+  right: auto;
+  max-width: calc(100% - 24px);
   z-index: 15;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex-wrap: wrap;
+  padding: 5px 7px;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 9px;
+  box-shadow: 0 6px 20px rgba(2, 6, 23, 0.32);
 }
 
-/* 视频二 (PVLANE) 框选屋面后的屋面类型选择浮条 (位于画布底部状态栏上方，绝不遮挡顶部工具栏) */
+.satmap-float-more {
+  position: relative;
+  display: inline-block;
+}
+
+.satmap-float-more > summary {
+  list-style: none;
+  user-select: none;
+}
+
+.satmap-float-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.satmap-float-more[open] > summary.satmap-float-btn {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.satmap-float-more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 268px;
+  padding: 8px;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.38);
+  border-radius: 9px;
+  box-shadow: 0 14px 32px rgba(2, 6, 23, 0.52);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.satmap-float-more-menu .satmap-float-btn {
+  width: 100%;
+  text-align: left;
+  padding: 5px 8px;
+}
+
+/* 屋面类型与坡度快捷选择浮条 (位于画布底部状态栏与操作提示条上方左侧，互不重叠) */
 .satmap-roof-type-bar {
   position: absolute;
-  bottom: 38px;
+  bottom: 98px;
   left: 10px;
   z-index: 10;
   display: flex;
@@ -474,20 +555,20 @@
   gap: 6px;
   flex-wrap: wrap;
   padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #93c5fd;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(56, 189, 248, 0.45);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
   font-size: 12px;
-  color: #0f172a;
+  color: #f8fafc;
 }
 
 .satmap-roof-type-pill {
   padding: 3px 9px;
   border-radius: 4px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #334155;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(30, 41, 59, 0.85);
+  color: #e2e8f0;
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
@@ -527,22 +608,22 @@
   min-width: 220px;
 }
 
-/* 视频一(鹧鸪云)白底清晰浮动工具按钮 */
+/* 清晰浮动工具按钮 (适配卫星图深色画布与日夜双主题) */
 .satmap-float-btn {
   padding: 4px 8px;
   border-radius: 5px;
-  border: 1px solid #cbd5e1;
-  background: rgba(255, 255, 255, 0.95);
-  color: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.86);
+  color: #f8fafc;
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 2px 6px rgba(2, 6, 23, 0.32);
 }
 
 .satmap-float-btn:hover {
-  border-color: #2563eb;
-  color: #2563eb;
+  border-color: #38bdf8;
+  color: #38bdf8;
 }
 
 .satmap-float-btn.active {
@@ -649,34 +730,34 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 12.5px;
-  background: #ffffff;
+  background: var(--card, #ffffff);
 }
 
 .satmap-angle-table th,
 .satmap-mppt-table th {
-  background: #f8fafc;
-  color: #334155;
+  background: var(--well, #f8fafc);
+  color: var(--ink-2, #334155);
   font-weight: 700;
   text-align: left;
   padding: 8px 10px;
-  border-bottom: 1px solid #cbd5e1;
+  border-bottom: 1px solid var(--line-2, #cbd5e1);
   white-space: nowrap;
 }
 
 .satmap-angle-table td,
 .satmap-mppt-table td {
   padding: 7px 10px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #1e293b;
+  border-bottom: 1px solid var(--line, #f1f5f9);
+  color: var(--ink, #1e293b);
   font-family: var(--f-mono, monospace);
   white-space: nowrap;
 }
 
 .satmap-angle-table tr.opt-row {
-  background: #f0f9ff;
+  background: rgba(14, 165, 233, 0.11);
 }
 
-/* 视频一(鹧鸪云) Step 2: 逆变器品牌筛选与可视化选型卡片网格 */
+/* Step 2: 逆变器品牌筛选与可视化选型卡片网格 */
 .satmap-inv-brand-bar {
   display: flex;
   align-items: center;
@@ -688,9 +769,9 @@
 .satmap-inv-brand-btn {
   padding: 4px 12px;
   border-radius: 999px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #334155;
+  border: 1px solid var(--line-2, #cbd5e1);
+  background: var(--well, #f8fafc);
+  color: var(--ink-2, #334155);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -716,19 +797,35 @@
 }
 
 .satmap-inv-card {
-  padding: 10px 12px;
+  padding: 9px 11px;
   border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
+  border: 1px solid var(--line-2, #cbd5e1);
+  background: var(--card, #ffffff);
+  color: var(--ink, #1e293b);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  transition: border-color 0.15s;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.satmap-inv-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.08);
 }
 
 .satmap-inv-card.active {
-  border: 2px solid #2563eb;
-  background: #eff6ff;
+  border: 1.5px solid #2563eb;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.satmap-inv-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11.5px;
+  color: var(--ink-2, #475569);
+  line-height: 1.42;
 }
 
 /* 通用按钮与状态标签 */
@@ -741,7 +838,7 @@
   padding: 0 11px;
   border-radius: 5px;
   border: 1px solid var(--line-2, #cbd5e1);
-  background: #ffffff;
+  background: var(--well, #ffffff);
   color: var(--ink, #1e293b);
   font-size: 12px;
   font-weight: 600;
@@ -855,30 +952,102 @@
 .satmap-cad-viewport {
   background: #050a14;
   border: 1px solid #1e293b;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.12);
 }
 
 .satmap-cad-tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  background: #0b1324;
+  border-bottom: 1px solid #1e293b;
+}
+
+.satmap-cad-sheet-strip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.55);
+  scrollbar-width: thin;
+}
+
+.satmap-cad-viewer-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 6px 12px;
+  background: #070d19;
+}
+
+.satmap-cad-active-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #f8fafc;
+  font-size: 12.5px;
+}
+
+.satmap-cad-code-badge {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(2, 132, 199, 0.25);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #38bdf8;
+  font-family: var(--f-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.satmap-cad-layer-tag {
+  color: #94a3b8;
+  font-family: var(--f-mono, monospace);
+  font-size: 11px;
+}
+
+.satmap-cad-viewer-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.satmap-cad-pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 6px;
   background: #0f172a;
-  border-bottom: 1px solid #1e293b;
+  border: 1px solid #1e293b;
 }
 
 .satmap-cad-sheet-btn {
-  padding: 5px 11px;
-  border-radius: 4px;
-  border: 1px solid #334155;
-  background: #1e293b;
+  padding: 4px 6.5px;
+  border-radius: 5px;
+  border: 1px solid #26354d;
+  background: #131f35;
   color: #cbd5e1;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.12s ease;
+}
+
+.satmap-cad-sheet-btn:hover {
+  border-color: #38bdf8;
+  color: #ffffff;
 }
 
 .satmap-cad-sheet-btn.active {
@@ -887,8 +1056,21 @@
   color: #ffffff;
 }
 
+.satmap-cad-pill-group .satmap-cad-sheet-btn {
+  border: none;
+  background: transparent;
+  padding: 3px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.satmap-cad-pill-group .satmap-cad-sheet-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+}
+
 .satmap-cad-svg-host {
-  padding: 10px;
+  padding: 12px;
   overflow: auto;
 }
 
@@ -899,7 +1081,7 @@
 }
 
 /* ============================================================================
- * 7. 视频一(鹧鸪云) & 视频二(PVLANE) 1:1 专属组件样式
+ * 7. 建模工作栏与多抽屉切换组件样式
  * ============================================================================ */
 
 /* 视频一顶部建模动作栏 (v1_04.0s ~ v1_10.2s) */
@@ -910,8 +1092,8 @@
   flex-wrap: wrap;
   gap: 6px;
   padding: 5px 10px;
-  background: linear-gradient(90deg, #eff6ff 0%, #ffffff 55%, #f8fafc 100%);
-  border: 1px solid #bfdbfe;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line-2, #bfdbfe);
   border-radius: 8px;
 }
 
@@ -928,9 +1110,9 @@
   gap: 4px;
   padding: 3px 8px;
   border-radius: 5px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #1e293b;
+  border: 1px solid var(--line-2, #cbd5e1);
+  background: var(--well, #ffffff);
+  color: var(--ink, #1e293b);
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
@@ -954,8 +1136,8 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   padding: 3px;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  background: var(--track, #f1f5f9);
+  border: 1px solid var(--line-2, #cbd5e1);
   border-radius: 6px;
 }
 
@@ -968,7 +1150,7 @@
   border-radius: 4px;
   border: none;
   background: transparent;
-  color: #475569;
+  color: var(--ink-2, #475569);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -981,18 +1163,17 @@
   box-shadow: 0 1px 4px rgba(37, 99, 235, 0.25);
 }
 
-/* 视频一画布底部中央实时边长输入浮条 ([12120] mm | 12.12m, v1_04.0s) */
+/* 画布右上角实时屋面主边长毫米级输入浮条 ([76000] mm | 76.00m) */
 .satmap-edge-dim-pill {
   position: absolute;
-  bottom: 76px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
+  top: 76px;
+  right: 60px;
+  z-index: 12;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: rgba(15, 23, 42, 0.90);
+  background: rgba(15, 23, 42, 0.92);
   border: 1px solid #38bdf8;
   border-radius: 999px;
   color: #f8fafc;
@@ -1001,7 +1182,7 @@
 }
 
 .satmap-edge-dim-pill input {
-  width: 72px;
+  width: 84px;
   height: 22px;
   padding: 0 6px;
   border: 1px solid #38bdf8;
@@ -1040,7 +1221,7 @@
   position: fixed;
   inset: 0;
   z-index: 9990;
-  background: rgba(15, 23, 42, 0.58);
+  background: rgba(15, 23, 42, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1051,8 +1232,9 @@
   width: min(860px, 95vw);
   max-height: 88vh;
   overflow-y: auto;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: var(--card, #ffffff);
+  color: var(--ink, #0f172a);
+  border: 1px solid var(--line-2, #cbd5e1);
   border-radius: 10px;
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.32);
   padding: 18px 20px;
@@ -1066,13 +1248,13 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 10px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--line, #e2e8f0);
 }
 
 .satmap-modal-header h3 {
   margin: 0;
   font-size: 16px;
-  color: #0f172a;
+  color: var(--ink, #0f172a);
 }
 
 .satmap-string-mode-grid {
@@ -1084,8 +1266,9 @@
 .satmap-string-mode-card {
   padding: 16px;
   border-radius: 8px;
-  border: 2px solid #cbd5e1;
-  background: #f8fafc;
+  border: 2px solid var(--line-2, #cbd5e1);
+  background: var(--well, #f8fafc);
+  color: var(--ink, #0f172a);
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -1094,21 +1277,28 @@
 
 .satmap-string-mode-card.active {
   border-color: #2563eb;
-  background: #eff6ff;
+  background: rgba(37, 99, 235, 0.14);
 }
 
-/* 视频一 Step 5 光伏图纸生成 3 步向导顶栏 (1. 基本参数 -> 2. 支架设计 -> 3. 生成图纸, v1_16.5s ~ v1_22.5s) */
+/* Step 5 简洁专业施工图纸顶栏与工作台 */
+.satmap-cad-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .satmap-cad-wizard-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 10px 14px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  margin-bottom: 0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 .satmap-cad-wizard-steps {
@@ -1118,23 +1308,1075 @@
   flex-wrap: wrap;
 }
 
+.satmap-cad-seg-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--well, #f1f5f9);
+  border: 1px solid var(--line, #e2e8f0);
+}
+
 .satmap-cad-wiz-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #334155;
-  font-size: 12.5px;
-  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--ink-2, #475569);
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.satmap-cad-wiz-btn:hover {
+  color: #2563eb;
 }
 
 .satmap-cad-wiz-btn.active {
   background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.25);
+  color: #ffffff;
+}
+
+.satmap-edge-dim-pill input {
+  background: #1e293b !important;
+  color: #fef08a !important;
+  border: 1px solid #38bdf8 !important;
+}
+
+/* 画布右下角竖向地图控制条 ([2D] [3D] [图层] [定位] [+] [-]) */
+.satmap-right-map-strip {
+  position: absolute;
+  right: 12px;
+  bottom: 64px;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.satmap-rms-btn,
+.satmap-right-strip-btn {
+  width: 36px;
+  height: 30px;
+  padding: 0 !important;
+  border-radius: 5px;
+  border: 1px solid rgba(148, 163, 184, 0.4) !important;
+  background: rgba(15, 23, 42, 0.88) !important;
+  color: #f8fafc !important;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+}
+
+.satmap-rms-btn:hover,
+.satmap-rms-btn.active,
+.satmap-right-strip-btn:hover,
+.satmap-right-strip-btn.active {
+  background: #2563eb !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+
+/* 画布底部橙色操作提示条 (位于底部黑色坐标状态栏正上方，互不遮挡) */
+.satmap-v1-orange-tip {
+  position: absolute;
+  bottom: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  background: rgba(255, 247, 237, 0.96);
+  border: 1px solid #fdba74;
+  color: #c2410c;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
+  white-space: nowrap;
+}
+
+/* Step 5 CAD 视口白底工程打印主题支持 */
+.satmap-cad-viewport.light-print {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+.satmap-cad-viewport.light-print .satmap-cad-svg-host svg {
+  filter: invert(0.92) hue-rotate(180deg) contrast(1.08);
+  background: #ffffff !important;
+}
+
+/* 视频一电气配置「容配比 0.4 ~ 1.8」双滑块视觉刻度条 (v1_12.2s) */
+.satmap-dcac-slider-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line-2, #e2e8f0);
+  margin: 6px 0 2px;
+}
+
+.satmap-dcac-slider-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0284c7, #2563eb);
+}
+
+.satmap-dcac-slider-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--card, #ffffff);
+  border: 2.5px solid #2563eb;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+}
+
+/* 视频一 Step 5 深色「光伏图纸生成」系统左侧导航栏与向导面板 (v1_16.5s ~ v1_27.0s) */
+.satmap-cad-dark-shell {
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  gap: 12px;
+  background: #0b1528;
+  border: 1px solid #1e3a5f;
+  border-radius: 10px;
+  padding: 12px;
+  color: #e2e8f0;
+}
+
+@media (max-width: 1180px) {
+  .satmap-cad-dark-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+.satmap-cad-dark-nav {
+  background: #070e1c;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.satmap-cad-dark-nav-item,
+.satmap-cad-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 6px;
+  border: 1px solid #1e293b !important;
+  background: rgba(30, 41, 59, 0.65) !important;
+  color: #cbd5e1 !important;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.14s ease;
+}
+
+.satmap-cad-dark-nav-item:hover,
+.satmap-cad-nav-item:hover {
+  background: rgba(30, 58, 138, 0.55) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+}
+
+.satmap-cad-dark-nav-item.active,
+.satmap-cad-nav-item.active {
+  background: linear-gradient(90deg, #1d4ed8 0%, #0284c7 100%) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+}
+
+.nav-badge-new,
+.satmap-cad-new-tag {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+/* Minimalist UI refinement: hide redundant floating modelbar & orange banner clutter while preserving DOM hooks */
+.satmap-v1-modelbar,
+.satmap-v1-orange-tip {
+  display: none !important;
+}
+
+/* Dedicated standalone full-page modes (#pvsyst, #oblique, #cad) */
+.satmap-shell[data-sat-standalone="pvsyst"] .satmap-step-bar,
+.satmap-shell[data-sat-standalone="oblique"] .satmap-step-bar,
+.satmap-shell[data-sat-standalone="cad"] .satmap-step-bar {
+  display: none !important;
+}
+
+.satmap-shell[data-sat-standalone="pvsyst"] .satmap-main-grid,
+.satmap-shell[data-sat-standalone="oblique"] .satmap-main-grid,
+.satmap-shell[data-sat-standalone="cad"] .satmap-main-grid {
+  grid-template-columns: 1fr !important;
+}
+
+.satmap-shell[data-sat-standalone="pvsyst"] .satmap-canvas-col,
+.satmap-shell[data-sat-standalone="oblique"] .satmap-canvas-col,
+.satmap-shell[data-sat-standalone="cad"] .satmap-canvas-col {
+  display: none !important;
+}
+
+.satmap-shell[data-sat-standalone="pvsyst"] .satmap-side-col,
+.satmap-shell[data-sat-standalone="oblique"] .satmap-side-col,
+.satmap-shell[data-sat-standalone="cad"] .satmap-side-col {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Innovation Lab (#lab) minimalist industrial styles */
+.lab-shell {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 16px 20px 32px;
+  color: var(--ink, #0f172a);
+}
+
+.lab-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.lab-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink, #0f172a);
+}
+
+.lab-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted, #64748b);
+}
+
+.lab-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lab-tab-btn {
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line-2, #cbd5e1);
+  background: var(--well, #f8fafc);
+  color: var(--ink-2, #334155);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.lab-tab-btn:hover {
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+.lab-tab-btn.active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+
+.lab-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 1100px) {
+  .lab-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lab-card {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.lab-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.lab-card-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink, #0f172a);
+}
+
+.lab-sub {
+  font-size: 11.5px;
+  color: var(--muted, #64748b);
+}
+
+.lab-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.16);
+  color: #0284c7;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lab-control-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lab-control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--ink-2, #334155);
+}
+
+.lab-control-row input[type="range"] {
+  width: 100%;
+  accent-color: #0284c7;
+}
+
+.lab-seg-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.lab-seg-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line-2, #cbd5e1);
+  background: var(--well, #f8fafc);
+  color: var(--ink-2, #334155);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lab-seg-btn.active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+
+.lab-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.lab-kpi-box {
+  background: var(--well, #f8fafc);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.lab-kpi-label {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+}
+
+.lab-kpi-val {
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink, #0f172a);
+}
+
+.lab-svg-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.lab-table-wrap {
+  overflow-x: auto;
+}
+
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.lab-table th,
+.lab-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line, #e2e8f0);
+  color: var(--ink, #1e293b);
+  text-align: left;
+}
+
+.lab-table th {
+  background: var(--well, #f8fafc);
+  font-weight: 700;
+  color: var(--ink-2, #334155);
+}
+
+.lab-row-active {
+  background: rgba(14, 165, 233, 0.14);
+}
+
+.lab-err-pill {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.18);
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 11.5px;
+}
+
+/* ============================================================================
+ * 8. 夜晚深色主题 ([data-theme="dark"]) 全局自适应强化
+ * 彻底消除深色模式下白底输入框、白底卡片、浅色内联背景和白字白底不可读问题
+ * ============================================================================ */
+:root[data-theme="dark"] .satmap-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+:root[data-theme="dark"] .satmap-shell select,
+:root[data-theme="dark"] .satmap-shell textarea,
+:root[data-theme="dark"] .lab-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+:root[data-theme="dark"] .lab-shell select {
+  background: var(--well, #1b1714) !important;
+  color: var(--ink, #f2ebe3) !important;
+  border-color: var(--line-2, #43392f) !important;
+}
+
+:root[data-theme="dark"] .sat-btn:not(.primary):not(.success) {
+  background: var(--well, #1b1714);
+  color: var(--ink, #f2ebe3);
+  border-color: var(--line-2, #43392f);
+}
+
+:root[data-theme="dark"] .sat-btn:not(.primary):not(.success):hover {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+:root[data-theme="dark"] .sat-btn.danger {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+:root[data-theme="dark"] .sat-pill-ok {
+  background: rgba(16, 185, 129, 0.22);
+  color: #4ade80;
+}
+
+:root[data-theme="dark"] .sat-pill-warn {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+}
+
+:root[data-theme="dark"] .satmap-tool-btn.active {
+  background: rgba(37, 99, 235, 0.28) !important;
+  border-color: #38bdf8 !important;
+  color: #93c5fd !important;
+}
+
+:root[data-theme="dark"] .satmap-right-summary {
+  background: rgba(14, 165, 233, 0.14);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: var(--ink, #f2ebe3);
+}
+
+:root[data-theme="dark"] .satmap-right-summary-row b {
+  color: #38bdf8;
+}
+
+:root[data-theme="dark"] .lab-badge {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+}
+
+:root[data-theme="dark"] .lab-err-pill {
+  background: rgba(34, 197, 94, 0.22);
+  color: #4ade80;
+}
+
+/* Override any remaining hardcoded light inline styles in dark mode */
+:root[data-theme="dark"] [style*="background:#ffffff"],
+:root[data-theme="dark"] [style*="background: #ffffff"],
+:root[data-theme="dark"] [style*="background:#fff;"],
+:root[data-theme="dark"] [style*="background:#f8fafc"],
+:root[data-theme="dark"] [style*="background: #f8fafc"],
+:root[data-theme="dark"] [style*="background:#f1f5f9"] {
+  background: var(--well, #1b1714) !important;
+  border-color: var(--line-2, #43392f) !important;
+  color: var(--ink, #f2ebe3) !important;
+}
+
+:root[data-theme="dark"] [style*="background:#f0f9ff"],
+:root[data-theme="dark"] [style*="background:#eff6ff"],
+:root[data-theme="dark"] [style*="background:#e0f2fe"] {
+  background: rgba(14, 165, 233, 0.15) !important;
+  border-color: rgba(56, 189, 248, 0.38) !important;
+  color: #7dd3fc !important;
+}
+
+:root[data-theme="dark"] [style*="background:#f0fdf4"] {
+  background: rgba(16, 185, 129, 0.14) !important;
+  border-color: rgba(52, 211, 153, 0.38) !important;
+  color: #86efac !important;
+}
+
+:root[data-theme="dark"] [style*="background:#fef2f2"] {
+  background: rgba(239, 68, 68, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.45) !important;
+  color: #fca5a5 !important;
+}
+
+:root[data-theme="dark"] [style*="color:#0f172a"],
+:root[data-theme="dark"] [style*="color:#1e293b"],
+:root[data-theme="dark"] [style*="color:#14532d"],
+:root[data-theme="dark"] [style*="color:#166534"] {
+  color: var(--ink, #f2ebe3) !important;
+}
+
+:root[data-theme="dark"] [style*="color:#475569"],
+:root[data-theme="dark"] [style*="color:#334155"],
+:root[data-theme="dark"] [style*="color:#64748b"] {
+  color: var(--ink-2, #d2c7bb) !important;
+}
+
+:root[data-theme="dark"] [style*="color:#0369a1"],
+:root[data-theme="dark"] [style*="color:#1d4ed8"] {
+  color: #38bdf8 !important;
+}
+
+/* ============================================================================
+ * WebGL Three.js 全景三维物理仿真工作台 (satmap-3d-twin-stage)
+ * ============================================================================ */
+.satmap-3d-twin-stage {
+  width: 100%;
+  height: 580px;
+  position: relative;
+  background: #0f172a;
+  overflow: hidden;
+  border-radius: 0 0 8px 8px;
+}
+
+.satmap-canvas-wrap.is-fullscreen .satmap-3d-twin-stage {
+  height: calc(100vh - 42px);
+}
+
+.satmap-3d-simbar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 54px;
+  z-index: 18;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #f8fafc;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  font-size: 11.5px;
+}
+
+.satmap-3d-sim-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 6px;
+  border-right: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.satmap-3d-sim-group:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.satmap-3d-chip {
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(30, 41, 59, 0.85);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.satmap-3d-chip:hover {
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.satmap-3d-chip.active {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.satmap-3d-chip.accent {
+  background: #059669;
+  border-color: #34d399;
+  color: #ffffff;
+}
+
+.satmap-3d-metrics-bar {
+  position: absolute;
+  left: 10px;
+  right: 54px;
+  bottom: 36px;
+  z-index: 15;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.84);
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  color: #e2e8f0;
+  font-size: 11px;
+  pointer-events: none;
+}
+
+/* ============================================================================
+ * 9. 现代极简交互组件：浮动下拉面板 (sat-popover)、折叠抽屉卡片 (satmap-acc-card) 与 CAD 双栏目录
+ * ============================================================================ */
+.sat-popover {
+  position: relative;
+  display: inline-block;
+}
+
+.sat-popover > summary {
+  list-style: none;
+  user-select: none;
+}
+
+.sat-popover > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sat-popover[open] > summary.sat-btn {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.sat-popover-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 80;
+  min-width: 220px;
+  padding: 8px;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line-2, #cbd5e1);
+  border-radius: 10px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sat-popover-panel:not(.sat-popover-wide):not(.sat-popover-dark) > .sat-btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.sat-popover-panel.sat-popover-wide {
+  min-width: 300px;
+  padding: 10px 12px;
+  gap: 8px;
+}
+
+.sat-popover-panel.sat-popover-dark {
+  left: 0;
+  right: auto;
+  min-width: 224px;
+  padding: 6px;
+  background: #070e1c;
+  border-color: #1e293b;
+  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.5);
+}
+
+.satmap-acc-card {
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 8px;
+  background: var(--card, #ffffff);
+  overflow: hidden;
+}
+
+.satmap-acc-card > summary {
+  list-style: none;
+  user-select: none;
+  cursor: pointer;
+  padding: 8px 11px;
+  background: var(--well, #f8fafc);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.14s ease;
+}
+
+.satmap-acc-card > summary::-webkit-details-marker {
+  display: none;
+}
+
+.satmap-acc-card > summary > span:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.satmap-acc-card > summary > small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted, #64748b);
+  white-space: nowrap;
+}
+
+.satmap-acc-card > summary::after {
+  content: "▸";
+  font-size: 11px;
+  color: var(--muted, #64748b);
+  transition: transform 0.16s ease;
+  flex-shrink: 0;
+}
+
+.satmap-acc-card[open] > summary {
+  border-bottom: 1px solid var(--line, #e2e8f0);
+}
+
+.satmap-acc-card[open] > summary::after {
+  transform: rotate(90deg);
+}
+
+.satmap-acc-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+/* Step 5 双栏宽幅施工图纸布局与目录 */
+.satmap-cad-studio-grid {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 1120px) {
+  .satmap-cad-studio-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.satmap-cad-sidebar {
+  padding: 10px;
+  gap: 8px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.satmap-cad-sheet-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.satmap-cad-cat-pills {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3px;
+  padding: 3px;
+  background: var(--well, #f1f5f9);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 7px;
+  margin-bottom: 4px;
+}
+
+.satmap-cad-cat-pill {
+  padding: 4px 2px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink-2, #475569);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  transition: all 0.12s ease;
+}
+
+.satmap-cad-cat-pill.active {
+  background: var(--card, #ffffff);
+  color: #2563eb;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+}
+
+.satmap-cad-dir-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
+}
+
+.satmap-cad-dir-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink, #1e293b);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+}
+
+.satmap-cad-dir-item:hover {
+  background: var(--well, #f8fafc);
+  border-color: var(--line, #e2e8f0);
+}
+
+.satmap-cad-dir-item.active {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.satmap-cad-dir-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.satmap-cad-dir-code {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--well, #f1f5f9);
+  border: 1px solid var(--line, #e2e8f0);
+  color: var(--muted, #64748b);
+  font-family: var(--f-mono, monospace);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.satmap-cad-dir-item.active .satmap-cad-dir-code {
+  background: #2563eb;
   border-color: #2563eb;
   color: #ffffff;
 }
+
+:root[data-theme="dark"] .sat-popover-panel:not(.sat-popover-dark) {
+  background: var(--card, #181512);
+  border-color: var(--line-2, #43392f);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+}
+
+:root[data-theme="dark"] .satmap-acc-card {
+  background: var(--card, #181512);
+  border-color: var(--line-2, #43392f);
+}
+
+:root[data-theme="dark"] .satmap-acc-card > summary {
+  background: var(--well, #211c18);
+  color: var(--ink, #f2ebe3);
+}
+
+:root[data-theme="dark"] .satmap-cad-cat-pill.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .satmap-cad-dir-item.active {
+  background: rgba(37, 99, 235, 0.24);
+  border-color: #38bdf8;
+  color: #93c5fd;
+}
+
+/* ============================================================================
+ * 10. 方案比选与光储精算中心 (#lab) 专业仪表盘组件样式
+ * ============================================================================ */
+.satmap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.satmap-card {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  color: var(--ink, #0f172a);
+}
+
+.satmap-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.09);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.satmap-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  margin-top: 4px;
+  border: 1px solid var(--line-2, #cbd5e1);
+  border-radius: 6px;
+  background: var(--well, #f8fafc);
+  color: var(--ink, #0f172a);
+  font-size: 12.5px;
+  font-family: var(--f-mono, monospace);
+}
+
+.satmap-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
+}
+
+.satmap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.satmap-table th,
+.satmap-table td {
+  padding: 9px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--line, #e2e8f0);
+  vertical-align: middle;
+}
+
+.satmap-table thead th {
+  background: var(--well, #f8fafc);
+  color: var(--ink-2, #475569);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.satmap-table tbody tr:hover {
+  background: rgba(37, 99, 235, 0.04);
+}
+
+:root[data-theme="dark"] .satmap-header,
+:root[data-theme="dark"] .satmap-card {
+  background: var(--card, #181512);
+  border-color: var(--line-2, #43392f);
+}
+
+:root[data-theme="dark"] .satmap-tag {
+  background: rgba(56, 189, 248, 0.16);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+}
+
+:root[data-theme="dark"] .satmap-input {
+  background: var(--well, #211c18);
+  border-color: var(--line-2, #43392f);
+  color: var(--ink, #f2ebe3);
+}
+
+:root[data-theme="dark"] .satmap-table thead th {
+  background: var(--well, #211c18);
+  color: var(--ink-2, #cbd5e1);
+}
+
+
+
+
+
+
 

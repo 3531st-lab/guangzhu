@@ -11,9 +11,17 @@ import subprocess
 import tempfile
 
 from ..config import ROOT
+from ..platform_compat import candidate_pdf_browsers
 from .archive import evidence, load_archive
 
-NAMES = {"msedge": "Edge", "chrome": "Chrome"}
+NAMES = {
+    "msedge": "Edge",
+    "microsoft edge": "Edge",
+    "chrome": "Chrome",
+    "google chrome": "Chrome",
+    "chromium": "Chromium",
+    "brave browser": "Brave",
+}
 
 
 def generate(run_dir, *, regenerated=False, browsers=None):
@@ -59,9 +67,7 @@ def render_pdf(target, state, browsers=None):
     from .pagination import paginate
     output = target.parent
     if browsers is None:
-        browsers = [Path(os.environ.get(key, "")) / suffix
-                    for suffix in ("Google/Chrome/Application/chrome.exe", "Microsoft/Edge/Application/msedge.exe")
-                    for key in ("PROGRAMFILES(X86)", "PROGRAMFILES", "LOCALAPPDATA")]
+        browsers = candidate_pdf_browsers()
     state.update(status="html-only", hint="可用浏览器打印成 PDF")
     failed = []
     for browser in dict.fromkeys(Path(path) for path in browsers if Path(path).is_file()):

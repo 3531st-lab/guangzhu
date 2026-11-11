@@ -6,13 +6,32 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import re
 import subprocess
+import sys
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
-OFFICIAL = ROOT / 'runtime/agh/agnes-win32-x64.exe' if (ROOT / 'build-manifest.json').is_file() else (
-    ROOT.parent / '竞赛/work/agh-runtime-official/runtime-5da4073-03b1998b0818/distribution/agnes-win32-x64.exe')
+
+
+def _default_official_agh() -> Path:
+    rt = Path(os.environ.get('GUANGZHU_RUNTIME_ROOT', str(ROOT / 'runtime')))
+    if sys.platform == 'darwin':
+        arch = 'arm64' if platform.machine().lower() in ('arm64', 'aarch64') else 'x64'
+        if (ROOT / 'build-manifest.json').is_file():
+            for name in (f'agnes-darwin-{arch}', 'agnes-darwin-arm64', 'agnes-darwin-x64', 'agnes-darwin'):
+                cand = rt / 'agh' / name
+                if cand.is_file():
+                    return cand
+            return rt / 'agh' / f'agnes-darwin-{arch}'
+        return ROOT.parent / f'竞赛/work/agh-runtime-official/distribution/agnes-darwin-{arch}'
+    if (ROOT / 'build-manifest.json').is_file():
+        return rt / 'agh/agnes-win32-x64.exe'
+    return ROOT.parent / '竞赛/work/agh-runtime-official/runtime-5da4073-03b1998b0818/distribution/agnes-win32-x64.exe'
+
+
+OFFICIAL = _default_official_agh()
 SECRET = re.compile(
     r'(?i)(?:sk-|ghp_|github_pat_)[A-Za-z0-9_-]{12,}|\b(?:Bearer|Basic)\s+\S+'
     r'|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'

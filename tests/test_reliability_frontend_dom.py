@@ -193,3 +193,27 @@ def test_full_editor_concave_corridor_save_and_reopen(full_app,shape,turn):
     page.locator('[data-re="name"]').wait_for()
     assert page.locator('.re-item').count()==len(validated.keepouts)
     assert not state['errors']
+
+
+def test_full_innovation_lab_route_tabs_env_toggle_and_satmap_handoff(full_app):
+    page,state,tmp=full_app
+    page.locator('.navtabs a[href="#lab"]').click()
+    page.locator('[data-lab-tab="pareto"]').wait_for()
+    assert page.locator('[data-lab-tab]').count()==3
+    page.locator('[data-lab-tab="bess-carbon"]').click()
+    page.locator('[data-lab-env-mode="ccer"]').wait_for()
+    gec_text=page.locator('#view').inner_text()
+    page.locator('[data-lab-env-mode="ccer"]').click()
+    ccer_text=page.locator('#view').inner_text()
+    assert gec_text!=ccer_text
+    page.locator('[data-lab-tab="benchmark"]').click()
+    page.locator('[data-lab-load-case="TZ-01"]').first.wait_for()
+    bench_text=page.locator('#view').inner_text()
+    assert '某厂' not in bench_text
+    assert '5.12%' in bench_text and '0.7%' in bench_text
+    page.locator('[data-lab-load-case="TZ-01"]').first.click()
+    page.wait_for_url('**/#satmap')
+    page.locator('.satmap-shell').wait_for()
+    page.screenshot(path=str(tmp/'full-app-lab-to-satmap.png'))
+    assert not state['errors']
+

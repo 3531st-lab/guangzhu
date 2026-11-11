@@ -38,7 +38,17 @@ def offline_analysis():
         native = cash["generation"]["results"]["c"]
         if saved != summary or not summary["ok"] or summary["yield_kwh"]["p50"] <= 0 or native["annual_kwh"] <= 0:
             raise RuntimeError("离线分析或 PySAM 原生计算未返回有效结果")
-        result = {"passed": True, "summary": summary, "pysam_kwh": native["annual_kwh"], "failures": []}
+        from .satmap_design import list_satellite_presets
+        presets = list_satellite_presets()
+        if len(presets) < 8:
+            raise RuntimeError("卫星地图预设场址库数量不足")
+        result = {
+            "passed": True,
+            "summary": summary,
+            "pysam_kwh": native["annual_kwh"],
+            "satmap_presets": len(presets),
+            "failures": [],
+        }
     except Exception as error:
         result = {"passed": False, "failures": [f"{type(error).__name__}: {error}"]}
     finally:

@@ -27,21 +27,30 @@ NOTICE = '这是初步方案文件导出；规则预检查不能代替独立工�
 
 
 def _review_status(base, version):
-    """Return the best review status for this version, checking existing review files."""
+    """Return local review status; loose files in reviews/ are never promoted to verified independent review."""
     reviews_dir = Path(base) / 'reviews'
     has_local_rule = False
+    has_loose_review = False
     if reviews_dir.is_dir():
         for path in sorted(reviews_dir.glob(f'v{version}-*.json'), reverse=True):
             try:
                 data = json.loads(path.read_text(encoding='utf-8'))
-                if data.get('version') == version and data.get('verdict') in ('approve', 'pass'):
-                    model_name = str(data.get('reviewer_model') or '')
-                    if data.get('review_kind') == 'local_rule' or path.name.endswith('-local-rule-engine.json') or model_name.startswith('local-rule-engine'):
-                        has_local_rule = True
-                        continue
-                    return dict(status='verified', reason='已有独立审核通过记录。')
+                if data.get('version') != version:
+                    continue
+                model_name = str(data.get('reviewer_model') or '')
+                is_local = (
+                    data.get('review_kind') == 'local_rule'
+                    or path.name.endswith('-local-rule-engine.json')
+                    or model_name.startswith('local-rule-engine')
+                )
+                if is_local:
+                    has_local_rule = True
+                else:
+                    has_loose_review = True
             except (OSError, ValueError, KeyError):
                 continue
+    if has_loose_review:
+        return dict(status='unverified', reason='已记录本地审核文件，但未绑定独立会话执行账本，不作为已核验独立审核')
     if has_local_rule:
         return dict(status='unverified', reason='已记录本机规则复核；本地导出不证明已完成独立模型工程审核')
     return dict(status='unverified', reason='本地导出不证明已完成独立工程审核')

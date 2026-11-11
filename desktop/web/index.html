@@ -16,13 +16,13 @@
 <body>
   <div class="win">
     <header class="topnav">
-      <a class="logo" href="#new"><img src="/assets/guangzhu-128.png" alt=""><b>光筑</b><small>基于 Agnes Harness</small></a>
-      <nav class="navtabs" aria-label="主导航"><a href="#new">新建设计</a><a href="#records">设计记录</a><a href="#park">园区</a><a href="#satmap">卫星图设计</a></nav>
-      <div class="navright"><span id="connection" class="conn">正在连接 AGH</span><button class="btn sm" id="settings-open">设置</button></div>
+      <a class="logo" href="#new"><img src="/assets/guangzhu-128.png" alt=""><b>光筑</b><small id="brand-sub">智能光伏深化设计系统</small></a>
+      <nav class="navtabs" aria-label="主导航"><a href="#new">三维设计</a><a href="#satmap">卫星排布</a><a href="#lab">方案与光储比选</a><a href="#park">园区</a><a href="#records">设计记录</a></nav>
+      <div class="navright"><span id="connection" class="conn">正在连接智能引擎</span><button class="btn sm" id="lang-toggle" type="button" title="切换中英文界面">切换英文</button><button class="btn sm" id="settings-open">设置</button></div>
     </header>
     <main id="view" class="view"></main>
   </div>
-  <div id="agh-dock" class="agh-dock parked"><iframe id="agh" title="Agnes Harness 原生会话"></iframe></div>
+  <div id="agh-dock" class="agh-dock parked"><iframe id="agh" title="智能设计引擎会话"></iframe></div>
   <dialog id="settings"><header><h2>设置</h2><button class="btn sm" id="settings-close">关闭</button></header><div id="settings-content"></div></dialog>
   <div id="active-task-bar" class="active-task-bar" role="region" aria-label="当前后台任务控制栏" hidden></div>
   <div id="notice" role="status" hidden></div>

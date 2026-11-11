@@ -55,10 +55,17 @@ def views(design):
 def simulations(project, design, *, offline=False):
     from . import economics, yieldsim
     loss = economics.load_assumptions()['design_system_loss_pct']['value']
+    p_lat = getattr(project.site, 'weather_proxy_lat', None)
+    p_lon = getattr(project.site, 'weather_proxy_lon', None)
+    proxy = (p_lat, p_lon) if p_lat is not None and p_lon is not None else None
+    proxy_note = getattr(project.site, 'weather_proxy_note', None)
     cache = {}
     for identity, view in views(design):
         angle = identity[1:]
         if angle not in cache:
-            cache[angle] = yieldsim.simulate_design_yields(project.site.lat, project.site.lon,
-                            tilt=angle[0], azimuth=angle[1], loss_percent=loss, offline=offline, module_id=project.equipment.module_id)
+            cache[angle] = yieldsim.simulate_design_yields(
+                project.site.lat, project.site.lon,
+                tilt=angle[0], azimuth=angle[1], loss_percent=loss, offline=offline,
+                module_id=project.equipment.module_id, weather_proxy=proxy, weather_proxy_note=proxy_note,
+            )
         yield identity, view, cache[angle]

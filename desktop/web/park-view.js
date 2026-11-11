@@ -1,4 +1,4 @@
-import { esc, valueMarkup, splitter } from './data.js';
+import { esc, cleanRoofLabel, valueMarkup, splitter } from './data.js';
 import { mountParkScene3D } from './park-scene-3d.js';
 
 const terminal = item => ['completed', 'failed', 'skipped'].includes(item.status);
@@ -88,6 +88,8 @@ export class ParkView {
       api, queue, configure, buildSpec, notice, id: null, parks: [], selected: new Set(),
       scene3d: null,
       colorByPhase: true,
+      parkSunDate: '2026-12-21',
+      parkSunHour: 10.0,
       batch: {
         preset_key: 'standard',
         module_id: 'trina-tsm-605neg19rc20',
@@ -113,13 +115,13 @@ export class ParkView {
     if (this.id && (!this.queue.item || this.id === this.queue.id)) await this.queue.load(this.id);
   }
   html() {
-    const options = this.parks.map(p => `<option value="${esc(p.id)}" ${p.id === this.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+    const options = this.parks.map(p => `<option value="${esc(p.id)}" ${p.id === this.id ? 'selected' : ''}>${esc(cleanRoofLabel(p.name))}</option>`).join('');
     const button = (action, text, cls = '') => `<button class="btn sm ${cls}" data-paction="${action}">${text}</button>`;
     const side = `<aside class="card"><h2>园区</h2><select data-pselect><option value="">选择园区</option>${options}</select>
-      ${button('new', '新建园区')}${button('taizhou-demo', '载入泰州中国医药城产业园')}${button('demo', '载入武进示意园区')}<a class="btn sm" href="#park-legacy">已有设计汇总</a></aside>`;
+      ${button('new', '新建园区')}${button('taizhou-demo', '载入泰州中国医药城产业园')}${button('demo', '载入武进工业园区')}<a class="btn sm" href="#park-legacy">已有设计汇总</a></aside>`;
     if (!this.current) return `<div class="park-editor">${side}${splitter('park')}<p>新建园区，加入我的屋顶或演示屋顶。</p></div>`;
     const { park, data, svg } = this.current;
-    const field = (key, label, unit) => `<label class="park-field-inline"><span>${label}</span><input data-pfield="${key}" value="${esc(park[key] ?? '')}"/>${unit ? `<small>${unit}</small>` : ''}</label>`;
+    const field = (key, label, unit) => `<label class="park-field-inline"><span>${label}</span><input data-pfield="${key}" value="${esc(cleanRoofLabel(park[key] ?? ''))}"/>${unit ? `<small>${unit}</small>` : ''}</label>`;
     const sources = this.roofs.filter(r => !r.project?.park && !park.buildings.some(b => b.template === r.id));
     const roofTypeLabel = { flat: '混凝土平屋顶', metal: '彩钢瓦屋面', pitched: '多坡屋面', ground: '地面阵列', carport: '光伏车棚' };
     const phaseBadge = phase => phase === 1
@@ -127,7 +129,7 @@ export class ParkView {
       : phase === 2
         ? '<span class="park-phase-pill phase-2">2 · 二期扩建</span>'
         : '<span class="park-phase-pill phase-none">— 待设计</span>';
-    const rows = data.buildings.map(b => `<tr class="park-bldg-row"><td><label class="park-bldg-check"><input type="checkbox" data-pick="${esc(b.template)}" checked><span><b>${esc(b.name)}</b><small>${esc(roofTypeLabel[b.roof?.type] || b.roof?.type || '屋顶')}</small></span></label></td>
+    const rows = data.buildings.map(b => `<tr class="park-bldg-row"><td><label class="park-bldg-check"><input type="checkbox" data-pick="${esc(b.template)}" checked><span><b>${esc(cleanRoofLabel(b.name))}</b><small>${esc(roofTypeLabel[b.roof?.type] || b.roof?.type || '屋顶')}</small></span></label></td>
       <td>${b.roof.height_m} m</td><td>${valueMarkup(b.result?.dc_kw, 'kW')}</td><td>${valueMarkup(b.result?.capex_cny, '元')}</td>
       <td>${valueMarkup(b.result?.payback_years, '年')}</td><td>${phaseBadge(b.result?.park_phase)}</td>
       <td><input type="number" data-rotate="${esc(b.template)}" value="${b.rotation_deg}" min="-360" max="360" aria-label="旋转角度" style="width:68px"></td>
@@ -137,12 +139,12 @@ export class ParkView {
     const totals = [['装机', data.all.dc_kw, 'kW'], ['年发电', data.all.annual_kwh, 'kWh'], ['造价', data.all.capex_cny, '元'],
     ['整体回本', data.all.payback_years, '年'], ['年减碳', data.all.co2_t, 't'], ['逆变器', data.inverter_count, '台'],
     ['实际额定 AC', data.rated_ac_kw, 'kW']].map(([label, value, unit]) => `<span>${label} ${valueMarkup(value, unit)} ${unit}</span>`).join(' · ');
-    const risks = data.risks.map(r => `${r.label}：${r.limit == null ? '未填' : r.excess == null ? '无法核定' :
+    const risks = data.risks.map(r => `${cleanRoofLabel(r.label)}：${r.limit == null ? '未填' : r.excess == null ? '无法核定' :
       r.excess > 1e-9 ? `有风险，超 ${r.excess.toFixed(3)} kW` : '未超出'}`).join('；');
     const riskPills = data.risks.map(r => {
       const state = r.limit == null ? 'neutral' : r.excess == null ? 'neutral' : r.excess > 1e-9 ? 'warn' : 'ok';
       const text = r.limit == null ? '上限未填' : r.excess == null ? '待核定' : r.excess > 1e-9 ? `超限 ${r.excess.toFixed(1)} kW` : `合规 (≤${r.limit}kW)`;
-      return `<span class="park-risk-pill ${state}">${esc(r.label)}：${esc(text)}</span>`;
+      return `<span class="park-risk-pill ${state}">${esc(cleanRoofLabel(r.label))}：${esc(text)}</span>`;
     }).join('');
     const kpiStrip = `<div class="park-kpi-grid">
       <div class="park-kpi-card"><span>全园直流总装机</span><strong>${valueMarkup(data.all.dc_kw, 'kW')} <small>kW</small></strong><small>一期优先 ${valueMarkup(data.phase1.dc_kw, 'kW')} kW · 已设计 ${data.all.count}/${data.buildings.length} 栋</small></div>
@@ -171,7 +173,19 @@ export class ParkView {
           ${button('toggle-pick-all', '☑️ 全选/反选厂房')}
         </div>
       </div>
-      <div class="grid4" style="gap:8px;margin-top:6px">
+      <div class="re-row" style="margin:6px 0 8px;gap:8px;flex-wrap:wrap;align-items:center">
+        ${button('apply-oneclick-setup', '✅ 一键应用设置并同步园区3D坐标', 'primary')}
+        ${button('oneclick-setup-and-run', '🚀 一键设置并立即全园排板计算', 'primary')}
+        ${button('reset-designs', '🧹 清空园区已有排板')}
+        <span style="font-size:12px;color:var(--muted)">自动补齐专变/并网/预算约束并同步邻楼 3D 遮挡。</span>
+      </div>
+      <details class="satmap-acc-card" style="margin-top:4px">
+        <summary>
+          <span>展开批量设备、电价与电缆细项设置 (8项)</span>
+          <small>按需微调</small>
+        </summary>
+        <div class="satmap-acc-body">
+          <div class="grid4" style="gap:8px">
         <label class="field"><span>统一光伏组件选型</span><select data-pbatch="module_id">
           ${[
         ['trina-tsm-605neg19rc20', '天合光能 Vertex N 605W (N型双玻)'],
@@ -228,13 +242,9 @@ export class ParkView {
             <option value="YJLH22" ${b.ac_cable_family === 'YJLH22' ? 'selected' : ''}>铝合金 YJLH22</option>
           </select>
         </span></label>
-      </div>
-      <div class="re-row" style="margin-top:10px;gap:8px;flex-wrap:wrap;align-items:center">
-        ${button('apply-oneclick-setup', '✅ 一键应用设置并同步园区3D坐标', 'primary')}
-        ${button('oneclick-setup-and-run', '🚀 一键设置并立即全园排板计算', 'primary')}
-        ${button('reset-designs', '🧹 清空园区已有排板')}
-        <span style="font-size:12px;color:var(--muted)">提示：点击「一键应用设置」将自动补齐专变/并网/预算约束、写入所有勾选厂房开工条件，并同步邻楼 3D 遮挡。</span>
-      </div>
+          </div>
+        </div>
+      </details>
     </div>`;
 
     return `<div class="park-editor">${side}${splitter('park')}<main>
@@ -242,7 +252,7 @@ export class ParkView {
       <div class="card"><div class="park-toolbar-row">${field('name', '名称', '')}
       ${field('transformer_kva', '变压器', 'kVA')}${field('grid_kw', '并网限制', 'kW')}${field('budget_cny', '预算', '元')}
       ${button('save', '保存', 'primary')}${button('place', '按原始坐标摆放')}${button('sync-neighbors', '🏢 一键同步邻楼3D遮挡')}${button('delete', '删除园区')}
-      <span class="park-add-group"><select data-source>${sources.map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select>${button('add', '加入厂房')}</span></div>
+      <span class="park-add-group"><select data-source>${sources.map(r => `<option value="${esc(r.id)}">${esc(cleanRoofLabel(r.name))}</option>`).join('')}</select>${button('add', '加入厂房')}</span></div>
       <p style="margin:6px 0 8px;color:var(--ink-2);font-size:13px">拖动下方左侧 2D 平面图楼栋可调整园区相对位置，右侧 3D 园区全景沙盘实时联动显示真实三维园区建筑、障碍物与设计后的全园区光伏阵列（点击 3D 楼栋可直达单栋精细工作台）。</p>
       <div class="grid2" style="gap:12px;align-items:stretch">
         <div class="park-pane-box">
@@ -252,12 +262,23 @@ export class ParkView {
         <div class="park-pane-box">
           <div class="park-pane-head">
             <h4 style="margin:0">🌐 真实园区 3D 全景数字孪生沙盘</h4>
-            <div class="re-row" style="margin:0">
+            <div class="re-row" style="margin:0;flex-wrap:wrap;gap:4px">
               ${button('3d-iso', '🏛 鸟瞰')}
               ${button('3d-top', '⬇ 顶视')}
               ${button('3d-south', '☀ 南向')}
               ${button('3d-color', this.colorByPhase ? '🎨 分期着色' : '🎨 实景深蓝')}
+              ${button('3d-sun-play', '▶ 日照动画')}
             </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;font-size:11.5px;background:var(--well,#f8fafc);border-radius:6px;margin-bottom:6px">
+            <select data-psun-date style="padding:2px 6px;border-radius:4px;font-size:11.5px">
+              <option value="2026-12-21" ${this.parkSunDate === '2026-12-21' ? 'selected' : ''}>冬至日 (12-21)</option>
+              <option value="2026-03-21" ${this.parkSunDate === '2026-03-21' ? 'selected' : ''}>春分日 (03-21)</option>
+              <option value="2026-06-21" ${this.parkSunDate === '2026-06-21' ? 'selected' : ''}>夏至日 (06-21)</option>
+            </select>
+            <span>时刻</span>
+            <input type="range" min="6.5" max="17.8" step="0.1" value="${this.parkSunHour}" data-psun-hour style="flex:1">
+            <b id="park-sun-hour-label" style="font-family:monospace;min-width:42px">${String(Math.floor(this.parkSunHour)).padStart(2, '0')}:${String(Math.round((this.parkSunHour % 1) * 60)).padStart(2, '0')}</b>
           </div>
           <div id="park-scene-3d" style="width:100%;height:340px;border-radius:10px;overflow:hidden;border:1px solid var(--line,#cbd5e1)"></div>
         </div>
@@ -292,6 +313,7 @@ export class ParkView {
     if (forceConstraints || !park.grid_kw) park.grid_kw = preset.grid_kw;
     if (forceConstraints || !park.budget_cny) park.budget_cny = preset.budget_cny;
 
+    const hadBuildingsInitially = park.buildings.length > 0;
     if (!park.buildings.length && Array.isArray(this.roofs) && this.roofs.length) {
       const defaults = ['taizhou-cmc-pharma', 'taizhou-shipbuilding-workshop', 'taizhou-watertown-pavilion', 'taizhou-lixiahe-coldchain']
         .filter(id => this.roofs.some(r => r.id === id));
@@ -301,17 +323,23 @@ export class ParkView {
       }
     }
 
+    const allPickBoxes = [...host.querySelectorAll('[data-pick]')];
+    let keys = [...host.querySelectorAll('[data-pick]:checked')].map(el => el.dataset.pick);
+    if (!keys.length) {
+      if (hadBuildingsInitially && allPickBoxes.length > 0) {
+        if (!quiet) {
+          this.notice('请至少勾选一栋厂房后再应用配置或运行批量设计');
+        }
+        return [];
+      }
+      keys = park.buildings.map(b => b.template);
+    }
+
     const originCount = park.buildings.filter(b => Math.abs(b.x_m || 0) < 1e-3 && Math.abs(b.y_m || 0) < 1e-3).length;
     if (park.buildings.length > 1 && originCount > 1) {
       const placed = await this.api(`parks/${this.id}/place`, park);
       park.buildings = placed.buildings || park.buildings;
       if (placed.origin) park.origin = placed.origin;
-    }
-
-    let keys = [...host.querySelectorAll('[data-pick]:checked')].map(el => el.dataset.pick);
-    if (!keys.length) {
-      keys = park.buildings.map(b => b.template);
-      host.querySelectorAll('[data-pick]').forEach(el => { el.checked = true; });
     }
 
     const shiftCode = { day: '1', two: '2', continuous: '3', '1': '1', '2': '2', '3': '3' }[this.batch.shifts] || '2';
@@ -370,6 +398,15 @@ export class ParkView {
     if (container3d && this.current) {
       this.scene3d = mountParkScene3D(container3d, this.current, {
         colorByPhase: this.colorByPhase,
+        sunDate: this.parkSunDate,
+        sunHour: this.parkSunHour,
+        onSunTick: ({ hourBjt }) => {
+          this.parkSunHour = hourBjt;
+          const slider = host.querySelector('[data-psun-hour]');
+          if (slider) slider.value = String(hourBjt);
+          const lbl = host.querySelector('#park-sun-hour-label');
+          if (lbl) lbl.textContent = `${String(Math.floor(hourBjt)).padStart(2, '0')}:${String(Math.round((hourBjt % 1) * 60)).padStart(2, '0')}`;
+        },
         onSelectBuilding: tpl => {
           const b = this.current?.data?.buildings?.find(x => x.template === tpl);
           if (b?.result?.project_id) {
@@ -399,6 +436,11 @@ export class ParkView {
       if (action === '3d-iso') { this.scene3d?.setCameraView('iso'); return; }
       if (action === '3d-top') { this.scene3d?.setCameraView('top'); return; }
       if (action === '3d-south') { this.scene3d?.setCameraView('south'); return; }
+      if (action === '3d-sun-play') {
+        const playing = this.scene3d?.toggleSunPlay?.();
+        el.textContent = playing ? '⏸ 暂停日照' : '▶ 日照动画';
+        return;
+      }
       if (action === '3d-color') {
         this.colorByPhase = !this.colorByPhase;
         await this.refresh();
@@ -520,6 +562,16 @@ export class ParkView {
         this.id = el.value;
         return this.refresh();
       }
+      if (el.hasAttribute('data-psun-date')) {
+        this.parkSunDate = el.value;
+        this.scene3d?.setSunTime?.(this.parkSunDate, this.parkSunHour);
+        return;
+      }
+      if (el.hasAttribute('data-psun-hour')) {
+        this.parkSunHour = Number(el.value);
+        this.scene3d?.setSunTime?.(this.parkSunDate, this.parkSunHour);
+        return;
+      }
       if (el.dataset.pbatch) {
         this.batch[el.dataset.pbatch] = el.type === 'checkbox' ? el.checked : el.value;
         return;
@@ -530,6 +582,13 @@ export class ParkView {
         return this.save();
       }
     });
+    host.oninput = event => {
+      const el = event.target;
+      if (el?.hasAttribute?.('data-psun-hour')) {
+        this.parkSunHour = Number(el.value);
+        this.scene3d?.setSunTime?.(this.parkSunDate, this.parkSunHour);
+      }
+    };
     const svg = host.querySelector('#park-map');
     if (!svg) return;
     let drag;

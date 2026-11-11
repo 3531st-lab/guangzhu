@@ -5,7 +5,7 @@ import { ParkView, queueMarkup } from './park-view.js';
 import { computeSteps } from "./steps.js";
 import { Bridge, setAghOrigin } from "./bridge.js";
 import {
-  esc, show, rawValue, valueMarkup, qualified, formSpec, roofSVG, modelChoices, toolResult, runStats,
+  esc, cleanRoofLabel, show, rawValue, valueMarkup, qualified, formSpec, roofSVG, modelChoices, toolResult, runStats,
   finishRequest, shouldReview, timeLabel, isReviewRecord, replayChoices, recordPassed, recordUnverified,
   withVerifiedReview, versionSummary, naturallyStopped, usageSummary, inferRequirements, beijingTime,
   isEvaluation, recoveryDescription, comparisonTable, parkPlan, parkSVG, SPLITS, splitter
@@ -26,9 +26,15 @@ import { evidenceMarkup, evidenceDownload } from './design-evidence.js';
 import { lossMetricsMarkup, monthlyYieldMarkup } from './engineering-charts.js';
 import { SatMapView } from './satmap-view.js';
 import { pvsystProFoldMarkup, collectPvsystTuningParams } from './pvsyst-workbench.js';
+import { InnovationLabView } from './innovation-lab.js';
+import { getLang, setLang, toggleLang, applyGlobalI18n, localizeDomSubtree, translateHtmlToEn, toPureEnText, toPureZhText } from './i18n.js';
 const evaluation = /(?:^\?|&)eval=1(?:&|$)/.test(location.search ?? "");
 const $ = (id) => document.getElementById(id), html = (id, text) => {
-  if ($(id)) $(id).innerHTML = text;
+  const el = $(id);
+  if (el) {
+    el.innerHTML = translateHtmlToEn(text);
+    localizeDomSubtree(el);
+  }
 };
 const state = {
   roofs: [], records: [], localProjects: [], mode: "auto", form: {}, brief: "", errors: [], sessions: new Map(), active: null, design: null,
@@ -182,7 +188,8 @@ const guarded = (fn) => (...args) => Promise.resolve().then(() => fn(...args)).c
   notice(error.message);
 });
 function notice(text, { persist = false } = {}) {
-  $("notice").textContent = text;
+  const raw = String(text ?? "");
+  $("notice").textContent = getLang() === "en" ? toPureEnText(raw) : raw;
   $("notice").hidden = false;
   clearTimeout(notice.timer);
   notice.timer = persist ? null : setTimeout(() => {
@@ -211,7 +218,7 @@ const empty = (text) => `<div class="empty muted">${esc(text)}</div>`;
 const fact = (label, value, unit = "") => `<div class="fact"><span>${esc(label)}</span><b>${valueMarkup(value, unit)}<small>${esc(unit)}</small></b></div>`;
 const tabNames = {
   live: "实时输出", all: "全部", pass: "四步全过", fail: "未通过", review: "独立审核", evaluation: "评测",
-  light: "浅色", dark: "深色", system: "跟随系统", heat: "遮挡热力", string: "组串", wiring: '串联布线', phase: '分期', wind: '风荷载'
+  light: "浅色", dark: "深色", system: "跟随系统", zh: "简体中文", en: "英文界面", heat: "遮挡热力", string: "组串", wiring: '串联布线', phase: '分期', wind: '风荷载'
 };
 const tabs = (values, current, key) => `<div class="seg">${values.map((v) =>
   `<button data-${key}="${esc(v)}" aria-pressed="${current === v}">${esc(key === "scene-mode" && v === "light" ? "光影" : tabNames[v] ??
@@ -378,7 +385,7 @@ function keySaved(message, request) {
   if ($("settings")?.open) settings();
 }
 function localProjectRow(p) {
-  return `<a class="item" href="#result/${encodeURIComponent(p.project_id)}?version=${p.version}"><span><b>${esc(p.name)}</b>${p.showcase ? ' <span class="tag-demo">泰州实景案例</span>' : ""}<small> ${esc(p.project_id)} · v${p.version}</small></span>${pill(p.status_label ?? (p.hard_failed === 0 ? "规则通过候选" : Number.isInteger(p.hard_failed) ? "待消缺" : "计算待核对"), p.hard_failed === 0 ? "ok" : "warn")}<small>${p.dc_kw ? Number(p.dc_kw).toFixed(1) + " kWp" : ""} · 回本 ${p.payback_years ? Number(p.payback_years).toFixed(1) + "年" : "—"}</small></a>`;
+  return `<a class="item" href="#result/${encodeURIComponent(p.project_id)}?version=${p.version}"><span><b>${esc(cleanRoofLabel(p.name))}</b>${p.showcase ? ' <span class="tag-demo">泰州实景案例</span>' : ""}<small> ${esc(p.project_id)} · v${p.version}</small></span>${pill(p.status_label ?? (p.hard_failed === 0 ? "规则通过候选" : Number.isInteger(p.hard_failed) ? "待消缺" : "计算待核对"), p.hard_failed === 0 ? "ok" : "warn")}<small>${p.dc_kw ? Number(p.dc_kw).toFixed(1) + " kWp" : ""} · 回本 ${p.payback_years ? Number(p.payback_years).toFixed(1) + "年" : "—"}</small></a>`;
 }
 function newPage() {
   const r = roof(), g = geo(r);
@@ -399,13 +406,14 @@ function field(key, label, unit, min, max, placeholder = "不限") {
 }
 function formPage() {
   const r = roof(), f = state.form, defaults = r?.defaults ?? {};
-  if (state.mode === "chat") return head("进入对话", r?.name ?? "", "", 2) +
+  const rTitle = cleanRoofLabel(r?.name ?? "");
+  if (state.mode === "chat") return head("进入对话", rTitle, "", 2) +
     `<div class="form-grid"><p>需求请在右侧 AGH 里直接说</p>${splitter("form")}${briefMarkup(r, f)}</div>`;
   const toggle = (key, text) => `<label class="toggle ro"><span>${text}</span><input type="checkbox" data-field="${key}"
     ${key === 'compare' && geo(r).type === 'metal' ? 'disabled' : ''} ${f[key] ? "checked" : ""}></label>`;
   return `${state.parkEdit ? btn('保存园区条件并返回', 'park-settings-save') : ''}${head(
     '<a class="btn sm ghost" href="#new">← 选屋顶</a>填写条件',
-    `${r?.name ?? ""} · ${state.mode === "auto" ? "一键模式" : "对话模式"}`,
+    `${rTitle} · ${state.mode === "auto" ? "一键模式" : "对话模式"}`,
     "",
     2
   )}<div class="form-grid"><div class="form-left scroll">
@@ -931,9 +939,13 @@ async function render() {
       content = head('园区', '') + empty('园区没能打开：' + error.message) + btn('重试载入', 'result-retry');
     }
   }
-  else if (page === 'satmap' && satmapView) {
+  else if (['satmap', 'pvsyst', 'oblique', 'cad'].includes(page) && satmapView) {
+    satmapView.setStandaloneMode(page === 'satmap' ? null : page);
     await satmapView.load();
     content = satmapView.html();
+  }
+  else if (page === 'lab' && innovationLabView) {
+    content = innovationLabView.html();
   }
   else if (page === "result") {
     const params = new URLSearchParams(query), run = params.get("run"), suffix = params.has("version") ? "?version=" + params.get("version") : "";
@@ -949,6 +961,8 @@ async function render() {
     state.resultRun = run;
     state.resultExplicit = params.has("version");
     state.result = result;
+    state.pvsystParams = null;
+    state.pvsystClientFallback = false;
     state.localExport = null;
     state.editing = null;
     state.wireString = '';
@@ -965,11 +979,12 @@ async function render() {
   }
   if (epoch !== routeEpoch) return;
   if (typeof stopSunPlay === "function") stopSunPlay();
-  if (page !== 'satmap') satmapView?.dispose();
+  if (!['satmap', 'pvsyst', 'oblique', 'cad'].includes(page)) satmapView?.dispose();
   scene?.dispose();
   replay?.dispose();
   scene = replay = null;
-  $("view").innerHTML = `<section class="page${page === "new" ? " home" : ""}">${content}</section>`;
+  applyGlobalI18n(document);
+  $("view").innerHTML = `<section class="page${page === "new" ? " home" : ""}">${translateHtmlToEn(content)}</section>`;
   if (page === "roof") mountRoofEditor({
     post: api, notice, saved: roofSaved, modules: state.modules, inverters: state.inverters, quickRunRoof: async (roofId, aiOptions = {}) => {
       await roofSaved(roofId);
@@ -977,7 +992,8 @@ async function render() {
     }
   });
   if (page === 'park') parkView.mount($('view').querySelector('.page'));
-  if (page === 'satmap') satmapView?.mount($('view').querySelector('.page'));
+  if (['satmap', 'pvsyst', 'oblique', 'cad'].includes(page)) satmapView?.mount($('view').querySelector('.page'));
+  if (page === 'lab') innovationLabView?.mount($('view').querySelector('.page'));
   if (page === "result" && state.result.version != null) mountScene();
   if (page === "replay") {
     const r = state.replayRun, choices = replayChoices(r), reviewOptions = { review: { enabled: true, mode: "independent" } };
@@ -1004,6 +1020,7 @@ async function render() {
         }
     });
   }
+  applyGlobalI18n(document);
   requestAnimationFrame(placeFrame);
   updateActiveTaskBar();
 }
@@ -1098,29 +1115,32 @@ function theme() {
   bridge.setTheme(effective);
 }
 function settings() {
-  const allProviders = [["deepseek", "DeepSeek（默认设计）"], ["agnes", "Agnes（默认审核）"], ...OTHER_PROVIDERS];
+  const allProviders = [["deepseek", "深度求索（默认设计）"], ["agnes", "智能审图通道（默认审核）"], ...OTHER_PROVIDERS];
   const curProvider = $("settings-kb-provider")?.value || "deepseek";
   const curSlot = ["agnes", "deepseek"].includes(curProvider) ? curProvider : "other";
   const curUrl = savedKeyUrl(curProvider) || savedKeyUrl(curSlot) || "";
-  html("settings-content", `<p>${bridge.ready ? "AGH 已连接" : "等待 AGH 连接"}</p><h3>主题</h3>${tabs(["light", "dark", "system"], state.theme, "theme")}
-  <h3>接口与模型 Key（支持自定义接口 URL）</h3>
+  html("settings-content", `<p>${bridge.ready ? "智能引擎已连接" : "正在连接本机智能引擎"}</p><h3>界面主题</h3>${tabs(["light", "dark", "system"], state.theme, "theme")}<h3>界面语言</h3>${tabs(["zh", "en"], getLang(), "lang")}
+  <h3>接口与模型密钥（支持自定义网关地址）</h3>
   <div class="settings-key-box">
     <label class="field"><span>服务商通道</span><select id="settings-kb-provider" aria-label="设置服务商">${allProviders.map(([v, n]) =>
       `<option value="${v}" ${v === curProvider ? "selected" : ""}>${n}</option>`).join("")}</select></label>
-    <label class="field"><span>自定义接口 URL（选填，留空用官方接口）</span><input id="settings-key-url" type="url" autocomplete="off" spellcheck="false"
-      value="${esc(curUrl)}" placeholder="如 https://zhenze-huhehaote.cmecloud.cn/tokenplan/v1"></label>
-    <label class="field"><span>API Key</span><span class="kb-input"><input id="settings-key-value" type="password" autocomplete="off" spellcheck="false"
-      placeholder="粘贴 API Key"><button class="btn sm primary" data-action="settings-save-key" ${state.keySaving ? "disabled" : ""}>${state.keySaving ? "正在验证…" : "验证并保存"}</button></span></label>
+    <label class="field"><span>自定义接口地址（选填，留空用官方接口）</span><input id="settings-key-url" type="url" autocomplete="off" spellcheck="false"
+      value="${esc(curUrl)}" placeholder="选填自定义模型网关地址"></label>
+    <label class="field"><span>模型访问密钥</span><span class="kb-input"><input id="settings-key-value" type="password" autocomplete="off" spellcheck="false"
+      placeholder="粘贴模型访问密钥"><button class="btn sm primary" data-action="settings-save-key" ${state.keySaving ? "disabled" : ""}>${state.keySaving ? "正在验证…" : "验证并保存"}</button></span></label>
   </div>
   <h3>设计模型</h3>
   ${modelSelect("design-model", "", state.designModel)}<h3>审核模型</h3>${modelSelect("review-model", "", state.reviewModel)}
-  <p class="muted">任何填了 key 的模型都能设计或审核；按 DeepSeek 实际运行经验，Pro 每次约 0.1–0.3 元，Flash 约 0.03 元（经验参考，并非收费表）。若使用第三方兼容接口或政企网关，填写自定义 URL 与 Key 保存后即可在上方下拉框中切换该接口返回的任意模型。</p><h3>
+  <p class="muted">按 DeepSeek 实际运行经验估算（并非收费表）：Pro 每次约 0.1–0.3 元，Flash 约 0.03 元。任何填写密钥的模型都能执行自动设计或独立审核；即使不填写外部模型密钥，也可直接使用本机物理与规则引擎完成全套三维排布、卫星设计、全年逐时仿真与十六张施工图纸导出。</p><h3>
   可用模型</h3><div class="model-list">${bridge.models.map((m) => `<p><b>${esc(m.label)}</b><br><span class="mono">${esc(m.id)}</span></p>`).join("") ||
-    "尚未收到模型清单"}</div>${btn("在浏览器中打开 AGH", "open-agh")}`);
+    "尚未收到模型清单"}</div>${btn("在浏览器中打开智能工作台", "open-agh")}`);
 }
 function connectionLabel() {
-  const block = setup.association?.installed && setupFailed() || state.status && state.status.agh?.connected ? startBlock() : "正在启动";
-  $("connection").textContent = block ? block.replace(/^先在首页上方/, "") : "已就绪 · 设计用 " + (state.designModel?.label ?? state.designModel?.id ?? "");
+  const block = setup.association?.installed && setupFailed() || state.status && state.status.agh?.connected ? startBlock() : "正在连接引擎";
+  const rawLabel = block ? block.replace(/^先在首页上方/, "") : "引擎已就绪 · 智能深化设计";
+  if ($("connection")) {
+    $("connection").textContent = getLang() === "en" ? toPureEnText(rawLabel) : rawLabel;
+  }
 }
 async function checkConnection() {
   if (statusPolling) return;
@@ -1331,6 +1351,19 @@ const parkView = new ParkView(api, parkQueue, async (key, park) => {
   return { spec: formSpec(form, state.reviewModel), design_model: state.designModel.id, workspace_binding: bridge.workspaceBinding };
 }, notice);
 const satmapView = typeof SatMapView === 'function' ? new SatMapView(api, notice, state) : null;
+const innovationLabView = typeof InnovationLabView === 'function' ? new InnovationLabView({
+  satmapView,
+  onNotice: notice,
+  onJumpToSatmap: () => {
+    location.hash = '#satmap';
+  },
+  onOpenCaseInSatmap: (caseItem) => {
+    if (satmapView) {
+      satmapView.loadBenchmarkCase(caseItem);
+      location.hash = '#satmap';
+    }
+  },
+}) : null;
 async function saveParkSettings() {
   const { key, park } = state.parkEdit;
   await preview();
@@ -1503,6 +1536,8 @@ async function finishSession(s, force = false, autoReview = !force) {
     if (state.route === "run") await render();
     else if (state.route === "result" && state.result?.project_id === design.project && !state.resultExplicit) {
       state.result = final.result;
+      state.pvsystParams = null;
+      state.pvsystClientFallback = false;
       await render();
     }
   } catch (error) {
@@ -1991,45 +2026,80 @@ document.addEventListener("click", guarded(async (event) => {
   if (el.dataset.sceneEdit) return activateSceneEditTool(el.dataset.sceneEdit);
   if (el.dataset.pvsystAction && state.route === 'result' && state.result && typeof pvsystProFoldMarkup === 'function') {
     const pvAct = el.dataset.pvsystAction;
-    if (pvAct === 'apply-optimal-angle') {
-      const optTilt = Number(el.dataset.optimalTilt);
-      const optAz = Number(el.dataset.optimalAzimuth);
-      state.pvsystParams = {
-        ...(state.pvsystParams ?? {}),
-        ...(Number.isFinite(optTilt) ? { tilt_deg: optTilt } : {}),
-        ...(Number.isFinite(optAz) ? { azimuth_deg: optAz } : {}),
-      };
-      const foldBody = document.querySelector('[data-fold="pvsyst_pro"] .fold-body');
-      if (foldBody) foldBody.innerHTML = pvsystProFoldMarkup(state.result, { params: state.pvsystParams });
-      notice(`⚡ 已按寻优最佳倾角 ${el.dataset.optimalTilt}° / 方位角 ${el.dataset.optimalAzimuth}° 更新 PVsyst 8760h 能量平衡瀑布图！`);
-      return;
-    }
-    if (pvAct === 'recalculate' || pvAct === 'refresh-weather') {
-      const tuned = typeof collectPvsystTuningParams === 'function' ? collectPvsystTuningParams(el.closest('[data-pvsyst-workbench]')) : {};
-      state.pvsystParams = { ...(state.pvsystParams ?? {}), ...tuned };
-      const site = state.result?.project?.site ?? {};
-      const summary = state.result?.metrics ?? state.result?.summary ?? {};
-      const electric = state.result?.scene?.electrical ?? {};
+    if (pvAct === 'apply-optimal-angle' || pvAct === 'recalculate' || pvAct === 'refresh-weather') {
+      const reqResult = state.result;
+      const reqPid = reqResult?.project_id;
+      const reqVer = reqResult?.version;
+      const reqRouteEpoch = routeEpoch;
+      const reqSeq = (state.pvsystReqSeq = (state.pvsystReqSeq || 0) + 1);
+      let nextParams = { ...(state.pvsystParams ?? {}) };
+      if (pvAct === 'apply-optimal-angle') {
+        const optTilt = Number(el.dataset.optimalTilt);
+        const optAz = Number(el.dataset.optimalAzimuth);
+        if (Number.isFinite(optTilt)) nextParams.tilt_deg = optTilt;
+        if (Number.isFinite(optAz)) nextParams.azimuth_deg = optAz;
+      } else {
+        const tuned = typeof collectPvsystTuningParams === 'function' ? collectPvsystTuningParams(el.closest('[data-pvsyst-workbench]')) : {};
+        nextParams = { ...nextParams, ...tuned };
+      }
+      state.pvsystParams = nextParams;
+      const site = reqResult?.project?.site ?? {};
+      const summary = reqResult?.metrics ?? reqResult?.summary ?? {};
+      const electric = reqResult?.scene?.electrical ?? {};
+      let usedBackend = false;
       try {
         const simRes = await api('pvsyst/simulate', {
           lat: Number(site.lat ?? 32.4562),
           lon: Number(site.lon ?? 119.9231),
           dc_kw: Number(summary.dc_kw ?? 100),
           ac_kw: Number(electric.ac_kw ?? summary.ac_kw ?? 85),
-          tilt_deg: Number(state.pvsystParams.tilt_deg ?? state.result?.design?.params?.tilt_deg ?? state.result?.project?.roof?.slope_deg ?? 15),
-          azimuth_deg: Number(state.pvsystParams.azimuth_deg ?? state.result?.design?.params?.azimuth_deg ?? 180),
-          shading_loss_pct: Number(state.result?.scene?.shading?.summary?.avg_loss_pct ?? 2.1),
-          ...tuned,
+          tilt_deg: Number(nextParams.tilt_deg ?? reqResult?.design?.params?.tilt_deg ?? reqResult?.project?.roof?.slope_deg ?? 15),
+          azimuth_deg: Number(nextParams.azimuth_deg ?? reqResult?.design?.params?.azimuth_deg ?? 180),
+          shading_loss_pct: Number(reqResult?.scene?.shading?.summary?.avg_loss_pct ?? 2.1),
+          ...nextParams,
         });
+        if (
+          state.route !== 'result' ||
+          state.result !== reqResult ||
+          state.result?.project_id !== reqPid ||
+          state.result?.version !== reqVer ||
+          routeEpoch !== reqRouteEpoch ||
+          state.pvsystReqSeq !== reqSeq
+        ) {
+          return;
+        }
         if (simRes?.summary) {
-          state.result.pvsyst = simRes;
+          reqResult.pvsyst = simRes;
+          usedBackend = true;
         }
       } catch {
-        // Offline or mock environment falls back to computeClientFallbackPvsyst
+        if (
+          state.route !== 'result' ||
+          state.result !== reqResult ||
+          state.result?.project_id !== reqPid ||
+          state.result?.version !== reqVer ||
+          routeEpoch !== reqRouteEpoch ||
+          state.pvsystReqSeq !== reqSeq
+        ) {
+          return;
+        }
       }
+      state.pvsystClientFallback = !usedBackend;
       const foldBody = document.querySelector('[data-fold="pvsyst_pro"] .fold-body');
-      if (foldBody) foldBody.innerHTML = pvsystProFoldMarkup(state.result, { params: state.pvsystParams });
-      notice('🔄 已更新 PVsyst 8760h 16阶能量平衡瀑布图与官方实时气象数据！');
+      if (foldBody) {
+        foldBody.innerHTML = usedBackend
+          ? pvsystProFoldMarkup(reqResult, { tuningValues: state.pvsystParams, preferAuthoritative: true })
+          : pvsystProFoldMarkup(reqResult, { params: state.pvsystParams, forceClientFallback: true });
+      }
+      if (pvAct === 'apply-optimal-angle') {
+        notice(usedBackend
+          ? `⚡ 已按寻优最佳倾角 ${el.dataset.optimalTilt}° / 方位角 ${el.dataset.optimalAzimuth}° 完成后端 8760h 仿真更新！`
+          : `⚡ 已按寻优最佳倾角 ${el.dataset.optimalTilt}° / 方位角 ${el.dataset.optimalAzimuth}° 更新前端近似灵敏度估算。`);
+      } else {
+        notice(usedBackend
+          ? '🔄 已通过后端 8760h 物理引擎更新 16 阶能量平衡瀑布图与实时气象数据！'
+          : '🔄 当前处于离线近似模式，已按调参更新前端灵敏度估算。');
+      }
       return;
     }
   }
@@ -2098,6 +2168,14 @@ document.addEventListener("click", guarded(async (event) => {
     state.theme = el.dataset.theme;
     theme();
     settings();
+  }
+  if (el.dataset.lang) {
+    setLang(el.dataset.lang);
+    applyGlobalI18n(document);
+    settings();
+    connectionLabel();
+    await render();
+    applyGlobalI18n(document);
   }
   if (el.dataset.sceneMode) {
     setResultSceneMode(el.dataset.sceneMode);
@@ -2225,6 +2303,16 @@ const setup = new Setup(api, bridge, () => {
 });
 setup.preference = localStorage.getItem("gz-design-model") ?? "";
 setup.reviewPreference = localStorage.getItem("gz-review-model") ?? "";
+if ($("lang-toggle")) {
+  $("lang-toggle").onclick = async () => {
+    toggleLang();
+    applyGlobalI18n(document);
+    connectionLabel();
+    if ($("settings")?.open) settings();
+    await render();
+    applyGlobalI18n(document);
+  };
+}
 $("settings-open").onclick = () => {
   settings();
   $("settings").showModal();
@@ -2360,7 +2448,7 @@ function roofChoices(r) {
     groups.map(([collection, label]) => [label, state.roofs.filter((x) => (x.collection ?? "demo") === collection && !x.project?.park)])
       .filter(([, rows]) => rows.length).map(([label, rows]) =>
         `<h3 class="sec">${label}</h3>${rows.map((x) =>
-          `<button class="roofrow" data-roof="${esc(x.id)}" aria-pressed="${x.id === r?.id}"><span class="ic">${roofSVG(x)}</span><span><h4>${esc(x.name)}
+          `<button class="roofrow" data-roof="${esc(x.id)}" aria-pressed="${x.id === r?.id}"><span class="ic">${roofSVG(x)}</span><span><h4>${esc(cleanRoofLabel(x.name))}
   <span class="chip"><span title="原值 ${esc(rawValue(x.area_m2))}">${Number(x.area_m2).toLocaleString("zh-CN", { maximumFractionDigits: 2 })} m²</span>
     </span></h4>
   <p>${geo(x).obstacles?.length ?? 0}处障碍 · ${geo(x).keepouts?.length ?? 0}处禁区${geo(x).surroundings?.length ? ` · ${geo(x).surroundings.length}处周边遮挡` : ""} · ${x.collection === "mine" ? "我画的" : "随屋顶资料"}${geo(x).type === 'metal' ?
@@ -2376,14 +2464,14 @@ async function roofSaved(id) {
   location.hash = "#new";
 }
 function roofPreview(r, g) {
-  return `<aside class="card preview"><div class="pv-title"><h3>${esc(r?.name)}</h3>${r?.collection === "mine" ? `<a class="btn sm" href="#roof/${encodeURIComponent(r.id)}">编辑这个屋顶</a>` : '<span class="chip line">屋顶资料</span>'}</div><div class="pv-draw">${r ?
+  return `<aside class="card preview"><div class="pv-title"><h3>${esc(cleanRoofLabel(r?.name))}</h3>${r?.collection === "mine" ? `<a class="btn sm" href="#roof/${encodeURIComponent(r.id)}">编辑这个屋顶</a>` : '<span class="chip line">屋顶资料</span>'}</div><div class="pv-draw">${r ?
       roofSVG(r, true) : ""}</div><div class="facts">${fact("屋顶面积", r?.area_m2, "m²")}${fact("外形尺寸", r?.dimensions_m?.join(" × "), "m")}${fact("女儿墙",
-        parapetInfo(g).label)}${fact(g.load_verified ? "屋面承重（结构核定）" : "屋面承重（示意值）", g.load_capacity_kn_m2, "kN/m²")}${fact("障碍物", g.obstacles?.length, "处")}${fact("禁区", g.keepouts?.length,
-          "处")}${g.surroundings?.length ? fact("周边楼和树", g.surroundings.length, "处") : ""}</div>${r?.project?.economics?.assumptions_note ? `<details class="muted"><summary>案例输入与待核实项</summary><p>${esc(r.project.economics.assumptions_note)}</p></details>` : ''}<div class="preview-actions"><button class="btn next" data-action="quick-run">运行本机规则设计（无需模型密钥）</button><a class="btn primary next" href="#form">下一步：填条件 →</a></div></aside>`;
+        parapetInfo(g).label)}${fact(g.load_verified ? "屋面承重（结构核定）" : "屋面承重（待核定）", g.load_capacity_kn_m2, "kN/m²")}${fact("障碍物", g.obstacles?.length, "处")}${fact("禁区", g.keepouts?.length,
+          "处")}${g.surroundings?.length ? fact("周边楼和树", g.surroundings.length, "处") : ""}</div>${r?.project?.economics?.assumptions_note ? `<details class="muted"><summary>案例输入与待核实项</summary><p>${esc(cleanRoofLabel(r.project.economics.assumptions_note))}</p></details>` : ''}<div class="preview-actions"><button class="btn next" data-action="quick-run">运行本机规则设计（无需模型密钥）</button><a class="btn primary next" href="#form">下一步：填条件 →</a></div></aside>`;
 }
 function requirementsMarkup(r, f) {
-  const extras = [['curtail', '限电上限（示意默认10）', '%', 100], ['transformer', '变压器（默认取问答）', 'kVA', 1e5],
-  ['transformerShare', '逆变器占比（示意默认80）', '%', 100], ['maxHeight', '组件最高点', 'm', 100],
+  const extras = [['curtail', '限电上限（默认10）', '%', 100], ['transformer', '变压器（默认取问答）', 'kVA', 1e5],
+  ['transformerShare', '逆变器占比（默认80）', '%', 100], ['maxHeight', '组件最高点', 'm', 100],
   ['phaseKw', '一期装机（与预算二选一）', 'kW', 1e5], ['phaseBudget', '一期预算硬上限', '万元', 1e5]];
   return `<div class="card fcard"><h3>硬性要求 <small>空着表示不限</small></h3><div class="grid4">${field("payback", "回本不超过", "年", 1, 25)}${field("budget", "预算不超过",
     "万元", 1, 1e4)}${field("capMin", "装机不少于", "kW", 1, 5e3)}${field("capMax", "装机不超过", "kW", 1, 5e3)}${field("walkway", "检修通道至少", "m", 0,
@@ -2395,7 +2483,7 @@ function requirementsMarkup(r, f) {
     <label><input type="checkbox" data-field="parapetCap" ${f.parapetCap ? 'checked' : ''} ${parapetInfo(geo(r)).cap == null ? 'disabled' : ''}>不高出女儿墙</label>
     ${parapetInfo(geo(r)).segmented ? '<p class="muted">分段女儿墙没有全周统一限高，请核对墙段和缺口后填写“组件最高点”。</p>' : ''}
   <div class="keeps"><span class="muted">必须避开</span>${[...geo(r).obstacles ?? [], ...geo(r).keepouts ?? []].map((o) =>
-          `<button class="keep" data-keep="${esc(o.id)}" aria-pressed="${f.keep.includes(o.id)}">${esc(o.label)} <span class="mono">${esc(o.id)}</span>
+          `<button class="keep" data-keep="${esc(o.id)}" aria-pressed="${f.keep.includes(o.id)}">${esc(cleanRoofLabel(o.label))} <span class="mono">${esc(o.id)}</span>
   </button>`).join("")}</div><label class="field"><span>补充说明</span><input data-field="notes" maxlength="200" value="${esc(f.notes)}"></label></div>`;
 }
 function factsMarkup(f) {  // T22: answers before construction, all optional
@@ -2404,24 +2492,24 @@ function factsMarkup(f) {  // T22: answers before construction, all optional
   if (state.parkEdit?.key === 'shared') return `<div class="card fcard"><h3>每栋共享的用电假设</h3>
     <p>以下作为每栋厂房的假设，不是园区总负荷；各栋可覆盖。其他开工问答请按栋填写。</p><div class="grid3">
     ${field('fKwh', '每栋月用电', '万度', 0.01, 1e5, '不清楚')}
-    ${pick('fShifts', '每栋生产班次', [['1', '单班'], ['2', '两班'], ['3', '三班'], ['4', '养殖场风机（示意）']])}</div></div>`;
+    ${pick('fShifts', '每栋生产班次', [['1', '单班'], ['2', '两班'], ['3', '三班'], ['4', '养殖场风机']])}</div></div>`;
   const kind = geo(roof()).type;
   if (['ground', 'carport'].includes(kind)) return `<div class="card fcard"><h3>新建安装开工前问答</h3><div class="grid3">
     ${kind === 'ground' ? pick('fLand', '土地性质', [['construction', '建设用地'], ['cultivated', '一般耕地'],
   ['permanent', '永久基本农田'], ['forest', '林地'], ['grass', '草地'], ['pasture', '牧草地'], ['unused', '未利用地']]) +
       pick('fRedline', '建筑附属且同一建设用地红线', [['1', '是'], ['0', '否']]) : ''}
     ${field('fKva', '变压器', 'kVA', 1, 1e5, '不清楚')}${field('fKwh', '月用电', '万度', .01, 1e5, '不清楚')}
-    ${pick('fShifts', '生产班次', [['1', '单班'], ['2', '两班'], ['3', '三班'], ['4', '养殖场风机（示意）']])}
+    ${pick('fShifts', '生产班次', [['1', '单班'], ['2', '两班'], ['3', '三班'], ['4', '养殖场风机']])}
     ${pick('fExport', '余电上网', [['1', '可以'], ['0', '只能自用']])}</div>
     <p>基础、地勘和钢结构由厂家核定。${kind === 'ground' ?
       '新建方阵不得占用任何耕地；其他土地须当地自然资源及林草部门确认。独立空地通常按集中式，附属同红线项目仍须满足分布式条件。' :
-      '车位和车道按倒车垂直停车参照；结构深度与柱径示意，净高须按实际梁底核对。'}</p></div>`;
+      '车位和车道按倒车垂直停车参照；净高须按实际梁底核对。'}</p></div>`;
   return `<div class="card fcard"><h3>开工前问答 <small>选填，不知道就选"不清楚"；AI 会据此列出开工前要核实的事</small></h3><div class="grid3">
   ${pick("fRoof", "屋面类型", [["concrete", "混凝土平屋顶"], ["metal", "彩钢瓦"], ["other", "其他"]])}${field("fAge", "屋面已用", "年", 0, 100, "不清楚")}
   ${pick("fCore", "夹芯板", [["none", "不是夹芯板"], ["rockwool", "岩棉芯"], ["foam", "泡沫芯"]])}${pick("fSky", "采光带", [["1", "有"], ["0", "没有"]])}
   ${pick("fOwned", "厂房", [["1", "自己的"], ["0", "租的"]])}${field("fKva", "变压器", "kVA", 1, 1e5, "不清楚")}
   ${field("fKwh", "月用电", "万度", 0.01, 1e5, "不清楚")}
-  ${pick('fShifts', '生产班次', [['1', '单班'], ['2', '两班'], ['3', '三班'], ['4', '养殖场风机（示意）']])}
+  ${pick('fShifts', '生产班次', [['1', '单班'], ['2', '两班'], ['3', '三班'], ['4', '养殖场风机']])}
   ${pick("fExport", "余电上网", [["1", "可以"], ["0", "只能自用"]])}</div></div>`;
 }
 const siteStates = { ok: ["没问题", "ok"], risk: ["有风险", "bad"], ask: ["没填", "idle"] };
@@ -2429,7 +2517,7 @@ const siteMarkup = (result) => {
   const dcKw = Number((result.metrics ?? result.summary ?? {}).dc_kw ?? result.design?.statistics?.dc_kw ?? 0);
   const kvaRec = dcKw > 0 ? Math.ceil((dcKw * 1.25) / 50) * 50 : 630;
   const kwhRec = dcKw > 0 ? (dcKw * 0.14).toFixed(1) : "35.0";
-  const aiDefaultsCard = `<section class="card fcard" style="margin-top:8px"><h3 class="sec">📐 典型工商业屋顶工程默认参数模板 <small>未填项按常见工商业默认假设补齐（示意，开工前须现场核实）</small></h3>
+  const aiDefaultsCard = `<section class="card fcard" style="margin-top:8px"><h3 class="sec">📐 典型工商业屋顶工程默认参数模板 <small>未填项按常见工商业默认假设补齐（开工前须现场核实）</small></h3>
     <div class="rulelist">
       <div><b>并网与消纳假设</b><span>默认自发自用、余电上网（按江苏分时电价与典型负荷曲线估算，实际以企业电表为准）</span>${pill("默认模板", "idle")}</div>
       <div><b>配电变压器参考</b><span>按当前装机 ${dcKw.toFixed(1)} kWp 折算参考专变容量 ≥ ${kvaRec} kVA（按80%负载率估算），参考月用电 ≥ ${kwhRec} 万kWh</span>${pill("容量折算", "idle")}</div>
@@ -2463,7 +2551,7 @@ function parkBody() {
   const card = (b) => {
     const on = plan.picked.includes(b), phase = !on ? pill("没选") : plan.first.includes(b) ? pill("一期", "ok") : pill("二期", "warn");
     return `<article class="card park-card${on ? "" : " off"}"><label><input type="checkbox" data-park="${esc(b.run_id)}" ${on ? "checked" : ""}>
-    <b>${esc(b.name)}</b></label><p>${esc(b.building ?? '')}</p>${parkSVG(b)}<p>${valueMarkup(b.dc_kw, "kW")} kW ·
+    <b>${esc(cleanRoofLabel(b.name))}</b></label><p>${esc(cleanRoofLabel(b.building ?? ''))}</p>${parkSVG(b)}<p>${valueMarkup(b.dc_kw, "kW")} kW ·
       回本 ${valueMarkup(b.payback_years, "年")} 年 · 造价 ${valueMarkup(b.capex_cny / 1e4, "万元")} 万元</p><p>${phase}${b.flags.map((flag) => pill(flag, "bad")).join("")}<a class="btn sm ghost" href="#result/${encodeURIComponent(b.project_id)}?run=${encodeURIComponent(b.run_id)}">看这栋</a></p><small class="muted">${esc(beijingTime(b.ended_at))} · v${b.version}</small></article>`;
   };
   return `<div class="kpis park-kpis">${[[limited ? "一期栋数" : "栋数", total.count, "栋"], ["装机", total.dc_kw, "kW"], ["基准年发电", total.annual_kwh / 1e4,
@@ -2473,7 +2561,7 @@ function parkBody() {
         ""}</p><div class="park-grid">${data.buildings.map(card).join("")}</div>`;
 }
 function optionsMarkup(defaults, f, toggle) {
-  return `<div class="row2"><div class="card fcard"><h3>经济参数 <span class="tag-demo">示意，可改</span></h3><div class="grid2">${field("priceSelf", "自用电价", "元/度",
+  return `<div class="row2"><div class="card fcard"><h3>经济参数 <span class="tag-demo">默认参考，可改</span></h3><div class="grid2">${field("priceSelf", "自用电价", "元/度",
     0.1, 2, rawValue(defaults.price_self_cny_kwh))}${field("selfUse", "自用比例", "%", 0, 100, defaults.self_use_ratio == null ? "模板默认" :
       defaults.self_use_ratio * 100)}${field("capex", "造价", "元/W", 1, 6, rawValue(defaults.capex_cny_per_w))}${field("priceExport", "余电上网", "元/度", 0, 1,
         rawValue(defaults.price_export_cny_kwh))}</div><p class="muted">月用电量和班次都填了，按逐时负荷算自用；手填比例优先，计算值作参考。
@@ -2504,7 +2592,7 @@ function modelSelect(id, label, current) {
   return label ? `<label class="ro">${label}${select}</label>` : select;
 }
 function briefMarkup(r, f) {
-  return `<aside class="card form-right"><div class="mini-roof"><span class="ic">${roofSVG(r)}</span><div><h4>${esc(r?.name)}</h4>
+  return `<aside class="card form-right"><div class="mini-roof"><span class="ic">${roofSVG(r)}</span><div><h4>${esc(cleanRoofLabel(r?.name))}</h4>
   <p>${valueMarkup(r?.area_m2, "m²")} m² · ${valueMarkup(r?.project?.site?.lat, "°")}°N</p><p id="tilt-hint" class="muted tilt-hint">${tiltHint(r)}</p>
   <label class="field"><span>项目编号</span>
   <input data-field="id" maxlength="64" value="${esc(f.id)}"></label></div></div><div class="brief-box" ${state.mode === "chat" ? "hidden" : ""}>
@@ -2517,7 +2605,7 @@ function briefMarkup(r, f) {
 }
 function tiltHint(r) {
   if (geo(r).type === 'pitched') {
-    return `${geo(r).planes.length} 个建模坡面分别顺坡平铺；比较所有可装面与每千瓦净年发电≥最好面95%的坡面（示意）。`;
+    return `${geo(r).planes.length} 个建模坡面分别顺坡平铺；比较所有可装面与每千瓦净年发电≥最好面95%的坡面。`;
   }
   if (geo(r).type === 'metal') {
     return `彩钢瓦顺坡平铺，倾角等于坡度 ${geo(r).slope_deg}°；三方案不适用`;
@@ -3086,7 +3174,7 @@ function openExecutiveBrief(result) {
   const co2 = cash.co2_t_per_year;
   const htmlDoc = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>${esc(result.project_id)} · 高管一页纸投资决策简报</title>
   <style>
-    body{font-family:"Microsoft YaHei",sans-serif;margin:24px;color:#0f172a;background:#fff}
+    body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;margin:24px;color:#0f172a;background:#fff}
     .hdr{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #0284c7;padding-bottom:10px;margin-bottom:16px}
     .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
     .kpi{background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:10px;text-align:center}
@@ -3204,7 +3292,7 @@ function engineeringMarkup(result) {
   return `<section class="engineering"><h3 class="sec">工程与经济明细 <small>点开查看计算过程和表格</small></h3>
     ${fold('copilot', '规则指令与设备调整', '每次修改保存新版本并重新计算', copilotMarkup(result))}
     ${fold('sota_bench', '专业仿真与精算包络指标', '满发小时 · LCOE 度电成本 · 电气/风载安全裕度', sotaEngineeringMetricsMarkup(result))}
-    ${typeof pvsystProFoldMarkup === 'function' ? fold('pvsyst_pro', 'PVsyst 8760h 专业能量平衡瀑布图与官方实时气象仿真', '16阶损耗瀑布 · PR性能比 · 双面/IAM · 倾角寻优 · P50/P90', pvsystProFoldMarkup(result, { params: state.pvsystParams })) : ''}
+    ${typeof pvsystProFoldMarkup === 'function' ? fold('pvsyst_pro', '8760h 专业能量平衡瀑布图与官方实时气象仿真', '16阶损耗瀑布 · PR性能比 · 双面/IAM · 倾角寻优 · P50/P90', state.pvsystClientFallback ? pvsystProFoldMarkup(result, { params: state.pvsystParams, forceClientFallback: true }) : pvsystProFoldMarkup(result, { tuningValues: state.pvsystParams, preferAuthoritative: true })) : ''}
     ${fold('factory_grid', '企业厂区源荷匹配与并网接入深化校核', '24h班次负荷匹配 · 专变容量80%校核 · SVG无功与光储协同', factoryGridAndLoadMarkup(result))}
     ${fold('string_schedule', '组串压降清册与厂房结构防腐交底', e?.strings?.length ? `${e.strings.length} 串电气清册 · C4/C5防腐与抗风揭规范` : '厂房结构锚固与工业防腐交底', stringAndStructureScheduleMarkup(result))}
     ${fold('losses', '本版本损耗指标', '遮挡与线路电压降 · 分项口径', lossMetricsMarkup(result))}

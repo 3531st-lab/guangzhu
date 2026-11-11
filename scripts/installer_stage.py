@@ -16,16 +16,37 @@ def removable_test(relative):
     return len(parts) > 2 and parts[0] in TEST_PACKAGES and 'tests' in parts[1:-1] and not protected
 
 
+def _is_reparse(item: Path) -> bool:
+    if item.is_symlink() or getattr(item, "is_junction", lambda: False)():
+        return True
+    try:
+        st = item.lstat()
+    except FileNotFoundError:
+        return False
+    attrs = getattr(st, "st_file_attributes", 0)
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    return bool(attrs & reparse_flag)
+
+
+def _site_packages_dirs(stage: Path) -> list[Path]:
+    candidates = [
+        stage / "runtime/python/Lib/site-packages",
+        stage / "runtime/python/lib/python3.12/site-packages",
+    ]
+    existing = [cand for cand in candidates if cand.exists() or cand.is_symlink()]
+    return existing or [candidates[0]]
+
+
 def contained(stage, target):
     stage = Path(stage).absolute()
-    if stage.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+    if _is_reparse(stage):
         raise ValueError(f"Reparse staging root: {stage}")
     stage = stage.resolve(strict=True)
     target = Path(target).absolute()
     if not target.resolve().is_relative_to(stage) or target.resolve() == stage:
         raise ValueError(f"Path escaped staging: {target}")
     for item in (target, *target.parents):
-        if item.is_symlink() or item.is_junction() or item.exists() and item.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+        if _is_reparse(item):
             raise ValueError(f"Reparse path in staging: {item}")
         if item == stage:
             break
@@ -34,11 +55,12 @@ def contained(stage, target):
 
 def cleanup_stage(stage):
     stage = Path(stage)
-    entries = contained(stage, stage / "runtime/python/Lib/site-packages/bin")
-    if entries.exists():
-        for item in entries.rglob("*"):
-            contained(stage, item)
-        shutil.rmtree(entries)
+    for site_dir in _site_packages_dirs(stage):
+        entries = contained(stage, site_dir / "bin")
+        if entries.exists():
+            for item in entries.rglob("*"):
+                contained(stage, item)
+            shutil.rmtree(entries)
     settings = contained(stage, stage / "desktop/settings.json")
     if settings.exists():
         settings.unlink()
@@ -48,20 +70,23 @@ def cleanup_stage(stage):
 def trim_tests(stage):
     """Remove only upstream test files inside the isolated installer payload."""
     stage = Path(stage)
-    site = contained(stage, stage / 'runtime/python/Lib/site-packages')
     candidates = []
-    for package in sorted(site.iterdir()):
-        if package.name.lower() not in TEST_PACKAGES:
+    for site in _site_packages_dirs(stage):
+        site = contained(stage, site)
+        if not site.exists():
             continue
-        contained(stage, package)
-        for directory, directories, filenames in os.walk(package, followlinks=False):
-            for name in [*directories, *filenames]:
-                contained(stage, Path(directory) / name)
-            for name in filenames:
-                path = Path(directory) / name
-                relative = path.relative_to(site)
-                if removable_test(relative):
-                    candidates.append((path, relative.parts[0], path.stat().st_size))
+        for package in sorted(site.iterdir()):
+            if package.name.lower() not in TEST_PACKAGES:
+                continue
+            contained(stage, package)
+            for directory, directories, filenames in os.walk(package, followlinks=False):
+                for name in [*directories, *filenames]:
+                    contained(stage, Path(directory) / name)
+                for name in filenames:
+                    path = Path(directory) / name
+                    relative = path.relative_to(site)
+                    if removable_test(relative):
+                        candidates.append((path, relative.parts[0], path.stat().st_size))
     # Validate the full candidate tree first; never follow a junction while deleting.
     packages = {}
     for path, package, size in candidates:
@@ -75,16 +100,30 @@ def trim_tests(stage):
 def validate_stage(stage, host_python, developer_root):
     stage = Path(stage).absolute()
     contained(stage, stage / "runtime/python")
-    roots = [Path(host_python).resolve().parent, Path(developer_root).resolve()]
+    host_resolved = Path(host_python).resolve()
+    host_parent = host_resolved.parent
+    posix_system_bins = {"/usr/bin", "/bin", "/usr/local/bin", "/opt/homebrew/bin"}
+    host_needle_root = host_resolved if host_parent.as_posix() in posix_system_bins else host_parent
+    roots = [host_needle_root, Path(developer_root).resolve()]
     needles = []
     for root in roots:
         for value in (str(root), str(root).replace("\\", "/"), str(root).replace("\\", "\\\\")):
             for encoding in ("utf-8", "utf-16-le"):
                 needles.append(value.encode(encoding).lower())
-    suffixes = {".py", ".pth", "._pth", ".json", ".cfg", ".ini", ".toml", ".txt", ".md", ".js", ".cmd", ".ps1"}
+    suffixes = {".py", ".pth", "._pth", ".json", ".cfg", ".ini", ".toml", ".txt", ".md", ".js", ".cmd", ".ps1", ".sh", ".command"}
     checked = 0
     for relative in ("runtime/python", "backend", "desktop", "scripts", "plugins"):
-        for item in sorted((stage / relative).rglob("*")):
+        root_entry = stage / relative
+        if not root_entry.exists() and not root_entry.is_symlink():
+            continue
+        contained(stage, root_entry)
+        for item in sorted(root_entry.rglob("*")):
+            if item.is_symlink() and relative == "runtime/python":
+                # Standalone POSIX Python distributions link python3 -> python3.12 inside runtime/python/bin and lib/
+                target_resolved = item.resolve()
+                if not target_resolved.is_relative_to((stage / "runtime/python").resolve()):
+                    raise ValueError(f"Runtime symlink escaped python prefix: {item.relative_to(stage)}")
+                continue
             contained(stage, item)
             if not item.is_file() or "licenses" in item.parts or item.name.lower().startswith(("license", "notice", "copying")):
                 continue
@@ -95,7 +134,12 @@ def validate_stage(stage, host_python, developer_root):
             if any(needle in content for needle in needles):
                 raise ValueError(f"Host/developer path in installed entry/text: {item.relative_to(stage)}")
             checked += 1
-    for relative in ("runtime/python/Lib/site-packages/bin", "runtime/python/Scripts", "desktop/settings.json"):
+    for relative in (
+        "runtime/python/Lib/site-packages/bin",
+        "runtime/python/lib/python3.12/site-packages/bin",
+        "runtime/python/Scripts",
+        "desktop/settings.json",
+    ):
         if (stage / relative).exists():
             raise ValueError(f"Excluded installed entry remains: {relative}")
     return checked

@@ -145,9 +145,15 @@ def generation(project,design,shadows,dc_kw,*,offline=False):
         energy['per_kw'] = energy['p50'] / dc_kw if dc_kw else 0.0
         return _monthly_generation(energy), dict(groups=records, omitted=omitted)
     loss=economics.load_assumptions()['design_system_loss_pct']['value']
-    result=yieldsim.simulate_design_yields(project.site.lat,project.site.lon,tilt=design.params.tilt_deg,
-                                         azimuth=design.params.azimuth_deg,loss_percent=loss,offline=offline,
-                                         module_id=project.equipment.module_id)
+    p_lat = getattr(project.site, 'weather_proxy_lat', None)
+    p_lon = getattr(project.site, 'weather_proxy_lon', None)
+    proxy = (p_lat, p_lon) if p_lat is not None and p_lon is not None else None
+    result=yieldsim.simulate_design_yields(
+        project.site.lat,project.site.lon,tilt=design.params.tilt_deg,
+        azimuth=design.params.azimuth_deg,loss_percent=loss,offline=offline,
+        module_id=project.equipment.module_id,
+        weather_proxy=proxy,weather_proxy_note=getattr(project.site, 'weather_proxy_note', None),
+    )
     specific={key:value['specific_yield_kwh_kwp'] for key,value in result['results'].items()}
     multiplier=dc_kw*(1-shadows['summary']['avg_loss_pct']/100)
     energy=dict(p50=specific['b']*multiplier,low=min(specific.values())*multiplier,high=max(specific.values())*multiplier,

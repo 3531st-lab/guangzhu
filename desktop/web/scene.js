@@ -5,6 +5,7 @@ import { createFacade, facadeSettings } from './scene-facade.js';
 import { normalizeView, viewDirection, sceneFramePoints, resizeCamera, fitCamera, changeProjection } from './scene-camera.js';
 import { createModuleTransform } from './scene-module-transform.js';
 import { buildObstacleModel, buildSurroundingModel, buildSynergySceneDetails } from './scene-models.js';
+import { createSolarPanelTintTexture } from './pro-3d-twin-engine.js';
 
 // A preview may deliberately reuse a version number. Its inherited analyses still
 // describe the saved geometry, so version equality alone cannot make them current.
@@ -152,8 +153,11 @@ export function createScene(container, options = {}) {
   }
   function instances(modules) {
     if (!modules.length) return null;
-    const object = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), material('#ffffff', { roughness: .45 }), modules.length);
-    object.userData.panelMaterials = [object.material, new T.MeshBasicMaterial({ color: 0xffffff })];
+    const panelTex = createSolarPanelTintTexture(T);
+    const stdMat = material('#ffffff', { roughness: .26, metalness: .28, ...(panelTex ? { map: panelTex } : {}) });
+    const flatMat = new T.MeshBasicMaterial({ color: 0xffffff, ...(panelTex ? { map: panelTex } : {}) });
+    const object = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), stdMat, modules.length);
+    object.userData.panelMaterials = [stdMat, flatMat];
     modules.forEach((module, i) => object.setMatrixAt(i, new T.Matrix4().fromArray(panelMatrix(module))));
     object.castShadow = true; object.receiveShadow = true; object.frustumCulled = false; group.add(object); return object;
   }
@@ -462,7 +466,8 @@ export function createScene(container, options = {}) {
   };
   const down = event => {
     pointerStart = [event.clientX, event.clientY];
-    if (options.showNavControls && data && !canvas.hidden && event.button === 0 && !event.shiftKey && !event.ctrlKey && !event.metaKey && !measureMode && !moduleTransform?.isDragging()) {
+    const editMode = moduleTransform?.stats()?.mode;
+    if (options.showNavControls && data && !canvas.hidden && event.button === 0 && !event.shiftKey && !event.ctrlKey && !event.metaKey && !measureMode && !moduleTransform?.isDragging() && !['move', 'rotate'].includes(editMode)) {
       const rect = canvas.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
         pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
@@ -473,12 +478,6 @@ export function createScene(container, options = {}) {
         const hit = raycaster.intersectObjects(targets, false)[0];
         if (hit && !hit.object?.userData?.surface) {
           if (T.MOUSE) controls.mouseButtons.LEFT = T.MOUSE.ROTATE;
-          if (hit.point && hit.point.distanceTo(controls.target) > data.span * 0.22) {
-            const delta = hit.point.clone().sub(controls.target).multiplyScalar(0.28);
-            delta.y *= 0.25;
-            controls.target.add(delta);
-            camera.position.add(delta);
-          }
         } else {
           if (T.MOUSE) controls.mouseButtons.LEFT = T.MOUSE.PAN;
         }
@@ -683,6 +682,11 @@ export function createScene(container, options = {}) {
     else if (key === 'a' || event.key === 'ArrowLeft') { event.preventDefault(); panBy(-1, 0); }
     else if (key === 'd' || event.key === 'ArrowRight') { event.preventDefault(); panBy(1, 0); }
   };
+  moduleTransform = createModuleTransform(T, {
+    canvas, scene, controls, getCamera: () => camera, getPanels: () => panels, getModelMeshes: () => [panels, ...modelMeshes],
+    onTransform: value => options.onModuleTransform?.(value), onSelect: (id, meta) => options.onSelectModule?.(id, meta),
+    onStatus: value => { note.hidden = true; recolor(); options.onTransformStatus?.(value); }
+  });
   canvas.addEventListener('pointermove', inspect); canvas.addEventListener('pointerleave', leave); canvas.addEventListener('webglcontextlost', lost);
   canvas.addEventListener('webglcontextrestored', restored);
   canvas.addEventListener('pointerdown', down, { capture: true });
@@ -690,11 +694,6 @@ export function createScene(container, options = {}) {
   canvas.addEventListener('dblclick', dblclick);
   canvas.addEventListener('wheel', onWheel, { passive: true });
   if (options.showNavControls) window.addEventListener('keydown', onKeyDown);
-  moduleTransform = createModuleTransform(T, {
-    canvas, scene, controls, getCamera: () => camera, getPanels: () => panels, getModelMeshes: () => [panels, ...modelMeshes],
-    onTransform: value => options.onModuleTransform?.(value), onSelect: (id, meta) => options.onSelectModule?.(id, meta),
-    onStatus: value => { note.hidden = true; recolor(); options.onTransformStatus?.(value); }
-  });
   // Until the user turns the view, keep the chosen framing when the canvas changes size (e.g. the wiring bar opens).
   controls.addEventListener('start', () => { moved = true; });
   const resize = new ResizeObserver(() => {
@@ -710,7 +709,7 @@ export function createScene(container, options = {}) {
     frame = requestAnimationFrame(draw);
     if (data && !document.hidden && container.clientWidth && container.clientHeight && !canvas.hidden) {
       if (!moduleTransform?.isDragging()) controls.update(); renderer.shadowMap.needsUpdate = needsShadow;
-      renderer.render(scene, camera); needsShadow = false; draws++;
+      renderer.render(scene,camera); needsShadow = false; draws++;
     }
   }
   setTheme(); draw();

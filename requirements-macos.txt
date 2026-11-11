@@ -1,0 +1,24 @@
+# macOS (Apple Silicon arm64 & Intel x86_64) Python 3.12 dependencies for Guangzhu (光筑)
+pvlib
+nrel-pysam
+pandas
+numpy
+scipy
+shapely>=2,<3
+requests
+pydantic>=2,<3
+fastapi
+uvicorn
+pywebview==6.2.1
+pyobjc-core>=10.0; sys_platform == "darwin"
+pyobjc-framework-Cocoa>=10.0; sys_platform == "darwin"
+pyobjc-framework-WebKit>=10.0; sys_platform == "darwin"
+pyobjc-framework-Quartz>=10.0; sys_platform == "darwin"
+pyobjc-framework-Security>=10.0; sys_platform == "darwin"
+mcp
+ezdxf
+pypdfium2
+openpyxl
+matplotlib
+jinja2
+pytest

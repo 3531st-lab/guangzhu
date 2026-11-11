@@ -340,6 +340,35 @@ export function buildSynergySceneDetails(T, { input, data, roof, mesh, material 
       // EV Charging post at bay head
       mesh(new T.BoxGeometry(0.28, 1.35, 0.22), material('#10b981'), [cp[0] + 1.05, 0.68, cp[2] - 2.35]);
     });
+  } else if (roof.type === 'flat' && Array.isArray(data.modules) && data.modules.length > 0) {
+    // Flat concrete roof 3D hot-dip galvanized racking posts + C30 concrete ballast piers
+    const stride = data.modules.length > 360 ? 2 : 1;
+    const postMat = material('#94a3b8', { roughness: 0.38, metalness: 0.68 });
+    const ballastMat = material('#78716c', { roughness: 0.9, metalness: 0.05 });
+    const cornerBallastMat = material('#c94e42', { roughness: 0.85, metalness: 0.08 });
+    for (let i = 0; i < data.modules.length; i += stride) {
+      const m = data.modules[i];
+      if (!Array.isArray(m.points) || m.points.length < 4) continue;
+      const [p0, p1, p2, p3] = m.points;
+      const eFront = [(p0[0] + p1[0]) * 0.5, (p0[1] + p1[1]) * 0.5, (p0[2] + p1[2]) * 0.5];
+      const eRear = [(p2[0] + p3[0]) * 0.5, (p2[1] + p3[1]) * 0.5, (p2[2] + p3[2]) * 0.5];
+      const frontSupport = [eFront[0] * 0.8 + eRear[0] * 0.2, eFront[1] * 0.8 + eRear[1] * 0.2, eFront[2] * 0.8 + eRear[2] * 0.2];
+      const rearSupport = [eFront[0] * 0.2 + eRear[0] * 0.8, eFront[1] * 0.2 + eRear[1] * 0.8, eFront[2] * 0.2 + eRear[2] * 0.8];
+      const deckY = roof.height_m;
+      const isCorner = m.wind?.zone === 'corner';
+      for (const pt of [frontSupport, rearSupport]) {
+        const clearance = pt[1] - deckY;
+        if (clearance < 0.08) continue;
+        const legH = Math.max(0.04, clearance - 0.025);
+        const ballastH = Math.min(0.14, Math.max(0.03, clearance * 0.5));
+        mesh(new T.BoxGeometry(0.045, legH, 0.045), postMat, [pt[0], deckY + legH * 0.5, pt[2]]);
+        mesh(
+          new T.BoxGeometry(isCorner ? 0.40 : 0.32, ballastH, 0.22),
+          isCorner ? cornerBallastMat : ballastMat,
+          [pt[0], deckY + ballastH * 0.5, pt[2]]
+        );
+      }
+    }
   }
 }
 

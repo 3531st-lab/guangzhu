@@ -24,8 +24,11 @@ from .brief import BriefSpec, render_brief
 from .config import AGH_ORIGIN, API_ORIGIN, API_PORT, ROOT
 from .economics import resolve_parameters
 from .models import GzError, SiteFacts
+from .platform_compat import bundled_agh_exe, ensure_os_startfile, reveal_in_file_manager
 from .templates import catalog_data, read_template
 from .setup import Coordinator, installation
+
+ensure_os_startfile()
 
 sys.path.insert(0, str(ROOT / "scripts"))
 import agh_export_run as evidence
@@ -52,7 +55,7 @@ def settings():
         if not coordinator.data['ready'] or not coordinator.data['target']:
             raise ValueError('光筑还在准备设计工具，请稍候')
         coordinator.client.identity()
-        return dict(agh_runtime=str(ROOT / 'runtime/agh/agnes-win32-x64.exe'),
+        return dict(agh_runtime=str(bundled_agh_exe(ROOT)),
                     agh_home=coordinator.data['target']['home'], agh_profile='local-dev')
     path = ROOT / "desktop/settings.json"
     values = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
@@ -725,7 +728,14 @@ def roof_reply(action):
     try:
         return public(action())
     except GzError as error:
-        return JSONResponse({"errors": [f"{error.message_zh}。{error.fix_hint}"]}, status_code=422)
+        status = 409 if error.error_code in (
+            "ANALYSIS_STALE",
+            "DESIGN_LOCK_GEOMETRY_CHANGED",
+            "DESIGN_VERSION_EXISTS",
+            "DESIGN_LOCK_STALE",
+            "PROJECT_EXISTS",
+        ) else 422
+        return JSONResponse({"errors": [f"{error.message_zh}。{error.fix_hint}"], "error_code": error.error_code}, status_code=status)
 
 
 @app.post("/api/drawings")
@@ -1161,33 +1171,81 @@ def generate_report(run_id: str):
         return public(make_report(run_folder(run_id), regenerated=True))
 
 
+def _require_current_report_fingerprint(base: Path, ver: int) -> str:
+    from .design_evidence import capture as capture_evidence
+    from .local_exports import _snapshot
+    ev = capture_evidence(base, ver)
+    state = ev.get("analysis") or {}
+    if (
+        state.get("status") != "recorded"
+        or state.get("input_binding") != "matched"
+        or state.get("completion_status") != "matched"
+    ):
+        raise HTTPException(409, "候选方案输入已变化或尚未完成计算，请先重新计算此版本后再查看或下载方案书 PDF。")
+    try:
+        return _snapshot(base, ver)[0]
+    except Exception:
+        raise HTTPException(409, "候选方案输入已变化或尚未完成计算，请先重新计算此版本后再查看或下载方案书 PDF。")
+
+
+def _pdf_matches_fingerprint(pdf_path: Path, expected_fp: str) -> bool:
+    if not pdf_path.is_file() or pdf_path.stat().st_size < 512:
+        return False
+    fp_path = pdf_path.with_name(pdf_path.name + ".fp")
+    if not fp_path.is_file():
+        return False
+    try:
+        return fp_path.read_text(encoding="utf-8").strip() == expected_fp
+    except OSError:
+        return False
+
+
+def _write_pdf_fingerprint(pdf_path: Path, expected_fp: str) -> None:
+    if pdf_path.is_file():
+        fp_path = pdf_path.with_name(pdf_path.name + ".fp")
+        fp_path.write_text(expected_fp + "\n", encoding="utf-8")
+
+
 def _open_project_report_file(pid: str, ver: int):
     base, archived_folder = _resolve_project_or_run_base(pid)
     if archived_folder is not None and (archived_folder / f"report/report-v{ver}.pdf").is_file():
         os.startfile(archived_folder / f"report/report-v{ver}.pdf")
         return
+    current_fp = _require_current_report_fingerprint(base, ver) if archived_folder is None else None
     pdf_candidate = safe(base, f"reports/v{ver}/report-v{ver}.pdf")
     html_candidate = safe(base, f"reports/v{ver}/report-v{ver}.html")
     cache_dir = safe(ROOT, f"data/cache/pdf/{pid}/v{ver}")
     cache_pdf = cache_dir / f"report-v{ver}.pdf"
     cache_html = cache_dir / f"report-v{ver}.html"
-    if pdf_candidate.is_file():
-        os.startfile(pdf_candidate)
-        return
-    if cache_pdf.is_file():
-        os.startfile(cache_pdf)
-        return
+    if current_fp is None:
+        if pdf_candidate.is_file():
+            os.startfile(pdf_candidate)
+            return
+        if cache_pdf.is_file():
+            os.startfile(cache_pdf)
+            return
+    else:
+        if _pdf_matches_fingerprint(pdf_candidate, current_fp):
+            os.startfile(pdf_candidate)
+            return
+        if _pdf_matches_fingerprint(cache_pdf, current_fp):
+            os.startfile(cache_pdf)
+            return
     from .report.local import render_report
     from .report import render_pdf
     html_text = render_report(base, result_data(pid, ver, folder=archived_folder))
     target_html = html_candidate if archived_folder is None else cache_html
     target_html.parent.mkdir(parents=True, exist_ok=True)
     target_html.write_text(html_text, encoding="utf-8", newline="\n")
+    target_pdf = target_html.with_suffix(".pdf")
+    if target_pdf.is_file():
+        target_pdf.unlink(missing_ok=True)
     try:
         render_pdf(target_html, dict(files=[dict(name=target_html.name, sha256="")]))
     except Exception:
         pass
-    target_pdf = target_html.with_suffix(".pdf")
+    if current_fp and target_pdf.is_file():
+        _write_pdf_fingerprint(target_pdf, current_fp)
     os.startfile(target_pdf if target_pdf.is_file() else target_html)
 
 
@@ -1257,20 +1315,32 @@ def open_target(payload: dict = Body(...)):
             raise ValueError("文件名不合法")
         target = None
         if payload.get("run_id"):
-            try:
-                capture = record(run_folder(payload["run_id"]))[0]
-                cand = safe(capture, f"project/exports/v{ver}/{fname}")
-                if cand.is_file():
-                    target = cand
-            except Exception:
-                pass
-        base, archived_folder = _resolve_project_or_run_base(pid)
-        if target is None:
-            cand = safe(base, f"exports/v{ver}/{fname}")
-            if cand.is_file():
-                target = cand
-        if target is None or not target.is_file():
+            capture_dir, run_meta, _ = record(run_folder(payload["run_id"]))
+            rel_key = f"project/exports/v{ver}/{fname}"
+            cand = safe(capture_dir, rel_key)
+            expected_sha = (run_meta.get("artifacts") or {}).get(rel_key)
+            if not cand.is_file() or not expected_sha or hashlib.sha256(cand.read_bytes()).hexdigest() != expected_sha:
+                raise HTTPException(409, "归档导出文件不存在或未通过摘要校验")
+            target = cand
+        else:
+            base, archived_folder = _resolve_project_or_run_base(pid)
             target = _ensure_export_deliverable_file(pid, ver, fname, base, archived_folder)
+            if target is None:
+                if archived_folder is None:
+                    from .local_exports import export_evidence
+                    ev = export_evidence(base, ver)
+                    if ev["status"] == "missing":
+                        raise HTTPException(409, "此版本尚未生成该文件，请先预览并明确批准导出。")
+                    if ev["status"] == "invalid":
+                        raise HTTPException(409, ev["reason"] or "导出文件核验失败，请保留原文件并重新核对。")
+                    cand = safe(base, f"exports/v{ver}/{fname}")
+                    if not cand.is_file() or fname not in ev["files"]:
+                        raise HTTPException(409, "此版本尚未生成该文件，请先预览并明确批准导出。")
+                    target = cand
+                else:
+                    cand = safe(base, f"exports/v{ver}/{fname}")
+                    if cand.is_file():
+                        target = cand
         if target is None or not target.is_file():
             raise HTTPException(409, "此版本尚未生成该导出文件，请先点击「预览并确认导出」完成批准")
         saved_target = target
@@ -1287,9 +1357,9 @@ def open_target(payload: dict = Body(...)):
             if target.suffix.lower() in (".pdf", ".xlsx", ".html", ".json"):
                 os.startfile(saved_target)
             else:
-                subprocess.Popen(["explorer.exe", f"/select,{saved_target}"])
+                reveal_in_file_manager(saved_target)
         except OSError:
-            subprocess.Popen(["explorer.exe", f"/select,{saved_target}"])
+            reveal_in_file_manager(saved_target)
     elif kind == "project_report":
         pid = identifier(payload.get("project_id"))
         try:
@@ -1444,28 +1514,41 @@ def download_project_export(project_id: str, kind: str, version: int = Query(1, 
         if archived_folder is not None and (archived_folder / f"report/report-v{version}.pdf").is_file():
             return FileResponse(archived_folder / f"report/report-v{version}.pdf",
                                 media_type="application/pdf", filename=f"{pid}-report-v{version}.pdf")
+        current_fp = _require_current_report_fingerprint(base, version) if archived_folder is None else None
         report_pdf = safe(base, f"reports/v{version}/report-v{version}.pdf")
-        if not report_pdf.is_file():
-            for run_dir in project_runs(pid):
-                cand = safe(run_dir, f"report/report-v{version}.pdf")
-                if cand.is_file():
-                    report_pdf = cand
-                    break
+        cache_pdf = safe(ROOT, f"data/cache/pdf/{pid}/v{version}/report-v{version}.pdf")
+        if current_fp is not None:
+            if _pdf_matches_fingerprint(report_pdf, current_fp):
+                return FileResponse(report_pdf, media_type="application/pdf", filename=f"{pid}-report-v{version}.pdf")
+            if _pdf_matches_fingerprint(cache_pdf, current_fp):
+                return FileResponse(cache_pdf, media_type="application/pdf", filename=f"{pid}-report-v{version}.pdf")
+            report_pdf = Path()
+        else:
+            if not report_pdf.is_file():
+                for run_dir in project_runs(pid):
+                    cand = safe(run_dir, f"report/report-v{version}.pdf")
+                    if cand.is_file():
+                        report_pdf = cand
+                        break
         if not report_pdf.is_file():
             from .report.local import render_report
             from .report import render_pdf
             html_file = safe(ROOT, f"data/cache/pdf/{pid}/v{version}/report-v{version}.html")
             html_file.parent.mkdir(parents=True, exist_ok=True)
             html_file.write_text(render_report(base, result_data(pid, version, folder=archived_folder)), encoding="utf-8", newline="\n")
+            report_pdf = html_file.with_suffix(".pdf")
+            if report_pdf.is_file():
+                report_pdf.unlink(missing_ok=True)
             try:
                 render_pdf(html_file, dict(files=[dict(name=html_file.name, sha256="")]))
             except Exception as exc:
                 import logging
                 logging.getLogger(__name__).warning("PDF render failed for %s v%s: %s", pid, version, exc)
-            report_pdf = html_file.with_suffix(".pdf")
             if not report_pdf.is_file() or report_pdf.stat().st_size < 1024:
                 from .report.pdf_generator import write_pdf_deliverables
                 write_pdf_deliverables(pid, version, html_file.parent, base_dir=base)
+            if current_fp and report_pdf.is_file():
+                _write_pdf_fingerprint(report_pdf, current_fp)
         if not report_pdf.is_file():
             raise HTTPException(409, "方案书 PDF 尚未生成")
         return FileResponse(report_pdf, media_type="application/pdf", filename=f"{pid}-report-v{version}.pdf")

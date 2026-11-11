@@ -327,13 +327,36 @@ def load_pvgis_result(lat: float, lon: float, *, tilt=25, azimuth=180, loss=LOSS
 
 
 def simulate_design_yields(lat: float, lon: float, *, tilt: float, azimuth: float,
-                           loss_percent: float, offline=False, module_id=None) -> dict:
+                           loss_percent: float, offline=False, module_id=None,
+                           weather_proxy: tuple[float, float] | None = None,
+                           weather_proxy_note: str | None = None) -> dict:
     """Five 1 kWp estimates with controlled model/weather comparisons and one loss."""
     from .catalog import load_cec_equipment
+    from .weather import WeatherDataError
     _validate_geometry(lat, lon, tilt, azimuth)
     _validate_loss(loss_percent)
-    nasa, nasa_meta = load_nasa_hourly(lat, lon, 2023, offline=offline)
-    tmy, tmy_meta = load_pvgis_tmy(lat, lon, offline=offline)
+    try:
+        nasa, nasa_meta = load_nasa_hourly(lat, lon, 2023, offline=offline)
+    except WeatherDataError:
+        if weather_proxy is None:
+            raise
+        nasa, nasa_meta = load_nasa_hourly(weather_proxy[0], weather_proxy[1], 2023, offline=offline)
+        nasa_meta = dict(nasa_meta, weather_proxy={
+            "requested_site": [lat, lon],
+            "proxy_site": list(weather_proxy),
+            "note": weather_proxy_note or "借用最近核验气象站逐时气象序列，太阳位置仍按实际经纬度计算",
+        })
+    try:
+        tmy, tmy_meta = load_pvgis_tmy(lat, lon, offline=offline)
+    except WeatherDataError:
+        if weather_proxy is None:
+            raise
+        tmy, tmy_meta = load_pvgis_tmy(weather_proxy[0], weather_proxy[1], offline=offline)
+        tmy_meta = dict(tmy_meta, weather_proxy={
+            "requested_site": [lat, lon],
+            "proxy_site": list(weather_proxy),
+            "note": weather_proxy_note or "借用最近核验气象站 TMY 序列，太阳位置仍按实际经纬度计算",
+        })
     equipment = load_cec_equipment(offline=offline, module_id=module_id)
     params = {"tilt": tilt, "azimuth": azimuth, "loss_percent": loss_percent}
     results = {"a": simulate_pvlib_simple(nasa, lat, lon, **params),

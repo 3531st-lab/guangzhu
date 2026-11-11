@@ -15,7 +15,17 @@ from matplotlib.patches import Circle, FancyBboxPatch, Polygon as MplPolygon, Re
 
 from .. import electrical, project as storage
 
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
+plt.rcParams["font.sans-serif"] = [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Heiti SC",
+    "STHeiti",
+    "Arial Unicode MS",
+    "Microsoft YaHei",
+    "SimHei",
+    "Noto Sans CJK SC",
+    "DejaVu Sans",
+]
 plt.rcParams["axes.unicode_minus"] = False
 
 

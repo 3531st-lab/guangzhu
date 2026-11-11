@@ -645,8 +645,11 @@ def run_copilot_command(project_id: str, version: int, command_text: str = "", a
 
 def run_local_review(project_id: str, version: int) -> dict:
     """Run a deterministic local engineering audit for v{version} when remote LLM review is unavailable or as a dual-engine fallback."""
+    from .design_evidence import capture
+
     project = storage.load(project_id)
     design = storage.load_design(project_id, version)
+    base = storage._path(project_id)
     offline = True
     try:
         mcp_actions._fetch_weather(project_id, "nasa_hourly", offline=True)
@@ -657,13 +660,31 @@ def run_local_review(project_id: str, version: int) -> dict:
         p = storage._path(project_id, rel)
         return json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
 
-    summary_path = storage._path(project_id, f"analysis/v{version}/summary.json")
-    if not summary_path.is_file():
-        summary = mcp_actions._analyze(project_id, version, offline=offline)
-    else:
-        summary = _read_json(f"analysis/v{version}/summary.json")
+    evidence = capture(base, version)
+    analysis_state = evidence.get("analysis") or {}
+    if analysis_state.get("status") == "missing":
+        mcp_actions._analyze(project_id, version, offline=offline)
+        evidence = capture(base, version)
+        analysis_state = evidence.get("analysis") or {}
+    if (
+        analysis_state.get("status") != "recorded"
+        or analysis_state.get("input_binding") != "matched"
+        or analysis_state.get("completion_status") != "matched"
+    ):
+        raise GzError(
+            "ANALYSIS_STALE",
+            "当前设计或工程输入已变化，不能直接复核或批准过期规则结果",
+            "请先重新计算此版本后再执行本机规则复核",
+        )
 
+    summary = _read_json(f"analysis/v{version}/summary.json")
     checked = _read_json(f"analysis/v{version}/rules.json")
+    if "hard_failed" not in checked or not isinstance(checked.get("items"), list):
+        raise GzError(
+            "ANALYSIS_STALE",
+            "缺少完整的规则计算结果文件，无法执行本机复核",
+            "请先重新计算此版本后再执行本机规则复核",
+        )
     elec = _read_json(f"analysis/v{version}/electrical.json")
     struct = _read_json(f"analysis/v{version}/structure.json")
     cross_path = storage._path(project_id, f"analysis/v{version}/crosscheck.json")
@@ -675,7 +696,7 @@ def run_local_review(project_id: str, version: int) -> dict:
     else:
         cross = _read_json(f"analysis/v{version}/crosscheck.json")
 
-    hard_failed = int(checked.get("hard_failed", 0))
+    hard_failed = int(checked["hard_failed"])
     failed_items = [r for r in checked.get("items", []) if r.get("status") == "fail"]
     findings = []
 

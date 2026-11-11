@@ -15,6 +15,7 @@ import sys
 import threading
 import uuid
 from .config import AGH_PORT
+from .platform_compat import bundled_agh_exe, bundled_python_exe, bundled_site_packages, default_data_home, is_macos
 from .setup_agh import Management, TOOLS, regular
 
 
@@ -27,9 +28,8 @@ def installation(root):
 
 
 def data_home():
-    """光筑自己的数据目录。GUANGZHU_DATA_HOME 只给测试用，让试装不碰正式数据。"""
-    override = os.environ.get('GUANGZHU_DATA_HOME')
-    return Path(override) if override else Path(os.environ.get('LOCALAPPDATA', str(Path.home()))) / 'guangzhu'
+    """光筑自己的数据目录（Windows: %LOCALAPPDATA%\\guangzhu；macOS: ~/Library/Application Support/Guangzhu）。"""
+    return default_data_home()
 
 
 def seed_examples(root):
@@ -60,7 +60,10 @@ def occupied():
 
 
 def runtime(root):
-    result = subprocess.run([str(root / 'runtime/agh/agnes-win32-x64.exe'), '--version'], cwd=root,
+    agh_bin = bundled_agh_exe(root)
+    if not agh_bin.is_file():
+        return False
+    result = subprocess.run([str(agh_bin), '--version'], cwd=root,
         capture_output=True, text=True, encoding='utf-8', timeout=60, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
     return result.returncode == 0 and result.stdout.startswith('agh ') and 'protocol _agnes/v1' in result.stdout
 
@@ -69,7 +72,7 @@ def offline(root):
     code = '''import json
 from guangzhu.selfcheck import offline_analysis
 print(json.dumps(offline_analysis(), ensure_ascii=True))'''
-    result = subprocess.run([str(root / 'runtime/python/python.exe'), '-X', 'utf8', '-B', '-c', code], cwd=root,
+    result = subprocess.run([str(bundled_python_exe(root)), '-X', 'utf8', '-B', '-c', code], cwd=root,
         capture_output=True, text=True, encoding='utf-8', timeout=180, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
     if result.returncode:
         raise ValueError('内置 Python 或发电计算组件无法运行，请重新安装光筑')
@@ -89,7 +92,8 @@ class Coordinator:
         self.data = dict(operation_id=None, busy=False, ready=False, phase='unconfigured', target=None, workspace_id=None,
                          installation=self.installation, steps=[dict(number=i, state='waiting', reason='尚未检查', action='')
                                                               for i in range(1, 8)])
-        reasons = ['等待检查 Windows 和 WebView2', '尚未检查自带 AGH', '尚未启动自带 AGH', '尚未检查12个设计工具',
+        step1_reason = '等待检查 macOS 和 WKWebView' if is_macos() else '等待检查 Windows 和 WebView2'
+        reasons = [step1_reason, '尚未检查自带 AGH', '尚未启动自带 AGH', '尚未检查12个设计工具',
                    '尚未检查插件、工作区和 Skill', '还没有可用的模型 key', '尚未运行离线计算自检']
         for row, reason in zip(self.data['steps'], reasons):
             row['reason'] = reason
@@ -160,7 +164,7 @@ class Coordinator:
                 raise ValueError('启动器没有提供启动 AGH 的方法，请重新打开光筑')
             if selected.exists():
                 regular(selected)
-            self.start(executable=str(self.root / 'runtime/agh/agnes-win32-x64.exe'), home=str(selected),
+            self.start(executable=str(bundled_agh_exe(self.root)), home=str(selected),
                        profile='local-dev', cwd=str(self.root))
         self.client = Management(selected, self.log, **({'send': self.send} if self.send else {}))
         try:
@@ -178,7 +182,7 @@ class Coordinator:
         if self.package['name'] != 'guangzhu-studio':
             raise ValueError('安装文件里的插件不正确，请重新安装光筑')
         self.definition = dict(serverId='guangzhu', displayName='光筑', secretBinding=dict(kind='none'), toolPolicy=dict(allow=TOOLS),
-            transport=dict(kind='stdio', executable=str(self.root / 'runtime/python/python.exe'), args=['-m', 'guangzhu.mcp_server']))
+            transport=dict(kind='stdio', executable=str(bundled_python_exe(self.root)), args=['-m', 'guangzhu.mcp_server']))
 
     def fail(self, error):
         known = isinstance(error, (ValueError, RuntimeError)) and not isinstance(error, json.JSONDecodeError)
@@ -207,7 +211,19 @@ class Coordinator:
     def configure(self):
         try:
             if self.data['steps'][0]['state'] != 'ready':
-                raise ValueError('Windows 或 WebView2 还没有通过检查')
+                raise ValueError('macOS 或 WKWebView 还没有通过检查' if is_macos() else 'Windows 或 WebView2 还没有通过检查')
+            if is_macos() and not bundled_agh_exe(self.root).is_file():
+                self.checking = 7
+                result = self.analyze(self.root)
+                self.step(7, result.get('passed') is True, '离线发电计算自检通过' if result.get('passed') else '离线计算自检没有通过')
+                if result.get('passed') is not True:
+                    raise ValueError('离线计算自检没有通过：' + '; '.join(result.get('failures', [])))
+                local_note = '当前 Mac 版运行免 Key 本机规则引擎与全套三维/物理计算模式'
+                for number in (2, 3, 4, 5, 6):
+                    self.step(number, True, local_note)
+                with self.lock:
+                    self.data.update(busy=False, ready=True, required=False, phase='ready')
+                return
             self.checking = 2
             if not self.check_runtime():
                 raise ValueError('自带 AGH 无法运行，请重新安装光筑')
@@ -316,8 +332,8 @@ class Coordinator:
 def compile_python(root):
     """Compile bytecode once (about 20 s): a cold first start of the tools would miss AGH's 10-second handshake."""
     import compileall
-    return all([compileall.compile_dir(str(Path(root) / folder), quiet=1, workers=0)
-                for folder in ('runtime/python/Lib/site-packages', 'backend')])
+    folders = [bundled_site_packages(root), Path(root) / 'backend']
+    return all(compileall.compile_dir(str(folder), quiet=1, workers=0) for folder in folders if folder.is_dir())
 
 
 def install(root):
@@ -336,7 +352,7 @@ def install(root):
             coordinator.log(dict(result='install-stop-failed', reason=type(error).__name__))
     state = coordinator.public()
     coordinator.log(dict(result='install', phase=state['phase'], reason=state.get('error', '')))
-    if state['phase'] != 'waiting_workspace':
+    if state['phase'] not in ('waiting_workspace', 'ready'):
         print(state.get('error', '配置失败'), file=sys.stderr)
         return 1
     return 0

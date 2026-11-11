@@ -54,8 +54,22 @@ class SiteShading:
     """A comparison shares immutable weather and sun positions for one site."""
 
     def __init__(self, project, *, offline=False):
+        from .weather import WeatherDataError
         with stage("shading.weather"):
-            self.weather, self.metadata = load_nasa_hourly(project.site.lat, project.site.lon, 2023, offline=offline)
+            try:
+                self.weather, self.metadata = load_nasa_hourly(project.site.lat, project.site.lon, 2023, offline=offline)
+            except WeatherDataError:
+                p_lat = getattr(project.site, "weather_proxy_lat", None)
+                p_lon = getattr(project.site, "weather_proxy_lon", None)
+                if p_lat is not None and p_lon is not None:
+                    self.weather, self.metadata = load_nasa_hourly(p_lat, p_lon, 2023, offline=offline)
+                    self.metadata = dict(self.metadata, weather_proxy={
+                        "requested_site": [project.site.lat, project.site.lon],
+                        "proxy_site": [p_lat, p_lon],
+                        "note": getattr(project.site, "weather_proxy_note", None) or "借用最近核验气象站逐时辐射",
+                    })
+                else:
+                    raise
         with stage("shading.annual-sun"):
             self.sun = sun_position(self.weather.index + pd.Timedelta(minutes=30), project.site.lat, project.site.lon)
         times = pd.DatetimeIndex([pd.Timestamp(year=2023, month=m, day=15, hour=h, tz="UTC") + pd.Timedelta(minutes=30)

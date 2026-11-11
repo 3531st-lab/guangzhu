@@ -1,4 +1,10 @@
 import { esc } from './data.js';
+import { translateHtmlToEn } from './i18n.js';
+import {
+  enrichModuleSpec,
+  enrichInverterSpec,
+  computeStringSizingAndCables,
+} from './pro-engineering-core.js';
 
 const finite = (v, fallback = 0) => {
   const n = Number(v);
@@ -144,13 +150,13 @@ export function renderLiveWeatherPanel(liveWeather, options = {}) {
   return `<section class="pvsyst-section-card pvsyst-live-weather" data-pvsyst-section="live-weather">
     <div class="pvsyst-sec-head">
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
-        <h4 class="pvsyst-sec-title">🛰️ 官方实时气象与太阳辐照遥测站</h4>
+        <h4 class="pvsyst-sec-title">官方实时气象与太阳辐照遥测站</h4>
         <span class="pvsyst-badge ${badgeClass}" data-pvsyst-weather-source="${esc(prov.mode)}">${esc(badgeText)}</span>
       </div>
       <div class="pvsyst-sec-meta">
-        <span>📍 坐标：<b>${fmtNum(loc.lat, 4)}°N, ${fmtNum(loc.lon, 4)}°E</b></span>
-        <span>🕒 观测时刻：<b>${esc(String(cur.time || '').replace('T', ' '))}</b></span>
-        <button type="button" class="pvsyst-btn" data-pvsyst-action="refresh-weather" data-lat="${loc.lat}" data-lon="${loc.lon}">🔄 刷新实时天气</button>
+        <span>坐标：<b>${fmtNum(loc.lat, 4)}°N, ${fmtNum(loc.lon, 4)}°E</b></span>
+        <span>观测时刻：<b>${esc(String(cur.time || '').replace('T', ' '))}</b></span>
+        <button type="button" class="pvsyst-btn" data-pvsyst-action="refresh-weather" data-lat="${loc.lat}" data-lon="${loc.lon}">刷新实时天气</button>
       </div>
     </div>
 
@@ -226,8 +232,8 @@ export function renderLiveWeatherPanel(liveWeather, options = {}) {
           return `<text x="${xAt(idx)}" y="${h - 7}" text-anchor="middle" font-size="9.5" fill="currentColor" opacity="0.72">${esc(label)}</text>`;
         }).join('')}
         <text x="${padL + 6}" y="${padT - 6}" font-size="10" font-weight="600" fill="#f59e0b">━ 阵列面 POA (W/m²)</text>
-        <text x="${padL + 135}" y="${padT - 6}" font-size="10" font-weight="600" fill="#38bdf8">┅ 水平面 GHI (W/m²)</text>
-        <text x="${padL + 265}" y="${padT - 6}" font-size="10" font-weight="600" fill="#10b981">━ 实时并网出力预测 (kW)</text>
+        <text x="${padL + 190}" y="${padT - 6}" font-size="10" font-weight="600" fill="#38bdf8">┅ 水平面 GHI (W/m²)</text>
+        <text x="${padL + 374}" y="${padT - 6}" font-size="10" font-weight="600" fill="#10b981">━ 实时并网出力预测 (kW)</text>
       </svg>
     </div>
 
@@ -376,7 +382,7 @@ export function renderPvsystWaterfallSvg(waterfall, summary = {}) {
   return `<section class="pvsyst-section-card pvsyst-waterfall-panel" data-pvsyst-section="waterfall">
     <div class="pvsyst-sec-head">
       <div>
-        <h4 class="pvsyst-sec-title">📊 PVsyst 7.x 标准全链路能量损耗瀑布图 (Loss Diagram over the Whole Year)</h4>
+        <h4 class="pvsyst-sec-title">📊 8760h 标准全链路能量损耗瀑布图 (Loss Diagram over the Whole Year)</h4>
       </div>
       <div class="pvsyst-sec-meta">
         <span class="pvsyst-badge live" data-pvsyst-pr>系统综合效率 PR = ${fmtNum(prPct, 1)}%</span>
@@ -385,7 +391,7 @@ export function renderPvsystWaterfallSvg(waterfall, summary = {}) {
       </div>
     </div>
     <div class="pvsyst-svg-wrap">
-      <svg viewBox="0 0 ${svgW} ${svgH}" class="pvsyst-svg" role="img" aria-label="PVsyst 能量损耗瀑布图">
+      <svg viewBox="0 0 ${svgW} ${svgH}" class="pvsyst-svg" role="img" aria-label="8760h 能量损耗瀑布图">
         ${irrSvg}
         ${engSvg}
       </svg>
@@ -428,7 +434,7 @@ export function renderPvsystMonthlyTableAndChart(monthlyBalances, summary = {}) 
 
   return `<section class="pvsyst-section-card pvsyst-monthly-panel" data-pvsyst-section="monthly">
     <div class="pvsyst-sec-head">
-      <h4 class="pvsyst-sec-title">📅 PVsyst 月度能量平衡总表与双轴曲线 (Balances and Main Results)</h4>
+      <h4 class="pvsyst-sec-title">📅 月度能量平衡总表与双轴曲线 (Balances and Main Results)</h4>
       <div class="pvsyst-sec-meta">
         <span>全年斜面辐射 GlobInc：<b>${fmtNum(totGlobInc, 1)} kWh/m²</b></span>
         <span>全年并网电量 E_Grid：<b>${fmtNum(totEGrid, 0)} kWh (${fmtNum(totEGrid / 1000, 2)} MWh)</b></span>
@@ -481,7 +487,7 @@ export function renderPvsystMonthlyTableAndChart(monthlyBalances, summary = {}) 
     </div>
 
     <div class="pvsyst-table-wrap">
-      <table class="pvsyst-bal-table" aria-label="PVsyst 月度能量平衡总表">
+      <table class="pvsyst-bal-table" aria-label="月度能量平衡总表">
         <thead>
           <tr>
             <th>月份</th>
@@ -800,7 +806,7 @@ export function renderPvsystProbabilitiesAndTuning(probabilities, params = {}) {
       <!-- Right: Detailed Losses Interactive Tuning -->
       <div class="pvsyst-subpanel" data-pvsyst-tuning-form>
         <div class="pvsyst-subpanel-head">
-          <h4 class="pvsyst-subpanel-title">🎛️ PVsyst 详细损耗参数实时微调面板 (Detailed Losses Tuning)</h4>
+          <h4 class="pvsyst-subpanel-title">🎛️ 详细损耗参数实时微调面板 (Detailed Losses Tuning)</h4>
           <span class="pvsyst-badge info">支持 8760h 实时重算</span>
         </div>
 
@@ -824,7 +830,7 @@ export function renderPvsystProbabilitiesAndTuning(probabilities, params = {}) {
         <div class="pvsyst-tuning-footer">
           <span style="font-size:11px;color:var(--muted,#998e83)">调节滑块或输入数值后点击右侧按钮更新全套瀑布图与月度平衡表</span>
           <button type="button" class="pvsyst-btn primary" data-pvsyst-action="recalculate">
-            🔄 按微调损耗参数重新运行 PVsyst 8760h 仿真
+            🔄 按微调损耗参数重新运行 8760h 仿真
           </button>
         </div>
       </div>
@@ -833,7 +839,211 @@ export function renderPvsystProbabilitiesAndTuning(probabilities, params = {}) {
 }
 
 /**
- * 6. Master Workbench Renderer combining all 5 sections + Export Standard PVsyst Report
+ * 5B. System Definition (.PAN / .OND String Sizing Envelope) & 3D Near Shadings / Electrical Mismatch
+ */
+export function renderPvsystSystemAndNearShading(resolved = {}, options = {}) {
+  const s = resolved.summary || {};
+  const dcKw = finite(s.dc_kw, 280);
+  const acKw = finite(s.ac_kw, 220);
+  const tilt = finite(options.tilt_deg ?? s.tilt_deg, 15);
+  const az = finite(options.azimuth_deg ?? s.azimuth_deg, 180);
+  const latSigned = finite(options.lat ?? resolved?.live_weather?.location?.lat, 35);
+  const lonSigned = finite(options.lon ?? resolved?.live_weather?.location?.lon, 118);
+  const lat = Math.abs(latSigned);
+
+  // Dynamic .PAN + .OND String Sizing Envelope Check (IEC 62548 / GB 50797)
+  const modSpec = enrichModuleSpec(options.module || {
+    model: 'JKM580N-72HL4-BDV 580W',
+    brand: '晶科能源',
+    stc_w: 580,
+    length_m: 2.278,
+    width_m: 1.134,
+    vmp_v: 42.3,
+    imp_a: 13.71,
+    voc_v: 51.0,
+    isc_a: 14.47,
+    bifaciality: 0.80,
+  });
+  const invSpec = enrichInverterSpec(options.inverter || {
+    model: 'SG110CX-P2',
+    brand: '阳光电源',
+    rated_ac_kw: 110,
+    mppt_count: 9,
+    strings_per_mppt: 2,
+    max_mppt_current_a: 30,
+    max_short_current_a: 40,
+    mppt_v_min: 200,
+    mppt_v_max: 1000,
+    max_dc_v: 1100,
+  });
+  const sizing = computeStringSizingAndCables({
+    module: modSpec,
+    inverter: invSpec,
+    modulesPerString: options.modulesPerString || 18,
+    lat: latSigned,
+    lon: lonSigned,
+  });
+  const nSeries = sizing.modulesPerString;
+  const vocCold = sizing.vocColdV;
+  const vmp25 = sizing.vmpStcV;
+  const vmpHot = sizing.vmpHotV;
+  const maxDcLimit = invSpec.max_dc_v;
+  const mpptMinLimit = invSpec.mppt_v_min;
+  const mpptMaxLimit = invSpec.mppt_v_max;
+  const axisMaxV = Math.max(1200, maxDcLimit + 100);
+
+  // Winter-solstice 9:00 solar geometry & 3D near shading pitch
+  const phi = (Math.max(18, Math.min(50, lat)) * Math.PI) / 180;
+  const delta = (-23.45 * Math.PI) / 180;
+  const omega = (45 * Math.PI) / 180;
+  const sinAlpha = Math.max(0.1, Math.sin(phi) * Math.sin(delta) + Math.cos(phi) * Math.cos(delta) * Math.cos(omega));
+  const alphaDeg = (Math.asin(Math.min(1, sinAlpha)) * 180) / Math.PI;
+  const modSlopeM = modSpec.length_m || 2.278;
+  const betaRad = (tilt * Math.PI) / 180;
+  const footprintM = modSlopeM * Math.cos(betaRad);
+  const heightM = modSlopeM * Math.sin(betaRad);
+  const unshadedGapM = Math.max(0.45, heightM / Math.max(0.15, Math.tan((alphaDeg * Math.PI) / 180)) * 0.72);
+  const pitchM = footprintM + unshadedGapM;
+  const gcr = (modSlopeM / Math.max(0.5, pitchM)) * 100;
+  const subArrays = Array.isArray(resolved.sub_arrays_summary) ? resolved.sub_arrays_summary : [];
+
+  return `<section class="pvsyst-section-card pvsyst-system-shading-panel" data-pvsyst-section="system-near-shading">
+    <div class="pvsyst-dual-grid">
+      <!-- Left: Dynamic Equipment Files & String Voltage-Temperature Safety Envelope -->
+      <div class="pvsyst-subpanel">
+        <div class="pvsyst-subpanel-head">
+          <h4 class="pvsyst-subpanel-title">🔋 系统设备参数文件与组串电压-温度包络校核</h4>
+          <span class="pvsyst-badge ${sizing.allWindowSafe ? 'live' : 'warn'}">${sizing.allWindowSafe ? 'IEC 62548 合规通过' : '请调整串联数'}</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--ink-2,#475569);display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div style="padding:7px 9px;background:rgba(2,132,199,0.06);border:1px solid rgba(2,132,199,0.2);border-radius:6px">
+            <b>📄 组件参数：${esc(modSpec.model)}</b>
+            <div>标准功率 ${modSpec.stc_w} 瓦 · 双面率 ${Math.round(modSpec.bifaciality * 100)}% · 转换效率 ${modSpec.efficiency_pct}%</div>
+            <div>开路 ${modSpec.voc_v}伏 (温度系数 ${modSpec.beta_voc_pct_c}%/°C) · 工作 ${modSpec.vmp_v}伏</div>
+            <div style="display:flex;gap:6px;margin-top:5px">
+              <label class="pvsyst-btn" style="padding:2px 8px;font-size:11px;cursor:pointer">
+                导入组件参数文件
+                <input type="file" accept=".pan,.PAN,.txt" data-sat-file="pan-file" style="display:none">
+              </label>
+              <button type="button" class="pvsyst-btn" style="padding:2px 8px;font-size:11px" data-sat-action="export-pan">导出组件参数文件</button>
+            </div>
+          </div>
+          <div style="padding:7px 9px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:6px">
+            <b>📄 逆变器参数：${esc(invSpec.model)} (${invSpec.rated_ac_kw}千瓦)</b>
+            <div>最大直流电压 = ${maxDcLimit}伏 · 欧洲效率 ${invSpec.euro_eff_pct}%</div>
+            <div>跟踪电压范围 ${mpptMinLimit}~${mpptMaxLimit}伏 · ${invSpec.mppt_count}路 (${invSpec.max_mppt_current_a}安/路)</div>
+            <div style="display:flex;gap:6px;margin-top:5px">
+              <label class="pvsyst-btn" style="padding:2px 8px;font-size:11px;cursor:pointer">
+                导入逆变器参数文件
+                <input type="file" accept=".ond,.OND,.txt" data-sat-file="ond-file" style="display:none">
+              </label>
+              <button type="button" class="pvsyst-btn" style="padding:2px 8px;font-size:11px" data-sat-action="export-ond">导出逆变器参数文件</button>
+            </div>
+          </div>
+        </div>
+        <div class="pvsyst-svg-wrap" style="padding:6px">
+          <svg viewBox="0 0 430 155" class="pvsyst-svg" role="img" aria-label="组串电压温度安全工作窗口">
+            <!-- Voltage axis -->
+            <rect x="45" y="18" width="355" height="98" rx="4" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.15"/>
+            <!-- Inverter MPPT operating zone -->
+            <rect x="${45 + (mpptMinLimit / axisMaxV) * 355}" y="22" width="${((mpptMaxLimit - mpptMinLimit) / axisMaxV) * 355}" height="90" fill="#10b981" fill-opacity="0.11" stroke="#10b981" stroke-dasharray="3 2"/>
+            <!-- Inverter Max DC red limit line -->
+            <line x1="${45 + (maxDcLimit / axisMaxV) * 355}" y1="16" x2="${45 + (maxDcLimit / axisMaxV) * 355}" y2="120" stroke="#ef4444" stroke-width="2"/>
+            <text x="${45 + (maxDcLimit / axisMaxV) * 355 - 4}" y="30" text-anchor="end" font-size="9" font-weight="700" fill="#ef4444">逆变器上限 ${maxDcLimit}V</text>
+            <text x="${45 + (mpptMinLimit / axisMaxV) * 355 + 4}" y="30" font-size="9" font-weight="700" fill="#10b981">MPPT下限 ${mpptMinLimit}V</text>
+            <!-- String Voltage Bars -->
+            <g transform="translate(0, 40)">
+              <text x="50" y="11" font-size="9.5" fill="currentColor">极端低温 (${sizing.tMinC}°C) Voc</text>
+              <rect x="172" y="2" width="${Math.min(195, (vocCold / axisMaxV) * 195)}" height="12" rx="2" fill="#0284c7"/>
+              <text x="${176 + Math.min(195, (vocCold / axisMaxV) * 195)}" y="11" font-size="9.5" font-family="monospace" font-weight="700" fill="#0284c7">${vocCold.toFixed(1)}V ≤ ${maxDcLimit}V</text>
+            </g>
+            <g transform="translate(0, 62)">
+              <text x="50" y="11" font-size="9.5" fill="currentColor">标准工况 (25°C) Vmp</text>
+              <rect x="172" y="2" width="${Math.min(195, (vmp25 / axisMaxV) * 195)}" height="12" rx="2" fill="#10b981"/>
+              <text x="${176 + Math.min(195, (vmp25 / axisMaxV) * 195)}" y="11" font-size="9.5" font-family="monospace" font-weight="700" fill="#10b981">${vmp25.toFixed(1)}V (推荐 ${sizing.nOpt}块/串)</text>
+            </g>
+            <g transform="translate(0, 84)">
+              <text x="50" y="11" font-size="9.5" fill="currentColor">夏季结温 (${sizing.tCellHotC}°C) Vmp</text>
+              <rect x="172" y="2" width="${Math.min(195, (vmpHot / axisMaxV) * 195)}" height="12" rx="2" fill="#f59e0b"/>
+              <text x="${176 + Math.min(195, (vmpHot / axisMaxV) * 195)}" y="11" font-size="9.5" font-family="monospace" font-weight="700" fill="#d97706">${vmpHot.toFixed(1)}V ≥ ${mpptMinLimit}V</text>
+            </g>
+            <text x="48" y="138" font-size="9.5" fill="currentColor" opacity="0.8">
+              允许串联范围：${sizing.nMin}~${sizing.nMax} 块/串（当前 ${nSeries} 块/串，属地 ${esc(sizing.climate.zoneZh)}），容配比 ${(dcKw / Math.max(1, acKw)).toFixed(2)}:1。
+            </text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Right: Near Shadings 3D Array Geometry & Heterogeneous Sub-Array Breakdown -->
+      <div class="pvsyst-subpanel">
+        <div class="pvsyst-subpanel-head">
+          <h4 class="pvsyst-subpanel-title">🏢 近场 3D 阴影模型与异向子阵物理核算 (Near Shadings 3D)</h4>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span class="pvsyst-badge info">覆盖率 ${fmtNum(gcr, 1)}%</span>
+            <button type="button" class="pvsyst-btn" style="padding:2px 8px;font-size:11px" data-sat-action="jump-3d-sim">开启三维全景仿真</button>
+            <button type="button" class="pvsyst-btn primary" style="padding:2px 8px;font-size:11px" data-sat-action="sync-3d-shading">同步三维遮挡损耗</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:11.5px;color:var(--ink-2,#475569);margin-bottom:6px">
+          <span>冬至日 9:00 太阳高度角：<b>${fmtNum(alphaDeg, 1)}°</b> · 倾角 <b>${fmtNum(tilt, 0)}°</b> / 方位角 <b>${fmtNum(az, 0)}°</b></span>
+          <span>阵列中心节距：<b>${fmtNum(pitchM, 2)} m</b> (无遮挡净距 <b>${fmtNum(unshadedGapM, 2)} m</b>)</span>
+        </div>
+        ${options.shading3d ? `
+          <div style="margin-bottom:6px;padding:6px 9px;border-radius:6px;background:rgba(15,23,42,0.04);border:1px solid rgba(100,116,139,0.22);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:11px">
+            <div><span style="color:var(--muted,#64748b);display:block">三维光线追踪线性遮挡</span><b>${fmtNum(options.shading3d.annualLinearLossPct, 2)}%</b></div>
+            <div><span style="color:var(--muted,#64748b);display:block">旁路二极管阴影电失配</span><b style="color:#d97706">${fmtNum(options.shading3d.annualElectricalLossPct, 2)}%</b></div>
+            <div><span style="color:var(--muted,#64748b);display:block">冬至早九至午三无遮挡率</span><b style="color:#059669">${fmtNum(options.shading3d.winter9to15PassPct, 1)}%</b></div>
+            <div><span style="color:var(--muted,#64748b);display:block">冬至晨间触发二极管组件</span><b>${options.shading3d.winterMorningDiodeMods ?? 0} 块</b></div>
+          </div>
+        ` : ''}
+        <div class="pvsyst-svg-wrap" style="padding:6px">
+          <svg viewBox="0 0 430 165" class="pvsyst-svg" role="img" aria-label="3D 近场阵列阴影与旁路二极管失配几何图">
+            <line x1="20" y1="126" x2="410" y2="126" stroke="#64748b" stroke-width="2.2"/>
+            <rect x="28" y="96" width="14" height="30" fill="#94a3b8" stroke="#475569" stroke-width="1"/>
+            <polygon points="42,126 78,126 42,96" fill="#0f172a" fill-opacity="0.24"/>
+            <text x="35" y="89" text-anchor="middle" font-size="8.5" fill="currentColor">女儿墙</text>
+            ${[0, 1, 2].map((idx) => {
+              const bx = 86 + idx * 112;
+              const by = 126;
+              const tx = bx + 48;
+              const ty = 78;
+              const shadowEndX = Math.min(bx + 106, tx + 38);
+              return `<g>
+                <line x1="${bx + 6}" y1="${by}" x2="${bx + 6}" y2="${by - 12}" stroke="#475569" stroke-width="2"/>
+                <line x1="${tx - 4}" y1="${by}" x2="${tx - 4}" y2="${ty + 4}" stroke="#475569" stroke-width="2"/>
+                <polygon points="${tx},${by} ${shadowEndX},${by} ${tx},${ty}" fill="#f59e0b" fill-opacity="0.16"/>
+                <line x1="${tx - 24}" y1="${ty - 20}" x2="${shadowEndX}" y2="${by}" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="4 2"/>
+                <line x1="${bx}" y1="${by - 10}" x2="${tx}" y2="${ty}" stroke="#0284c7" stroke-width="5.5" stroke-linecap="round"/>
+                <text x="${(bx + tx) / 2}" y="${ty - 6}" text-anchor="middle" font-size="9" font-weight="600" fill="#0284c7">阵列排 #${idx + 1} (倾角${fmtNum(tilt, 0)}°)</text>
+              </g>`;
+            }).join('')}
+            <line x1="86" y1="142" x2="198" y2="142" stroke="#10b981" stroke-width="1.4"/>
+            <text x="142" y="154" text-anchor="middle" font-size="9.5" font-weight="700" fill="#10b981">
+              中心间距 = ${fmtNum(pitchM, 2)}m (净排距 = ${fmtNum(unshadedGapM, 2)}m · 冬至9-15时零互遮挡)
+            </text>
+          </svg>
+        </div>
+        ${subArrays.length >= 2 ? `
+          <div style="margin-top:8px;padding:7px 10px;border-radius:6px;background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.2);font-size:11.5px">
+            <b style="color:#1d4ed8">双坡异向子阵独立斜面辐射与发电量精确拆分（南北坡严禁混串）：</b>
+            <div style="display:grid;grid-template-columns:repeat(${Math.min(3, subArrays.length)},1fr);gap:8px;margin-top:5px">
+              ${subArrays.map((sa) => `
+                <div style="padding:4px 6px;background:rgba(255,255,255,0.65);border-radius:4px">
+                  <b>${esc(sa.name)}（倾角 ${sa.tilt_deg}° / 方位 ${sa.azimuth_deg}°）</b>
+                  <div>装机 ${fmtNum(sa.dc_kw, 2)} kWp · 斜面辐射 ${fmtNum(sa.glob_inc_kwh_m2, 1)} kWh/m² (${fmtSignedPct(sa.transposition_gain_pct, 1)})</div>
+                  <div>满发 ${fmtNum(sa.specific_yield_kwh_kwp, 1)} h · 首年 ${fmtNum(sa.e_grid_kwh / 10000, 2)} 万kWh</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  </section>`;
+}
+
+/**
+ * 6. Master Workbench Renderer combining all 6 sections + Export Standard PVsyst Report
  */
 export function renderPvsystWorkbench(pvsystData, options = {}) {
   const resolved = resolvePvsystPayload(pvsystData, options);
@@ -844,21 +1054,22 @@ export function renderPvsystWorkbench(pvsystData, options = {}) {
   const prob = resolved.probabilities || {};
   const wx = resolved.live_weather || {};
   const opt = resolved.optimization_matrix || {};
+  const isApproxFallback = Boolean(options?.isClientFallback);
 
-  return `<div class="pvsyst-workbench" data-pvsyst-workbench>
+  return translateHtmlToEn(`<div class="pvsyst-workbench" data-pvsyst-workbench data-pvsyst-source="${isApproxFallback ? 'client-fallback' : 'backend-authoritative'}">
     <div class="pvsyst-wb-header">
       <div class="pvsyst-wb-title-wrap">
         <h3 class="pvsyst-wb-title">
-          <span>⚡ PVsyst 7.x 银行级光电物理仿真与官方实时气象工作台</span>
-          <span class="pvsyst-engine-tag">8760h Hourly Perez + Faiman + Bifacial Engine</span>
+          <span>8760h 银行级光电物理仿真与官方实时气象工作台</span>
+          <span class="pvsyst-engine-tag">${isApproxFallback ? '前端近似灵敏度估算 · 待连接后端 8760h 复核' : 'Project: Grid-Connected · Variant VC0 · 8760h Perez + Faiman'}</span>
         </h3>
         <p class="pvsyst-wb-subtitle">
-          对标国际主流 PVsyst 7.x 标准：16 级光学与电气能量损耗瀑布图 · 月度能量平衡总表 · 倾角×方位角寻优矩阵 · 太阳视运动遮挡轨迹 · P50/P90 授信概率评估
+          完整覆盖六大工程仿真模块：官方实时气象站 (.MET) · 倾角×方位角寻优与冬至日照间距 · 系统定义与组串电压温度包络校核 (.PAN/.OND) · 近场 3D 阴影与旁路二极管失配 · 16 阶能量损耗瀑布图 · 月度能量平衡表与 P50/P90 授信评估
         </p>
       </div>
       <div class="pvsyst-wb-actions">
-        <button type="button" class="pvsyst-btn" data-pvsyst-action="refresh-weather">🔄 刷新实时天气</button>
-        <button type="button" class="pvsyst-btn primary" data-pvsyst-action="print-report">🖨 导出 PVsyst 标准仿真报告 (PDF / 打印)</button>
+        <button type="button" class="pvsyst-btn" data-pvsyst-action="refresh-weather">刷新实时天气</button>
+        <button type="button" class="pvsyst-btn primary" data-pvsyst-action="print-report">导出标准光电仿真报告 (PDF / 打印)</button>
       </div>
     </div>
 
@@ -896,21 +1107,34 @@ export function renderPvsystWorkbench(pvsystData, options = {}) {
     </div>
 
     ${renderLiveWeatherPanel(wx, options)}
+    ${renderPvsystSystemAndNearShading(resolved, options)}
     ${renderPvsystWaterfallSvg(resolved.waterfall, s)}
     ${renderPvsystMonthlyTableAndChart(resolved.monthly_balances, s)}
     ${renderPvsystOptimizationAndSunPath(resolved.optimization_matrix, resolved.sun_path, options)}
-    ${renderPvsystProbabilitiesAndTuning(resolved.probabilities, options.params ?? resolved.params ?? DEFAULT_PVSYST_PARAMS)}
-  </div>`;
+    ${renderPvsystProbabilitiesAndTuning(resolved.probabilities, options.tuningValues ?? (options.params && Object.keys(options.params).length > 0 ? options.params : null) ?? resolved.params ?? DEFAULT_PVSYST_PARAMS)}
+  </div>`);
 }
 
 /**
  * Convenience wrapper for `#result` page's engineering details fold (`pvsystProFoldMarkup(result)`).
  */
 export function pvsystProFoldMarkup(result, options = {}) {
-  const data = result?.pvsyst
-    ? (options?.params ? computeClientFallbackPvsyst(result, options.params) : result.pvsyst)
-    : computeClientFallbackPvsyst(result, options?.params);
-  return renderPvsystWorkbench(data, { ...options, result });
+  const hasExplicitOverrides = Boolean(
+    options?.forceClientFallback ||
+    (!options?.preferAuthoritative &&
+      options?.params &&
+      typeof options.params === 'object' &&
+      Object.keys(options.params).length > 0)
+  );
+  const useBackend = Boolean(result?.pvsyst) && !hasExplicitOverrides;
+  const data = useBackend
+    ? result.pvsyst
+    : computeClientFallbackPvsyst(result, options?.params || {});
+  return renderPvsystWorkbench(data, {
+    ...options,
+    result,
+    isClientFallback: !useBackend,
+  });
 }
 
 /**
@@ -1007,14 +1231,41 @@ export function computeClientFallbackPvsyst(result = {}, customParams = {}) {
   const globHor = finite(basePvsyst?.summary?.glob_hor_kwh_m2 ?? summaryIn.glob_hor_kwh_m2, defaultGlobHor);
   const diffHor = finite(basePvsyst?.summary?.diff_hor_kwh_m2 ?? summaryIn.diff_hor_kwh_m2, globHor * 0.46);
 
-  // Transposition gain as function of tilt, azimuth, and latitude
+  // Transposition gain as function of tilt, azimuth, and latitude (supports heterogeneous sub-arrays)
   const optTilt = Math.min(38, Math.max(8, Math.round(Math.abs(lat) * 0.76)));
   const tiltGainPeak = 0.045 + 0.0028 * Math.abs(lat);
-  const southCos = Math.cos(azSouthDiffRad);
-  const tiltNorm = 1.0 - Math.pow((tiltDeg - optTilt) / Math.max(12, optTilt + 8), 2);
-  const transGainFrac = tiltDeg < 0.5
-    ? 0.0
-    : Math.max(-0.18, Math.min(0.22, tiltGainPeak * Math.max(-0.4, tiltNorm) * southCos + (albedo - 0.20) * 0.04 * (1 - Math.cos(tiltRad))));
+  const evalTransGainFrac = (subTiltDeg, subAzDeg) => {
+    const tDeg = Math.min(85, Math.max(0, finite(subTiltDeg, tiltDeg)));
+    if (tDeg < 0.5) return 0.0;
+    const tRad = (tDeg * Math.PI) / 180;
+    const azNorm = ((finite(subAzDeg, azimuthDeg) % 360) + 360) % 360;
+    const sCos = Math.cos(((azNorm - 180) * Math.PI) / 180);
+    if (sCos < -0.05) {
+      // North-facing slope loses direct beam irradiance monotonically with sin(tilt) and latitude
+      const northLoss = -(0.52 + 0.006 * Math.abs(lat)) * Math.sin(tRad) * Math.abs(sCos) + (albedo - 0.20) * 0.03 * (1 - Math.cos(tRad));
+      return Math.max(-0.32, Math.min(0.02, northLoss));
+    }
+    const tNorm = 1.0 - Math.pow((tDeg - optTilt) / Math.max(12, optTilt + 8), 2);
+    return Math.max(-0.18, Math.min(0.22, tiltGainPeak * Math.max(-0.4, tNorm) * sCos + (albedo - 0.20) * 0.04 * (1 - Math.cos(tRad))));
+  };
+
+  const rawSubArrays = Array.isArray(customParams?.sub_arrays)
+    ? customParams.sub_arrays
+    : (Array.isArray(result?.sub_arrays) ? result.sub_arrays : []);
+  const validSubArrays = rawSubArrays
+    .map((sa, idx) => ({
+      name: String(sa.name || `子阵 #${idx + 1}`),
+      dc_kw: Math.max(0, finite(sa.dc_kw, 0)),
+      tilt_deg: Math.min(85, Math.max(0, finite(sa.tilt_deg, tiltDeg))),
+      azimuth_deg: ((finite(sa.azimuth_deg, azimuthDeg) % 360) + 360) % 360,
+    }))
+    .filter((sa) => sa.dc_kw > 0.05);
+
+  let transGainFrac = evalTransGainFrac(tiltDeg, azimuthDeg);
+  if (validSubArrays.length >= 1) {
+    const totalSubKw = validSubArrays.reduce((s, a) => s + a.dc_kw, 0);
+    transGainFrac = validSubArrays.reduce((s, a) => s + a.dc_kw * evalTransGainFrac(a.tilt_deg, a.azimuth_deg), 0) / Math.max(0.1, totalSubKw);
+  }
   const globInc = globHor * (1.0 + transGainFrac);
   const transpositionGainPct = transGainFrac * 100.0;
 
@@ -1151,6 +1402,28 @@ export function computeClientFallbackPvsyst(result = {}, customParams = {}) {
   // Live Weather
   const live_weather = basePvsyst?.live_weather ?? normalizeLiveWeather(result?.live_weather, { lat, lon, dc_kw: dcKw, tilt_deg: tiltDeg, azimuth_deg: azimuthDeg });
 
+  // Heterogeneous Sub-Arrays Summary (e.g. South + North dual-slope roof)
+  let sub_arrays_summary = Array.isArray(basePvsyst?.sub_arrays_summary) ? basePvsyst.sub_arrays_summary : [];
+  if (validSubArrays.length >= 2) {
+    const prRatio = prPct / 100.0;
+    sub_arrays_summary = validSubArrays.map((sa) => {
+      const saGainFrac = evalTransGainFrac(sa.tilt_deg, sa.azimuth_deg);
+      const saGlobInc = globHor * (1.0 + saGainFrac);
+      const saSpecYield = saGlobInc * prRatio;
+      const saGridKwh = saSpecYield * sa.dc_kw;
+      return {
+        name: sa.name,
+        dc_kw: Number(sa.dc_kw.toFixed(2)),
+        tilt_deg: Number(sa.tilt_deg.toFixed(1)),
+        azimuth_deg: Number(sa.azimuth_deg.toFixed(1)),
+        glob_inc_kwh_m2: Number(saGlobInc.toFixed(1)),
+        transposition_gain_pct: Number((saGainFrac * 100).toFixed(2)),
+        specific_yield_kwh_kwp: Number(saSpecYield.toFixed(1)),
+        e_grid_kwh: Math.round(saGridKwh),
+      };
+    });
+  }
+
   return {
     ok: true,
     params: p,
@@ -1161,6 +1434,7 @@ export function computeClientFallbackPvsyst(result = {}, customParams = {}) {
     sun_path,
     probabilities,
     live_weather,
+    sub_arrays_summary,
   };
 }
 
@@ -1178,9 +1452,9 @@ export function openPvsystStandardReport(pvsystData, options = {}) {
   const optHtml = renderPvsystOptimizationAndSunPath(data.optimization_matrix, data.sun_path, options);
 
   const doc = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
-  <title>PVsyst 7.x 标准工程仿真报告 · ${fmtNum(s.dc_kw, 2)} kWp</title>
+  <title>8760h 标准工程仿真报告 · ${fmtNum(s.dc_kw, 2)} kWp</title>
   <style>
-    body{font-family:"Microsoft YaHei",system-ui,sans-serif;margin:20px auto;max-width:980px;color:#0f172a;background:#fff;line-height:1.45}
+    body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;margin:20px auto;max-width:980px;color:#0f172a;background:#fff;line-height:1.45}
     .hdr{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #c87743;padding-bottom:10px;margin-bottom:14px}
     .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px}
     .kpi{border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;background:#f8fafc}
@@ -1201,7 +1475,7 @@ export function openPvsystStandardReport(pvsystData, options = {}) {
   </div>
   <div class="hdr">
     <div>
-      <h2 style="margin:0">光筑 (Guangzhu) · PVsyst 7.x 标准光电物理仿真报告</h2>
+      <h2 style="margin:0">光筑 (Guangzhu) · 8760h 标准光电物理仿真报告</h2>
       <small>仿真坐标：${fmtNum(wx.location?.lat ?? 31.23, 4)}°N, ${fmtNum(wx.location?.lon ?? 121.47, 4)}°E · 8760h Perez 转置 + Faiman 热平衡 + 双面视角因子模型</small>
     </div>
     <div style="text-align:right"><small>生成时间：${new Date().toISOString().slice(0, 16).replace('T', ' ')}</small></div>

@@ -2,17 +2,18 @@
 import contextlib
 import csv
 import ctypes
-from ctypes import wintypes
 from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import threading
 import time
 from urllib.request import urlopen
 
 from .config import AGH_ORIGIN, AGH_PORT
+from .platform_compat import bundled_agh_node_exe
 from .setup_agh import regular
 
 HIDDEN = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
@@ -26,7 +27,50 @@ def reachable(origin=AGH_ORIGIN):
         return False
 
 
+def _posix_pid_path(pid: int) -> str:
+    if sys.platform == 'darwin':
+        try:
+            libsystem = ctypes.CDLL('/usr/lib/libSystem.B.dylib')
+            buf = ctypes.create_string_buffer(4096)
+            ret = libsystem.proc_pidpath(int(pid), buf, ctypes.sizeof(buf))
+            if ret > 0:
+                return buf.value.decode('utf-8', errors='replace')
+        except Exception:
+            pass
+    proc_exe = Path(f'/proc/{int(pid)}/exe')
+    if proc_exe.exists():
+        with contextlib.suppress(OSError):
+            return os.readlink(proc_exe)
+    out = subprocess.run(
+        ['ps', '-o', 'comm=', '-p', str(int(pid))],
+        capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=5,
+    )
+    if out.returncode == 0 and out.stdout.strip():
+        return out.stdout.strip()
+    raise OSError('无法核对进程程序')
+
+
+def _posix_process_identity(pid: int) -> dict:
+    env = {**os.environ, 'LC_ALL': 'C'}
+    out = subprocess.run(
+        ['ps', '-o', 'lstart=,ppid=', '-p', str(int(pid))],
+        capture_output=True, text=True, encoding='ascii', errors='replace', env=env, timeout=5,
+    )
+    if out.returncode != 0 or not out.stdout.strip():
+        raise OSError('无法核对进程身份')
+    tokens = out.stdout.strip().split()
+    if len(tokens) < 6:
+        raise OSError('无法解析进程时间与父进程')
+    lstart_text = ' '.join(tokens[:5])
+    ppid = int(tokens[5])
+    started_epoch = int(datetime.strptime(lstart_text, '%a %b %d %H:%M:%S %Y').timestamp())
+    return dict(start=started_epoch, parent=ppid, path=_posix_pid_path(int(pid)))
+
+
 def process_identity(pid, retained=None):
+    if sys.platform != 'win32':
+        return _posix_process_identity(pid)
+    from ctypes import wintypes
     kernel = ctypes.WinDLL('kernel32', use_last_error=True)
     kernel.OpenProcess.restype = wintypes.HANDLE
     kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
@@ -59,6 +103,11 @@ def private_home(path):
     """Create the instance home so that only the current user can read it (AGH refuses shared homes)."""
     path = Path(path)
     regular(next(item for item in (path, *path.parents) if item.exists()))
+    if sys.platform != 'win32':
+        if not path.exists():
+            path.mkdir(parents=True, mode=0o700)
+        os.chmod(path, 0o700)
+        return regular(path)
     if not path.exists():
         path.mkdir(parents=True)
         regular(path)
@@ -124,7 +173,7 @@ class OwnedAgh:
         self.process = subprocess.Popen([executable, 'serve', '--home', home, '--profile', profile, '--cwd', cwd,
                                          '--port', str(AGH_PORT)], cwd=cwd, env=environment,
                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=HIDDEN)
-        parent = process_identity(self.process.pid, self.process._handle)
+        parent = process_identity(self.process.pid, getattr(self.process, '_handle', None))
         started = time.monotonic()
         deadline = started + 120  # antivirus and cold filesystem reads can delay the first start
         after, ready, http_ready, socket_ready, previous = {}, False, False, False, None
@@ -147,10 +196,17 @@ class OwnedAgh:
         owner = after.get('owner', {})
         if ready and before['running'] is False and owner:
             child = process_identity(owner['pid'])
-            start_id = f"win32:{owner['pid']}:{child['start']}"
+            plat_prefix = 'win32' if sys.platform == 'win32' else sys.platform
+            start_id = f"{plat_prefix}:{owner['pid']}:{child['start']}"
+            start_id_ok = (
+                owner.get('processStartId') == start_id
+                if sys.platform == 'win32'
+                else str(owner.get('processStartId') or '').startswith(f"{plat_prefix}:{owner['pid']}:")
+            )
+            expected_node = bundled_agh_node_exe(executable).resolve()
             if (self.process.poll() is None and child['parent'] == self.process.pid and child['start'] >= parent['start'] and
-                    Path(child['path']).resolve() == (Path(executable).parent / 'runtime' / 'node.exe').resolve() and
-                    owner.get('processStartId') == start_id and
+                    Path(child['path']).resolve() == expected_node and
+                    start_id_ok and
                     all(isinstance(owner.get(key), str) and owner[key] for key in ('generation', 'startedAt', 'socketPath'))):
                 self.owner = {key: owner[key] for key in ('pid', 'processStartId', 'generation')}
         exit_code = self.process.poll()

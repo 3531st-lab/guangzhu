@@ -1,9 +1,9 @@
 import {esc, show} from './data.js';
 
 export const economicInputs = [
-  ['landRent', '空地年度地租', '元/亩·年', 0, 100000, '800，示意；仅空地消费'],
+  ['landRent', '空地年度地租', '元/亩·年', 0, 100000, '默认 800；仅空地消费'],
   ['loanRatio', '贷款比例', '%', 0, 99, '不贷款'], ['loanRate', '贷款年利率', '%', 0, 100, 'LPR 3.50，2026-09-20'],
-  ['loanYears', '贷款年限', '年', 1, 25, '20'], ['cleaningTimes', '每年清洗', '次', 0, 365, '2，示意'],
+  ['loanYears', '贷款年限', '年', 1, 25, '20'], ['cleaningTimes', '每年清洗', '次', 0, 365, '默认 2'],
   ['mechanismShare', '已获配机制电量占余电', '%', 0, 90, '0，资格未确认'],
   ['mechanismPrice', '已获配机制电价', '元/度', 0, 2, '按正式入选结果'],
   ['mechanismYears', '机制执行年限', '年', 1, 25, '按入选结果'],
@@ -11,10 +11,10 @@ export const economicInputs = [
 ];
 
 export function financialForm(f, field, toggle, kind = 'flat', use = null) {
-  const choices = [['', '按容量推断（示意）'], ['two_part', '两部制'], ['single100', '单一制≥100kVA'], ['single_small', '单一制<100kVA']];
+  const choices = [['', '按容量自动推断'], ['two_part', '两部制'], ['single100', '单一制≥100kVA'], ['single_small', '单一制<100kVA']];
   const fields = economicInputs.filter(args => args[0] !== 'landRent' || kind === 'ground');
   return `<div class="grid2">${fields.map(args => field(...(args[0] === 'cleaningTimes' && use === 'barn' ?
-    [...args.slice(0, 5), '4，养殖场示意默认；手填优先'] : args))).join('')}</div>
+    [...args.slice(0, 5), '默认 4（养殖场）；手填优先'] : args))).join('')}</div>
     ${kind === 'carport' ? '<p>未提供车棚租赁合同，合作情景未计场地或棚面租金；实际租金及税费待核定。</p>' : ''}
     <label>购电类别<select data-field="tariffClass">${choices.map(([key, label]) =>
       `<option value="${key}" ${f.tariffClass === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label>

@@ -13,6 +13,8 @@ import {parapetInfo} from '../../desktop/web/roof-parapets.js';
 import {diagnosticsMarkup,diagnosticAction} from '../../desktop/web/design-diagnostics.js';
 import {evidenceMarkup,evidenceDownload} from '../../desktop/web/design-evidence.js';
 import {lossMetricsMarkup,monthlyYieldMarkup} from '../../desktop/web/engineering-charts.js';
+import {pvsystProFoldMarkup,collectPvsystTuningParams} from '../../desktop/web/pvsyst-workbench.js';
+import * as i18n from '../../desktop/web/i18n.js';
 
 // The archived runs these fixtures came from are not part of the public repository; plain stand-ins keep the
 // session tests that do not depend on their details, the others are skipped.
@@ -27,6 +29,7 @@ const exported = {kind:'tool',name:'gz_export',status:'completed',result:'{"ok":
 const certificate = passed => ({run_id:'archive',verification:{passed,checks:[],review:{requested:false}},result:{selected_version:3},selected_version:3});
 
 async function app({search='',preference=null,fileProgress=null,runsResponse=null,existsResponse=null,setupResponse=null,transport=null,hash='#run'}={}) {
+  i18n.setLang('zh');
   const events = {}, elements = new Map(), requests = [], archives = [], selected = new Map();
   const intervals = [], timers = [];
   let respond = async () => certificate(false);
@@ -52,7 +55,7 @@ async function app({search='',preference=null,fileProgress=null,runsResponse=nul
       path.endsWith('/exists') ? await (existsResponse?.(path) ?? {exists:false}) : path === '/api/brief' ? {brief:'fixture-task',errors:[]} : path.endsWith('/progress') ? fileProgress : {agh:{connected:false}};
     return {ok:true,json:async () => value};
   };
-  const globals = {...data,HEAT_COLORS:['red','orange','green'],ParkQueue,ParkView,queueMarkup,
+  const globals = {...data,...i18n,pvsystProFoldMarkup,collectPvsystTuningParams,HEAT_COLORS:['red','orange','green'],ParkQueue,ParkView,queueMarkup,
     Bridge,setAghOrigin(){},Setup,computeSteps,resolvedTools,financialForm,financialResult,livestockResult,wiringPanel,wiringDetails,parapetInfo,diagnosticsMarkup,diagnosticAction,evidenceMarkup,evidenceDownload,lossMetricsMarkup,monthlyYieldMarkup,document,fetch,
     location:{hash,search},localStorage:{getItem:key => key==='gz-design-model' ? preference : null,setItem(){}},
     window:{addEventListener(){}},

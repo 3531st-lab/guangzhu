@@ -2,6 +2,18 @@
 // Renders all buildings in the park at their real (x_m, y_m, rotation_deg) coordinates,
 // with 3D building facades, parapets, realistic rooftop obstacles, park roads/trees/substation,
 // and all designed 3D solar arrays across the entire park (before and after design).
+import { createSolarPanelTintTexture, computeSolarVectorBjt } from './pro-3d-twin-engine.js';
+
+function cleanBuildingLabel(value) {
+  if (value == null) return '';
+  return String(value)
+    .replace(/[（(]\s*(?:轮廓真实[、，,\s]*屋面示意|轮廓真实|屋面示意|构造示意|合成小屋顶|示意值|示意)\s*[）)]/g, '')
+    .replace(/[（(]养羊示意[）)]/g, '（养羊）')
+    .replace(/厂房示意/g, '厂房')
+    .replace(/常州示意/g, '常州')
+    .replace(/示意园区/g, '工业园区')
+    .trim();
+}
 
 function transformPt([x, y], b) {
   const rad = ((Number(b.rotation_deg) || 0) * Math.PI) / 180;
@@ -43,6 +55,9 @@ export function mountParkScene3D(container, current, options = {}) {
   renderer.outputEncoding = T.sRGBEncoding;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false;
+  let needsShadow = true;
+  let needsRender = true;
 
   const scene = new T.Scene();
   const isDark = document.documentElement.dataset.theme === 'dark';
@@ -56,11 +71,14 @@ export function mountParkScene3D(container, current, options = {}) {
   controls.panSpeed = 1.45;
   controls.screenSpacePanning = false;
   controls.maxPolarAngle = Math.PI / 2 - 0.02;
+  controls.addEventListener?.('change', () => { needsRender = true; });
 
   const ambient = new T.HemisphereLight(0xffffff, 0x64748b, 0.68);
   const sun = new T.DirectionalLight(0xfff4d6, 1.15);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.bias = -0.0003;
+  sun.shadow.normalBias = 0.025;
   scene.add(ambient, sun, sun.target);
 
   const linear = col => new T.Color(col).convertSRGBToLinear();
@@ -135,10 +153,11 @@ export function mountParkScene3D(container, current, options = {}) {
     const transformedOutline = (roof.outline ?? []).map(pt => transformPt(pt, b));
     if (transformedOutline.length < 3) continue;
 
+    const bName = cleanBuildingLabel(b.name || b.template);
     const bMesh = addExtrudedPolygon(transformedOutline, h, 0, '#d8cfc4');
     if (bMesh) {
       bMesh.userData.buildingTemplate = b.template;
-      bMesh.userData.buildingName = b.name;
+      bMesh.userData.buildingName = bName;
       buildingMeshes.push(bMesh);
     }
 
@@ -188,7 +207,7 @@ export function mountParkScene3D(container, current, options = {}) {
         });
         const pMesh = addMesh(pGeom, pMat, [0, 0, 0]);
         pMesh.userData.buildingTemplate = b.template;
-        pMesh.userData.buildingName = b.name;
+        pMesh.userData.buildingName = bName;
         buildingMeshes.push(pMesh);
       }
     }
@@ -222,7 +241,12 @@ export function mountParkScene3D(container, current, options = {}) {
       const panelColor = colorByPhase
         ? (phase === 1 ? '#059669' : phase === 2 ? '#d97706' : '#1e3a8a')
         : '#1e3a8a';
-      const panelMat = mat(panelColor, { roughness: 0.35, metalness: 0.35 });
+      const panelTex = createSolarPanelTintTexture(T);
+      const panelMat = mat(panelColor, {
+        roughness: 0.26,
+        metalness: 0.36,
+        ...(panelTex ? { map: panelTex } : {}),
+      });
 
       const inst = new T.InstancedMesh(new T.BoxGeometry(1, 0.08, 1), panelMat, panels.length);
       inst.castShadow = true;
@@ -258,7 +282,7 @@ export function mountParkScene3D(container, current, options = {}) {
     const bWorldCenter = world([bcx, bcy, h * 0.55]);
     buildingTargets.push({
       template: b.template,
-      name: b.name || b.template,
+      name: bName,
       center: bWorldCenter,
       roofY: h,
       span: bSpan,
@@ -275,11 +299,11 @@ export function mountParkScene3D(container, current, options = {}) {
     ctx.lineWidth = 4;
     ctx.strokeRect(8, 8, 368, 80);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 24px "Microsoft YaHei", sans-serif';
+    ctx.font = 'bold 24px "PingFang SC", "Microsoft YaHei", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(String(b.name || b.template).slice(0, 14), 192, 42);
+    ctx.fillText(bName.slice(0, 14), 192, 42);
     ctx.fillStyle = '#93c5fd';
-    ctx.font = '20px "Microsoft YaHei", sans-serif';
+    ctx.font = '20px "PingFang SC", "Microsoft YaHei", sans-serif';
     const subText = b.result
       ? `${Number(b.result.dc_kw || 0).toFixed(1)} kWp · ${b.result.park_phase === 1 ? '一期优先' : '二期扩建'} · 回本${Number(b.result.payback_years || 0).toFixed(1)}年`
       : `檐高 ${h}m · 待运行批量设计`;
@@ -325,6 +349,7 @@ export function mountParkScene3D(container, current, options = {}) {
       Math.max(-span * 1.6, Math.min(span * 1.6, targetPt.z))
     );
     glideCamOffset = offset;
+    needsRender = true;
   }
 
   function focusBuilding(tpl) {
@@ -351,13 +376,40 @@ export function mountParkScene3D(container, current, options = {}) {
     controls.minDistance = 5;
     controls.maxDistance = span * 6;
     controls.update();
+    needsRender = true;
     updateHud();
   }
 
   setCameraView('iso');
-  sun.position.set(span * 0.8, span * 1.4, span * 0.6);
-  Object.assign(sun.shadow.camera, { left: -span, right: span, top: span, bottom: -span, near: 1, far: span * 4 });
-  sun.shadow.camera.updateProjectionMatrix();
+  let parkDateStr = options.sunDate || '2026-12-21';
+  let parkHourBjt = Number.isFinite(Number(options.sunHour)) ? Number(options.sunHour) : 10.0;
+  let parkPlaying = false;
+  let lastParkTs = 0;
+  const parkLat = Number(current?.park?.origin?.lat) || 32.46;
+  const parkLon = Number(current?.park?.origin?.lon) || 119.92;
+
+  function applyParkSunPosition(dateStr = parkDateStr, hourBjt = parkHourBjt) {
+    parkDateStr = dateStr;
+    parkHourBjt = Number(hourBjt);
+    const sv = computeSolarVectorBjt(parkLat, parkLon, parkDateStr, parkHourBjt);
+    const [dx, dy, dz] = sv.direction;
+    if (sv.altitudeDeg > 0.5) {
+      sun.intensity = Math.min(1.45, Math.max(0.45, 0.5 + Math.sin((sv.altitudeDeg * Math.PI) / 180) * 1.1));
+      sun.position.set(dx * span * 1.65, Math.max(12, dy * span * 1.65), dz * span * 1.65);
+    } else {
+      sun.intensity = 0.08;
+      sun.position.set(0, span * 1.4, span * 0.5);
+    }
+    Object.assign(sun.shadow.camera, { left: -span * 1.1, right: span * 1.1, top: span * 1.1, bottom: -span * 1.1, near: 1, far: span * 4.5 });
+    sun.shadow.camera.updateProjectionMatrix();
+    needsShadow = true;
+    needsRender = true;
+    const hh = Math.floor(parkHourBjt);
+    const mm = String(Math.round((parkHourBjt - hh) * 60)).padStart(2, '0');
+    updateHud(`太阳时 ${parkDateStr.slice(5)} ${String(hh).padStart(2, '0')}:${mm} (高度角 ${sv.altitudeDeg.toFixed(1)}° / 方位 ${sv.azimuthDeg.toFixed(0)}°)`);
+    options.onSunTick?.({ dateStr: parkDateStr, hourBjt: parkHourBjt, solar: sv });
+  }
+  applyParkSunPosition(parkDateStr, parkHourBjt);
 
   const raycaster = new T.Raycaster(), pointer = new T.Vector2();
   let downPt = null;
@@ -422,6 +474,7 @@ export function mountParkScene3D(container, current, options = {}) {
   canvas.addEventListener('wheel', e => {
     glideTarget = null;
     glideCamOffset = null;
+    needsRender = true;
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 2) {
       const forward = new T.Vector3();
       camera.getWorldDirection(forward);
@@ -460,36 +513,63 @@ export function mountParkScene3D(container, current, options = {}) {
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      needsRender = true;
     }
   });
   resize.observe(container);
 
-  function animate() {
+  function animate(ts = 0) {
     if (disposed) return;
     raf = requestAnimationFrame(animate);
+    if (parkPlaying) {
+      const dt = lastParkTs ? Math.min(0.1, (ts - lastParkTs) / 1000) : 0.016;
+      let nh = parkHourBjt + dt * 1.4;
+      if (nh > 17.8) nh = 6.8;
+      applyParkSunPosition(parkDateStr, nh);
+    }
+    lastParkTs = ts;
     if (glideTarget && glideCamOffset) {
       controls.target.lerp(glideTarget, 0.2);
       const desiredCam = glideTarget.clone().add(glideCamOffset);
       camera.position.lerp(desiredCam, 0.2);
+      needsRender = true;
       if (controls.target.distanceTo(glideTarget) < 0.15) {
         glideTarget = null;
         glideCamOffset = null;
       }
     }
     controls.update();
-    renderer.render(scene, camera);
+    if (!document.hidden && (needsRender || parkPlaying || Boolean(glideTarget))) {
+      renderer.shadowMap.needsUpdate = needsShadow;
+      renderer.render(scene, camera);
+      needsShadow = false;
+      needsRender = false;
+    }
   }
   animate();
 
   return {
     setCameraView,
     focusBuilding,
+    setSunTime: applyParkSunPosition,
+    toggleSunPlay() {
+      parkPlaying = !parkPlaying;
+      if (parkPlaying) needsRender = true;
+      return parkPlaying;
+    },
     dispose() {
       if (disposed) return;
       disposed = true;
       cancelAnimationFrame(raf);
       resize.disconnect();
       controls.dispose();
+      group.traverse?.(obj => {
+        if (obj.geometry) obj.geometry.dispose?.();
+        if (obj.isSprite && obj.material?.map) obj.material.map.dispose?.();
+        if (Array.isArray(obj.material)) obj.material.forEach(m => m?.dispose?.());
+        else if (obj.material) obj.material.dispose?.();
+      });
+      sun.shadow?.map?.dispose?.();
       renderer.dispose();
     },
   };

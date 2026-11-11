@@ -1,6 +1,7 @@
 """Unit and API integration tests for PVsyst 7.x 8760h engine, official live weather, and satellite map AI design."""
 from __future__ import annotations
 
+from typing import Any
 from fastapi.testclient import TestClient
 
 from guangzhu.api import app
@@ -114,6 +115,15 @@ def test_satmap_design_mppt_allocation_and_four_cad_drawings():
     assert design["summary"]["south_count"] > 0
     assert design["summary"]["north_count"] > 0
     assert len(design["electrical"]["mppt_table"]) >= 9
+    assert len(design["strings"]) == design["summary"]["string_count"]
+    w_opt = design["wiring_optimization"]
+    assert w_opt["dc_cable_saved_pct"] > 5.0
+    assert w_opt["keepout_crossings"] == 0
+    assert w_opt["cu_cable_model"].startswith("ZR-YJV22")
+    assert w_opt["al_cable_model"].startswith("YJLH22")
+    assert w_opt["cu_ac_drop_pct"] <= 2.0
+    assert w_opt["al_ac_drop_pct"] <= 2.0
+    assert w_opt["al_cost_saving_pct"] > 45.0
     assert set(design["cad_drawings"].keys()) == {"layout", "string", "grounding", "bracket"}
     for sheet_key, svg in design["cad_drawings"].items():
         assert svg.startswith("<svg") and "</svg>" in svg
@@ -126,7 +136,31 @@ def test_satmap_and_pvsyst_fastapi_routes():
     client = TestClient(app)
     r_presets = client.get("/api/satmap/presets")
     assert r_presets.status_code == 200
-    assert len(r_presets.json()["presets"]) >= 4
+    presets_list = r_presets.json()["presets"]
+    assert len(presets_list) >= 11
+    preset_keys = {p["key"] for p in presets_list}
+    for tz_key in (
+        "taizhou-cmc",
+        "taizhou-xiangtai-warehouse",
+        "taizhou-jielouwei-bipv",
+        "taizhou-shenyuan-alloy",
+        "taizhou-municipal-admin",
+        "taizhou-jingjiang-shipbuild",
+        "taizhou-taixing-chem",
+        "taizhou-jiangyan-equip",
+    ):
+        assert tz_key in preset_keys
+    for preset in presets_list:
+        assert "鹧鸪云" not in preset.get("name", "")
+        assert "PVLANE" not in preset.get("name", "")
+
+    r_exp = client.get("/api/satmap/experiments")
+    assert r_exp.status_code == 200
+    exp_json = r_exp.json()
+    assert exp_json["ok"] is True
+    assert exp_json["exp1_taizhou_8_real_projects"]["total_projects"] == 8
+    assert exp_json["exp1_taizhou_8_real_projects"]["industrial_7_mape_chain_b_pct"] < 1.0
+    assert exp_json["exp1_taizhou_8_real_projects"]["mape_chain_b_pct"] < 3.0
 
     r_wx = client.get("/api/pvsyst/live-weather?lat=32.4562&lon=119.9231&dc_kw=250&offline=true")
     assert r_wx.status_code == 200
@@ -321,8 +355,27 @@ def test_satmap_and_pvsyst_browser_e2e(tmp_path):
         page.locator('.satmap-floating-tools [data-sat-action="layout-modules"]').click()
         page.wait_for_timeout(300)
         laid_btn_text = page.locator(".satmap-primary-lay-btn").inner_text()
-        assert "重新铺设" in laid_btn_text and "kWp" in laid_btn_text, f"Expected modules laid out, got {laid_btn_text}"
+        assert "重新铺设" in laid_btn_text and ("千瓦" in laid_btn_text or "kWp" in laid_btn_text), f"Expected modules laid out, got {laid_btn_text}"
         page.screenshot(path=str(out_dir / "satmap_step1_workbench.png"))
+
+        # Launch WebGL Three.js 3D Digital Twin & Ray-Traced Shading Simulator
+        page.locator('.satmap-floating-tools [data-sat-action="jump-3d-sim"]').click()
+        page.wait_for_selector("#satmap-3d-twin-stage")
+        assert page.locator(".satmap-3d-simbar").count() == 1
+        assert page.locator("#satmap-3d-metrics-bar").count() == 1
+        metrics_txt = page.locator("#satmap-3d-metrics-bar").inner_text()
+        assert "太阳高度角" in metrics_txt and "旁路二极管" in metrics_txt, f"Unexpected 3D metrics text: {metrics_txt}"
+        page.locator('[data-sat-3d-mode="irradiance"]').click()
+        page.locator('[data-sat-3d-mode="diode"]').click()
+        page.locator('[data-sat-3d-mode="wind"]').click()
+        page.locator('[data-sat-3d-mode="realistic"]').click()
+        page.locator('[data-sat-3d-cam="walkway"]').click()
+        page.locator('[data-sat-3d-cam="iso"]').click()
+        page.wait_for_timeout(200)
+        page.screenshot(path=str(out_dir / "satmap_step1_3d_digital_twin.png"))
+        page.locator('.satmap-3d-simbar [data-sat-action="sync-3d-shading"]').click()
+        page.locator('.satmap-3d-simbar [data-sat-action="set-2d"]').click()
+        assert page.locator("#satmap-3d-twin-stage").count() == 0
 
         # Verify vertical scrolling works inside .satmap-shell and does NOT jump back up
         scroll_info = page.evaluate(
@@ -345,14 +398,14 @@ def test_satmap_and_pvsyst_browser_e2e(tmp_path):
         page.screenshot(path=str(out_dir / "satmap_step1_weather_angle_eval.png"))
         page.evaluate("() => { const s = document.querySelector('.satmap-shell'); if (s) s.scrollTop = 0; }")
 
-        # Step 2: Zheguyun Electrical Design & MPPT Table + Inverter Brand Filter
+        # Step 2: Electrical Design & MPPT Table + Inverter Brand Filter
         page.locator('.satmap-steps [data-sat-step="2"]').click()
         page.wait_for_selector(".satmap-mppt-table")
         assert page.locator(".satmap-inv-card").count() >= 6
         assert page.locator(".satmap-mppt-table tbody tr").count() >= 9
         page.screenshot(path=str(out_dir / "satmap_step2_mppt.png"))
 
-        # Step 3: PVsyst 8760h Simulation & Official Live Weather (verify scroll stability without infinite loop!)
+        # Step 3: 8760h Simulation & Official Live Weather (verify scroll stability without infinite loop!)
         page.locator('.satmap-steps [data-sat-step="3"]').click()
         page.wait_for_selector("[data-pvsyst-workbench]")
         assert page.locator('[data-pvsyst-section="waterfall"]').count() == 1
@@ -365,11 +418,12 @@ def test_satmap_and_pvsyst_browser_e2e(tmp_path):
         page.evaluate("() => { const s = document.querySelector('.satmap-shell'); if (s) s.scrollTop = 0; }")
         page.screenshot(path=str(out_dir / "satmap_step3_pvsyst.png"), full_page=True)
 
-        # Step 4: PVLANE Oblique Photo 4-Point Perspective Homography + Parapet Sightline Occlusion
+        # Step 4: Oblique Photo 4-Point Perspective Homography + Parapet Sightline Occlusion
         page.locator('.satmap-steps [data-sat-step="4"]').click()
         page.wait_for_selector("#sat-effect-canvas")
         page.locator('[data-sat-effect="demo-occlusion"]').click()
-        page.screenshot(path=str(out_dir / "satmap_step4_pvlane_effect.png"))
+        page.evaluate("() => { const s = document.querySelector('.satmap-shell'); if (s) s.scrollTop = 0; }")
+        page.screenshot(path=str(out_dir / "satmap_step4_oblique_effect.png"))
 
         # Step 5: 4 CAD Drawings (排布图 / 组串图 / 防雷接地图 / 支架图)
         page.locator('.satmap-steps [data-sat-step="5"]').click()
@@ -378,5 +432,92 @@ def test_satmap_and_pvsyst_browser_e2e(tmp_path):
         page.locator('.satmap-cad-tabs [data-sat-cad-sheet="bracket"]').click()
         page.screenshot(path=str(out_dir / "satmap_step5_cad_bracket.png"))
 
+        # Verify Topnav has exactly 5 clean non-wrapping tabs & #lab bidirectional sync + pure ZH/EN mode
+        assert page.locator(".navtabs a").count() == 5
+        page.locator('.navtabs a[href="#lab"]').click()
+        page.wait_for_selector("[data-lab-tab]")
+        page.wait_for_timeout(200)
+        page.screenshot(path=str(out_dir / "lab_zh_overview.png"))
+
+        # Switch to English mode via top-right #lang-toggle and verify single-line navtabs + pure EN UI
+        page.locator("#lang-toggle").click()
+        page.wait_for_timeout(250)
+        en_nav_heights = page.evaluate(
+            "() => Array.from(document.querySelectorAll('.navtabs a')).map(a => Math.round(a.getBoundingClientRect().height))"
+        )
+        assert all(h <= 40 for h in en_nav_heights), f"Expected single-line English nav tabs (<=40px), got {en_nav_heights}"
+        page.screenshot(path=str(out_dir / "lab_en_overview.png"))
+
+        # Switch back to Chinese mode
+        page.locator("#lang-toggle").click()
+        page.wait_for_timeout(200)
+
         assert not page_errors, f"Unexpected browser page errors: {page_errors}"
         browser.close()
+
+
+def test_multi_orientation_8760_slope_isolation_structural_and_dcf():
+    """Verify heterogeneous dual-slope 8760h physics, strict South/North string & MPPT isolation, GB 55001 check, 25-yr DCF & layered DXF."""
+    sim_multi = simulate_pvsyst(
+        32.4562,
+        119.9231,
+        dc_kw=300.0,
+        ac_kw=250.0,
+        tilt_deg=10.0,
+        azimuth_deg=180.0,
+        sub_arrays=[
+            {"name": "南坡子阵 (180°)", "dc_kw": 150.0, "tilt_deg": 10.0, "azimuth_deg": 180.0},
+            {"name": "北坡子阵 (0°)", "dc_kw": 150.0, "tilt_deg": 10.0, "azimuth_deg": 0.0},
+        ],
+        offline=True,
+    )
+    assert sim_multi["ok"] is True
+    subs = sim_multi.get("sub_arrays_summary") or []
+    assert len(subs) == 2
+    south_sub = next(s for s in subs if abs(s["azimuth_deg"] - 180.0) < 1e-3)
+    north_sub = next(s for s in subs if abs(s["azimuth_deg"] - 0.0) < 1e-3)
+    assert south_sub["glob_inc_kwh_m2"] > north_sub["glob_inc_kwh_m2"]
+    assert south_sub["specific_yield_kwh_kwp"] > north_sub["specific_yield_kwh_kwp"]
+
+    design_res = run_satmap_design(
+        {
+            "lat": 32.4562,
+            "lon": 119.9231,
+            "roof_type": "double_slope",
+            "slope_deg": 8.0,
+            "offline": True,
+        }
+    )
+    assert design_res["ok"] is True
+    assert design_res["summary"]["south_count"] > 0
+    assert design_res["summary"]["north_count"] > 0
+
+    # Zero strings and zero MPPT channels may mix South and North slopes
+    mod_slope_by_id = {m["id"]: m.get("slope") for m in design_res["modules"]}
+    for st in design_res["strings"]:
+        slope_val = st.get("slope")
+        assert slope_val in ("south", "north")
+        for mid in st.get("module_ids") or []:
+            assert mod_slope_by_id.get(mid) == slope_val, f"String {st['id']} mixed South and North modules!"
+
+    for mrow in design_res["mppt_table"]:
+        if mrow["string_count"] > 0:
+            assert mrow["slope"] in ("south", "north")
+
+    st_chk = design_res["structural_check"]
+    assert "GB 55001" in st_chk["standard_code"]
+    assert st_chk["w0_kn_m2"] > 0
+    assert st_chk["avg_added_dead_kn_m2"] <= st_chk["roof_load_limit_kn_m2"]
+
+    dcf = design_res["financial_dcf"]
+    assert 10.0 <= dcf["irr_pct"] <= 40.0
+    assert dcf["dynamic_payback_years"] > dcf["static_payback_years"]
+    assert 0.10 <= dcf["lcoe_rmb_kwh"] <= 0.55
+
+    assert len(design_res["pvsyst"].get("sub_arrays_summary") or []) == 2
+
+    dxf_bytes = export_satmap_dxf(design_res, drawing_type="all")
+    dxf_str = dxf_bytes.decode("utf-8")
+    for required_token in ("FRAME_BORDER", "TITLE_BLOCK", "INVERTER_EQUIP", "DIMENSIONS_TEXT", "TEXT"):
+        assert required_token in dxf_str
+

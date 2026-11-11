@@ -3,6 +3,17 @@ import {parapetInfo} from './roof-parapets.js';
 
 export const esc = (value) => String(value ?? "").replace(/[&<>"']/g,
   (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+export function cleanRoofLabel(value) {
+  if (value == null) return "";
+  return String(value)
+    .replace(/[（(]\s*(?:轮廓真实[、，,\s]*屋面示意|轮廓真实|屋面示意|构造示意|合成小屋顶|示意值|示意)\s*[）)]/g, "")
+    .replace(/[（(]养羊示意[）)]/g, "（养羊）")
+    .replace(/厂房示意/g, "厂房")
+    .replace(/常州示意/g, "常州")
+    .replace(/示意园区/g, "工业园区")
+    .replace(/示意默认/g, "默认")
+    .trim();
+}
 export const rawValue = (value) => value == null ? "未提供" : typeof value === "object" ? JSON.stringify(value) : String(value);
 const words = {
   true: "是",

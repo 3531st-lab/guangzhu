@@ -2,6 +2,7 @@
 import hashlib
 import json
 import math
+import re
 from html import escape
 
 from . import sitecheck
@@ -269,7 +270,12 @@ def map_svg(data):
                       'fill="#ede7dd" stroke="#5c5346" stroke-width="1.2" vector-effect="non-scaling-stroke"/>')
         for panel in result.get('panels', []):
             chunks.append(f'<polygon points="{path(transform(panel, building))}" fill="{colour}" fill-opacity="0.88"/>')
-        raw_label = f"{b['name']} · {b['roof']['height_m']:g}m"
+        clean_name = re.sub(
+            r'[（(]\s*(?:轮廓真实[、，,\s]*屋面示意|轮廓真实|屋面示意|构造示意|合成小屋顶|示意值|示意)\s*[）)]',
+            '',
+            str(b['name']),
+        ).strip()
+        raw_label = f"{clean_name} · {b['roof']['height_m']:g}m"
         if result.get('dc_kw'):
             raw_label += f" ({result['dc_kw']:.0f}kW)"
         label = escape(raw_label)
