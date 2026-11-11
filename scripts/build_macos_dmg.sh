@@ -76,10 +76,11 @@ if [[ "$ARCH_TAG" != "$HOST_NORM" ]]; then
   IS_CROSS_ARCH=1
 fi
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
 CACHE_DIR="$ROOT/build/macos-installer-cache"
-STAGE_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/guangzhu-macos-stage.XXXXXX")"
+RAW_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/guangzhu-macos-stage.XXXXXX")"
+STAGE_ROOT="$(cd "$RAW_STAGE" && pwd -P)"
 trap 'rm -rf "$STAGE_ROOT"' EXIT
 
 PAYLOAD_STAGE="$STAGE_ROOT/payload"
@@ -233,7 +234,7 @@ fi
 
 # Prune upstream package tests & verify no developer paths remain
 mv "$RUNTIME_STAGE" "$PAYLOAD_STAGE/runtime"
-"$BUILD_PY" "$ROOT/scripts/installer_stage.py" \
+"$HOST_PY" "$ROOT/scripts/installer_stage.py" \
   "$PAYLOAD_STAGE" \
   --host-python "$HOST_PY" \
   --developer-root "$ROOT" \
@@ -287,8 +288,9 @@ fi
 
 echo "==> [5/7] Code-signing ${APP_NAME}.app (identity: $CODESIGN_ID)..."
 xattr -cr "$BUNDLE_DIR" || true
-find "$BUNDLE_DIR/Contents/Resources/runtime" -type f \( -name "*.dylib" -o -name "*.so" \) -print0 | \
-  xargs -0 -I{} codesign --force --sign "$CODESIGN_ID" "{}" 2>/dev/null || true
+while IFS= read -r -d '' mach_file; do
+  codesign --force --sign "$CODESIGN_ID" "$mach_file" 2>/dev/null || true
+done < <(find "$BUNDLE_DIR/Contents/Resources/runtime" -type f \( -name "*.dylib" -o -name "*.so" \) -print0)
 if [[ -f "$BUNDLE_DIR/Contents/Resources/runtime/python/bin/python3.12" ]]; then
   codesign --force --sign "$CODESIGN_ID" "$BUNDLE_DIR/Contents/Resources/runtime/python/bin/python3.12"
 fi
