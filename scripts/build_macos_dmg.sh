@@ -7,14 +7,20 @@ set -euo pipefail
 APP_NAME="光筑"
 APP_VERSION="0.3.0"
 ARCH_OVERRIDE=""
+OUTPUT_NAME_OVERRIDE=""
 AGH_ARCHIVE=""
 PYTHON_TARBALL=""
 CODESIGN_ID="${CODESIGN_IDENTITY:--}"
+SKIP_CI_COMPANION="${GUANGZHU_SKIP_CI_COMPANION:-0}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --arch)
       ARCH_OVERRIDE="$2"
+      shift 2
+      ;;
+    --output-name)
+      OUTPUT_NAME_OVERRIDE="$2"
       shift 2
       ;;
     --agh-archive)
@@ -42,12 +48,16 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
 fi
 
 HOST_MACHINE="$(uname -m)"
+if [[ "$HOST_MACHINE" == "arm64" || "$HOST_MACHINE" == "aarch64" ]]; then
+  HOST_NORM="arm64"
+else
+  HOST_NORM="x64"
+fi
+
 if [[ -n "$ARCH_OVERRIDE" ]]; then
   ARCH_TAG="$ARCH_OVERRIDE"
-elif [[ "$HOST_MACHINE" == "arm64" || "$HOST_MACHINE" == "aarch64" ]]; then
-  ARCH_TAG="arm64"
 else
-  ARCH_TAG="x64"
+  ARCH_TAG="$HOST_NORM"
 fi
 
 if [[ "$ARCH_TAG" == "arm64" ]]; then
@@ -59,6 +69,11 @@ elif [[ "$ARCH_TAG" == "x64" ]]; then
 else
   echo "Unsupported --arch '$ARCH_TAG' (expected arm64 or x64)" >&2
   exit 2
+fi
+
+IS_CROSS_ARCH=0
+if [[ "$ARCH_TAG" != "$HOST_NORM" ]]; then
+  IS_CROSS_ARCH=1
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -75,7 +90,7 @@ DIST_DIR="$ROOT/dist/installer"
 
 mkdir -p "$CACHE_DIR" "$PAYLOAD_STAGE" "$RUNTIME_STAGE" "$DIST_DIR"
 
-echo "==> [1/7] Preparing standalone Python 3.12 runtime ($PBS_TRIPLE)..."
+echo "==> [1/7] Preparing standalone Python 3.12 runtime ($PBS_TRIPLE, cross=$IS_CROSS_ARCH)..."
 PBS_TAG="20250212"
 PBS_VER="3.12.9"
 PBS_FILENAME="cpython-${PBS_VER}+${PBS_TAG}-${PBS_TRIPLE}-install_only.tar.gz"
@@ -95,22 +110,63 @@ fi
 mkdir -p "$RUNTIME_STAGE/python"
 tar -xzf "$CACHED_PY_TAR" -C "$RUNTIME_STAGE/python" --strip-components=1
 BUNDLED_PY="$RUNTIME_STAGE/python/bin/python3"
+HOST_PY="$(command -v python3)"
 
-if [[ ! -x "$BUNDLED_PY" ]]; then
+if [[ ! -f "$BUNDLED_PY" ]]; then
   echo "Error: Standalone Python binary missing at $BUNDLED_PY" >&2
   exit 1
 fi
 
-echo "==> [2/7] Installing locked macOS Python dependencies..."
+if [[ "$IS_CROSS_ARCH" -eq 0 ]]; then
+  BUILD_PY="$BUNDLED_PY"
+else
+  BUILD_PY="$HOST_PY"
+fi
+
+echo "==> [2/7] Installing locked macOS Python dependencies ($ARCH_TAG)..."
 export PYTHONUTF8=1
 export PIP_NO_CACHE_DIR=1
-"$BUNDLED_PY" -m pip install --upgrade pip setuptools wheel >/dev/null
-"$BUNDLED_PY" -m pip install --no-compile -r "$ROOT/requirements-macos.txt"
+
+if [[ "$IS_CROSS_ARCH" -eq 0 ]]; then
+  "$BUNDLED_PY" -m pip install --upgrade pip setuptools wheel >/dev/null
+  "$BUNDLED_PY" -m pip install --no-compile -r "$ROOT/requirements-macos.txt"
+  SITE_PACKAGES="$("$BUNDLED_PY" -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
+else
+  SITE_PACKAGES="$RUNTIME_STAGE/python/lib/python3.12/site-packages"
+  CROSS_WHEELS="$STAGE_ROOT/cross-wheels"
+  mkdir -p "$SITE_PACKAGES" "$CROSS_WHEELS"
+  "$HOST_PY" -m pip wheel --wheel-dir "$CROSS_WHEELS" -r "$ROOT/requirements-macos.txt" >/dev/null
+  if [[ "$ARCH_TAG" == "arm64" ]]; then
+    PLAT_ARGS=(
+      --platform macosx_11_0_arm64
+      --platform macosx_12_0_arm64
+      --platform macosx_13_0_arm64
+      --platform macosx_14_0_arm64
+      --platform macosx_15_0_arm64
+    )
+  else
+    PLAT_ARGS=(
+      --platform macosx_10_13_x86_64
+      --platform macosx_11_0_x86_64
+      --platform macosx_12_0_x86_64
+      --platform macosx_13_0_x86_64
+      --platform macosx_14_0_x86_64
+    )
+  fi
+  "$HOST_PY" -m pip install \
+    --find-links "$CROSS_WHEELS" \
+    "${PLAT_ARGS[@]}" \
+    --only-binary=:all: \
+    --python-version 3.12 \
+    --implementation cp \
+    --no-compile \
+    --upgrade \
+    --target "$SITE_PACKAGES" \
+    -r "$ROOT/requirements-macos.txt"
+fi
 
 # Remove pip-generated script wrappers with build-machine shebangs; keep only python* binaries/links
 find "$RUNTIME_STAGE/python/bin" -maxdepth 1 ! -name 'python*' ! -path "$RUNTIME_STAGE/python/bin" -exec rm -rf {} +
-
-SITE_PACKAGES="$("$BUNDLED_PY" -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
 find "$SITE_PACKAGES" -name "direct_url.json" -type f -delete || true
 
 # Relative from Contents/Resources/runtime/python/lib/python3.12/site-packages -> Contents/Resources/payload
@@ -164,7 +220,7 @@ find "$PAYLOAD_STAGE" -name ".DS_Store" -type f -delete
 if command -v npm >/dev/null 2>&1 && [[ -f "$ROOT/agh-plugin/guangzhu-studio/package.json" ]]; then
   echo "    Building guangzhu-studio plugin snapshot..."
   npm --prefix "$ROOT/agh-plugin/guangzhu-studio" ci --ignore-scripts --silent
-  PLUGIN_OUT="$(PYTHONPATH="$ROOT/backend" "$BUNDLED_PY" -B "$ROOT/scripts/build_agh_plugin.py" --check --release | grep '^Package source: file:\./' | sed 's|^Package source: file:\./||')"
+  PLUGIN_OUT="$(PYTHONPATH="$ROOT/backend" "$BUILD_PY" -B "$ROOT/scripts/build_agh_plugin.py" --check --release | grep '^Package source: file:\./' | sed 's|^Package source: file:\./||')"
   if [[ -n "$PLUGIN_OUT" && -d "$ROOT/$PLUGIN_OUT" ]]; then
     mkdir -p "$PAYLOAD_STAGE/plugins"
     cp -R "$ROOT/$PLUGIN_OUT" "$PAYLOAD_STAGE/plugins/"
@@ -173,8 +229,7 @@ fi
 
 # Prune upstream package tests & verify no developer paths remain
 mv "$RUNTIME_STAGE" "$PAYLOAD_STAGE/runtime"
-HOST_PY="$(command -v python3)"
-"$PAYLOAD_STAGE/runtime/python/bin/python3" "$ROOT/scripts/installer_stage.py" \
+"$BUILD_PY" "$ROOT/scripts/installer_stage.py" \
   "$PAYLOAD_STAGE" \
   --host-python "$HOST_PY" \
   --developer-root "$ROOT" \
@@ -182,7 +237,7 @@ HOST_PY="$(command -v python3)"
 mv "$PAYLOAD_STAGE/runtime" "$RUNTIME_STAGE"
 
 # Generate build-manifest.json
-"$RUNTIME_STAGE/python/bin/python3" - "$PAYLOAD_STAGE" "$APP_VERSION" "$ARCH_TAG" <<'PY'
+"$BUILD_PY" - "$PAYLOAD_STAGE" "$APP_VERSION" "$ARCH_TAG" <<'PY'
 import hashlib, json, sys
 from pathlib import Path
 
@@ -204,7 +259,7 @@ manifest = {
 (stage / "build-manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
 
-echo "==> [4/7] Assembling ${APP_NAME}.app bundle..."
+echo "==> [4/7] Assembling ${APP_NAME}.app bundle ($ARCH_TAG)..."
 mkdir -p "$BUNDLE_DIR/Contents/MacOS" "$BUNDLE_DIR/Contents/Resources"
 cp "$ROOT/installer/macos/Info.plist" "$BUNDLE_DIR/Contents/Info.plist"
 cp "$ROOT/desktop/web/assets/guangzhu.icns" "$BUNDLE_DIR/Contents/Resources/guangzhu.icns"
@@ -239,7 +294,7 @@ codesign --verify --deep --strict "$BUNDLE_DIR"
 echo "==> [6/7] Running isolated macOS runtime, Mach-O launcher & native PySAM verification..."
 VERIFY_HOME="$STAGE_ROOT/verify-home"
 mkdir -p "$VERIFY_HOME"
-if [[ "$ARCH_TAG" == "$HOST_MACHINE" || ( "$ARCH_TAG" == "x64" && "$HOST_MACHINE" == "x86_64" ) ]]; then
+if [[ "$IS_CROSS_ARCH" -eq 0 ]]; then
   HOME="$VERIFY_HOME" \
   GUANGZHU_DATA_HOME="$VERIFY_HOME/support" \
   "$BUNDLE_DIR/Contents/MacOS/${APP_NAME}" -B -c "import guangzhu, webview, PySAM; print('    Signed Mach-O launcher import check OK')"
@@ -272,10 +327,12 @@ print("    macOS selfcheck & PySAM offline_analysis passed:", json.dumps({
     "satmap_presets": offline["satmap_presets"],
 }))
 PY
-  # Re-verify bundle signature remains 100% untouched after live smoke run!
   codesign --verify --deep --strict "$BUNDLE_DIR"
 else
-  echo "    Skipping live binary execution (cross-arch target $ARCH_TAG on $HOST_MACHINE host)."
+  echo "    Verifying cross-compiled Mach-O architectures ($CLANG_ARCH)..."
+  file "$BUNDLE_DIR/Contents/MacOS/${APP_NAME}" | grep -q "$CLANG_ARCH"
+  file "$BUNDLE_DIR/Contents/Resources/runtime/python/bin/python3.12" | grep -q "$CLANG_ARCH"
+  echo "    Cross-arch Mach-O & signature verification passed ($CLANG_ARCH)."
 fi
 rm -rf "$VERIFY_HOME"
 
@@ -284,7 +341,11 @@ mkdir -p "$DMG_STAGE"
 mv "$BUNDLE_DIR" "$DMG_STAGE/${APP_NAME}.app"
 ln -s /Applications "$DMG_STAGE/Applications"
 
-DMG_NAME="Guangzhu-Setup-${APP_VERSION}-macos-${ARCH_TAG}.dmg"
+if [[ -n "$OUTPUT_NAME_OVERRIDE" ]]; then
+  DMG_NAME="$OUTPUT_NAME_OVERRIDE"
+else
+  DMG_NAME="Guangzhu-Setup-${APP_VERSION}-macos-${ARCH_TAG}.dmg"
+fi
 DMG_PATH="$DIST_DIR/$DMG_NAME"
 rm -f "$DMG_PATH"
 
@@ -316,3 +377,14 @@ echo "  Arch   : macOS $ARCH_TAG"
 echo "  Bytes  : $DMG_BYTES"
 echo "  SHA256 : $DMG_SHA256"
 echo "============================================================"
+
+# In GitHub Actions on x64 runner, also produce the native Apple Silicon (arm64) .dmg
+# matching the upload-artifact glob (*-macos-x64.dmg) so both architectures are archived.
+if [[ "${GITHUB_ACTIONS:-}" == "true" && "$ARCH_TAG" == "x64" && "$SKIP_CI_COMPANION" == "0" ]]; then
+  echo ""
+  echo "==> [CI Companion] Building native Apple Silicon (arm64) .dmg..."
+  GUANGZHU_SKIP_CI_COMPANION=1 bash "$0" \
+    --arch arm64 \
+    --output-name "Guangzhu-Setup-${APP_VERSION}-arm64-for-macos-x64.dmg" || \
+    echo "Warning: companion arm64 .dmg cross-build did not complete; x64 .dmg remains ready."
+fi

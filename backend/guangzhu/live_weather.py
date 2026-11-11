@@ -242,7 +242,7 @@ def _synthesize_offline_payload(lat: float, lon: float) -> dict[str, Any]:
         # Synthesize from pvlib clear-sky Ineichen model + latitude climatology (Open-Meteo preceding-hour mean [t-1h, t])
         loc = pvlib.location.Location(latitude=lat, longitude=lon, tz="Asia/Shanghai", altitude=50.0)
         cs = loc.get_clearsky(hourly_index - pd.Timedelta(minutes=30), model="ineichen")
-        day_of_year = hourly_index.dayofyear.to_numpy(dtype=float)
+        day_of_year = hourly_index.day_of_year.to_numpy(dtype=float)
         hour_of_day = hourly_index.hour.to_numpy(dtype=float)
 
         # Synoptic 7-day weather wave

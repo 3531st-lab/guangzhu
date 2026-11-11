@@ -264,7 +264,7 @@ def test_satmap_and_pvsyst_browser_e2e(tmp_path):
     """Verify #satmap 5-step workbench and PVsyst 8760h UI in real headless Chromium/Edge with 0 page errors."""
     import os
     from pathlib import Path
-    from playwright.sync_api import sync_playwright
+    sync_playwright = pytest.importorskip("playwright.sync_api").sync_playwright
     from guangzhu.config import ROOT
 
     client = TestClient(app)
@@ -278,7 +278,13 @@ def test_satmap_and_pvsyst_browser_e2e(tmp_path):
     out_dir = artifact_dir if artifact_dir.exists() else tmp_path
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(channel="msedge", headless=True)
+        try:
+            browser = p.chromium.launch(channel="msedge", headless=True)
+        except Exception:
+            try:
+                browser = p.chromium.launch(headless=True)
+            except Exception as exc:
+                pytest.skip(f"Headless browser unavailable: {exc}")
         page = browser.new_page(viewport={"width": 1520, "height": 920})
         page_errors: list[str] = []
         page.on("pageerror", lambda err: page_errors.append(str(err)))
