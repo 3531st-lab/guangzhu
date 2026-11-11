@@ -264,6 +264,7 @@ def test_satmap_and_pvsyst_browser_e2e(tmp_path):
     """Verify #satmap 5-step workbench and PVsyst 8760h UI in real headless Chromium/Edge with 0 page errors."""
     import os
     from pathlib import Path
+    import pytest
     sync_playwright = pytest.importorskip("playwright.sync_api").sync_playwright
     from guangzhu.config import ROOT
 

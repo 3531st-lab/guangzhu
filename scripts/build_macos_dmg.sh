@@ -138,6 +138,8 @@ else
   "$HOST_PY" -m pip wheel --wheel-dir "$CROSS_WHEELS" -r "$ROOT/requirements-macos.txt" >/dev/null
   if [[ "$ARCH_TAG" == "arm64" ]]; then
     PLAT_ARGS=(
+      --platform macosx_10_9_universal2
+      --platform macosx_11_0_universal2
       --platform macosx_11_0_arm64
       --platform macosx_12_0_arm64
       --platform macosx_13_0_arm64
@@ -146,6 +148,8 @@ else
     )
   else
     PLAT_ARGS=(
+      --platform macosx_10_9_universal2
+      --platform macosx_11_0_universal2
       --platform macosx_10_13_x86_64
       --platform macosx_11_0_x86_64
       --platform macosx_12_0_x86_64
