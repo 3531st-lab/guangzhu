@@ -7,7 +7,9 @@
     <key>CFBundleDisplayName</key>
     <string>光筑</string>
     <key>CFBundleExecutable</key>
-    <string>光筑</string>
+    <string>Guangzhu</string>
+    <key>LSHasLocalizedDisplayName</key>
+    <true/>
     <key>CFBundleIconFile</key>
     <string>guangzhu.icns</string>
     <key>CFBundleIdentifier</key>

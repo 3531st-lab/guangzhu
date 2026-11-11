@@ -250,14 +250,48 @@ def clean_cache(*, all_copies: bool = False) -> list[Path]:
     return removed
 
 
+def _prepare_posix_pysam(source: Path) -> Path:
+    """Mirror Pvwattsv8 and its .so/.df files to an ASCII /tmp directory if installed under a non-ASCII POSIX path."""
+    if str(source).isascii():
+        return source
+    package_version = version("nrel-pysam")
+    extension = next(
+        (source / ("Pvwattsv8" + suffix) for suffix in EXTENSION_SUFFIXES
+         if (source / ("Pvwattsv8" + suffix)).is_file()),
+        None,
+    )
+    if extension is None:
+        return source
+    required = [source / "__init__.py", source / "version.py", extension]
+    for lib_name in ("libSAM_api.so", "libssc.so", "libSAM_api.dylib", "libssc.dylib"):
+        cand = source / lib_name
+        if cand.is_file():
+            required.append(cand)
+    required.extend(sorted((source / "defaults").glob("pvwattsv8_*.df")))
+    files = {p.relative_to(source): _file_digest(p) for p in required if p.is_file()}
+    identity = _snapshot_identity(str(source), package_version, files)
+    uid = getattr(os, "getuid", lambda: 0)()
+    base_tmp = Path("/private/tmp") if Path("/private/tmp").is_dir() else Path("/tmp")
+    cache_root = (base_tmp / f"guangzhu-pysam-{uid}").resolve()
+    cache_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    target = cache_root / identity / "PySAM"
+    (target / "defaults").mkdir(parents=True, exist_ok=True)
+    for rel, digest in files.items():
+        dst = target / rel
+        if dst.is_file() and _file_digest(dst) == digest:
+            continue
+        tmp_dst = dst.with_name(f".{dst.name}.tmp-{uuid.uuid4().hex}")
+        shutil.copy2(source / rel, tmp_dst)
+        os.replace(tmp_dst, dst)
+    return target.resolve()
+
+
 def prepare_pysam() -> Path:
     """Return the actual runtime path, retaining DLL search handles until exit.
 
-    Windows PySAM resolves native data files through an ASCII path. A Unicode
-    installation therefore receives real copies of the Pvwattsv8 extension,
-    package metadata, DLLs, and Pvwattsv8 defaults. The cache identity includes
-    source path, installed version, and every selected file's content digest.
-    Other PySAM models are outside this runtime's current scope.
+    PySAM's C extension calls PyUnicode_AsASCIIString on __file__ when loading
+    defaults/*.df. A Unicode installation path on Windows or macOS therefore
+    receives real ASCII copies of Pvwattsv8, shared libraries, and defaults.
     """
     with _PREPARE_LOCK:
         package = importlib.import_module("PySAM")
@@ -265,7 +299,14 @@ def prepare_pysam() -> Path:
             raise RuntimeError("Cannot determine the physical PySAM installation path.")
         source = Path(package.__file__).resolve().parent
         if os.name != "nt":
-            return source
+            target = _prepare_posix_pysam(source)
+            if target != source:
+                directory = str(target)
+                package.__path__ = list(dict.fromkeys([directory, str(source)]))
+                if package.__spec__ is not None:
+                    package.__spec__.submodule_search_locations = package.__path__
+                importlib.invalidate_caches()
+            return target
         if str(source).isascii():
             target = source
         else:

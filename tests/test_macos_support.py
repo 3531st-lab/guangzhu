@@ -221,7 +221,9 @@ def test_macos_bundle_assets_and_shell_scripts_have_valid_formats_and_lf_endings
     plist_path = ROOT / "installer/macos/Info.plist"
     plist_data = plistlib.loads(plist_path.read_bytes())
     assert plist_data["CFBundleIdentifier"] == "cn.guangzhu.desktop"
-    assert plist_data["CFBundleExecutable"] == "光筑"
+    assert plist_data["CFBundleExecutable"] == "Guangzhu"
+    assert plist_data["CFBundleDisplayName"] == "光筑"
+    assert plist_data["LSHasLocalizedDisplayName"] is True
     assert plist_data["CFBundleIconFile"] == "guangzhu.icns"
     assert plist_data["LSMinimumSystemVersion"] == "11.0"
     assert plist_data["NSHighResolutionCapable"] is True

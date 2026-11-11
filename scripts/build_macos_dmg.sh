@@ -4,7 +4,8 @@
 #   bash scripts/build_macos_dmg.sh [--arch arm64|x64] [--agh-archive /path/to/agnes-darwin.tar.gz]
 set -euo pipefail
 
-APP_NAME="光筑"
+APP_NAME="Guangzhu"
+APP_DISPLAY_NAME="光筑"
 APP_VERSION="0.3.0"
 ARCH_OVERRIDE=""
 OUTPUT_NAME_OVERRIDE=""
@@ -269,6 +270,13 @@ mkdir -p "$BUNDLE_DIR/Contents/MacOS" "$BUNDLE_DIR/Contents/Resources"
 cp "$ROOT/installer/macos/Info.plist" "$BUNDLE_DIR/Contents/Info.plist"
 cp "$ROOT/desktop/web/assets/guangzhu.icns" "$BUNDLE_DIR/Contents/Resources/guangzhu.icns"
 cp "$ROOT/installer/macos/bootstrap_macos.py" "$BUNDLE_DIR/Contents/Resources/bootstrap_macos.py"
+for lproj in zh_CN.lproj zh-Hans.lproj en.lproj; do
+  mkdir -p "$BUNDLE_DIR/Contents/Resources/$lproj"
+  cat > "$BUNDLE_DIR/Contents/Resources/$lproj/InfoPlist.strings" <<EOF
+"CFBundleDisplayName" = "${APP_DISPLAY_NAME}";
+"CFBundleName" = "${APP_DISPLAY_NAME}";
+EOF
+done
 mv "$RUNTIME_STAGE" "$BUNDLE_DIR/Contents/Resources/runtime"
 mv "$PAYLOAD_STAGE" "$BUNDLE_DIR/Contents/Resources/payload"
 
@@ -357,7 +365,7 @@ rm -f "$DMG_PATH"
 
 for attempt in 1 2 3; do
   if hdiutil create \
-    -volname "${APP_NAME} ${APP_VERSION}" \
+    -volname "${APP_DISPLAY_NAME} ${APP_VERSION}" \
     -srcfolder "$DMG_STAGE" \
     -ov \
     -format UDZO \
