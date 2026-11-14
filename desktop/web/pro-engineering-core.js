@@ -8,19 +8,217 @@
  *   5. 18-Item Engineering BOM & Full 16-Sheet Layered AutoCAD DXF Generator
  * ============================================================================ */
 
+function parseOptionalSpecNum(val, fallbackWhenUndefined) {
+  if (val === null || val === '规格书未给出' || (typeof val === 'string' && val.trim() === '')) {
+    return null;
+  }
+  if (val !== undefined && Number.isFinite(Number(val))) {
+    return Number(val);
+  }
+  return fallbackWhenUndefined;
+}
+
+const KNOWN_MODULE_PRESETS = {
+  'trina-tsm-550de19': {
+    model: 'TSM-550DE19',
+    brand: '天合光能 (Trina)',
+    stc_w: 550,
+    length_m: 2.384,
+    width_m: 1.096,
+    weight_kg: 28.6,
+    vmp_v: 31.6,
+    imp_a: 17.4,
+    voc_v: 37.9,
+    isc_a: 18.52,
+    beta_voc_pct_c: -0.25,
+    gamma_pmax_pct_c: -0.34,
+    alpha_isc_pct_c: 0.04,
+    noct_c: 43,
+    max_system_v: 1500,
+    bifaciality: 0.70,
+  },
+  'runergy-hy-wh144p8-550': {
+    model: 'HY-WH144P8-550',
+    brand: '润阳新能源 (Runergy)',
+    stc_w: 550,
+    length_m: 2.278,
+    width_m: 1.134,
+    weight_kg: 28.1,
+    vmp_v: 41.96,
+    imp_a: 13.11,
+    voc_v: 49.9,
+    isc_a: 14.0,
+    beta_voc_pct_c: -0.26,
+    gamma_pmax_pct_c: -0.35,
+    alpha_isc_pct_c: 0.048,
+    noct_c: 45,
+    nmot_c: 42,
+    max_system_v: 1500,
+    bifaciality: 0.70,
+  },
+  'trina-tsm-605neg19rc20': {
+    model: 'TSM-NEG19RC.20 / 605 W',
+    brand: '天合光能 (Trina)',
+    stc_w: 605,
+    length_m: 2.382,
+    width_m: 1.134,
+    weight_kg: 33.7,
+    vmp_v: 40.5,
+    imp_a: 14.94,
+    voc_v: 48.7,
+    isc_a: 15.83,
+    beta_voc_pct_c: -0.24,
+    gamma_pmax_pct_c: -0.29,
+    alpha_isc_pct_c: 0.04,
+    noct_c: 43,
+    max_system_v: 1500,
+    bifaciality: 0.80,
+  },
+  'jinko-jkm605n-66hl4m-bdv': {
+    model: 'JKM605N-66HL4M-BDV',
+    brand: '晶科能源 (Jinko)',
+    stc_w: 605,
+    length_m: 2.382,
+    width_m: 1.134,
+    weight_kg: 32.4,
+    vmp_v: 40.31,
+    imp_a: 15.01,
+    voc_v: 48.48,
+    isc_a: 15.9,
+    beta_voc_pct_c: -0.25,
+    gamma_pmax_pct_c: -0.29,
+    alpha_isc_pct_c: 0.045,
+    noct_c: 45,
+    max_system_v: 1500,
+    bifaciality: 0.80,
+  },
+  'jinko-jkm580n-72hl4-bdv': {
+    model: 'JKM580N-72HL4-BDV 580W',
+    brand: '晶科能源 (Jinko)',
+    stc_w: 580,
+    length_m: 2.278,
+    width_m: 1.134,
+    weight_kg: 31.8,
+    vmp_v: 42.3,
+    imp_a: 13.71,
+    voc_v: 51.0,
+    isc_a: 14.47,
+    beta_voc_pct_c: -0.25,
+    gamma_pmax_pct_c: -0.29,
+    alpha_isc_pct_c: 0.045,
+    noct_c: 45,
+    max_system_v: 1500,
+    bifaciality: 0.80,
+  },
+  'longi-lr5-72hph-550m': {
+    model: 'LR5-72HPH-550M 550W',
+    brand: '隆基绿能 (LONGi)',
+    stc_w: 550,
+    length_m: 2.278,
+    width_m: 1.134,
+    weight_kg: 27.5,
+    vmp_v: 41.95,
+    imp_a: 13.12,
+    voc_v: 49.8,
+    isc_a: 13.98,
+    beta_voc_pct_c: -0.27,
+    gamma_pmax_pct_c: -0.34,
+    alpha_isc_pct_c: 0.05,
+    noct_c: 45,
+    max_system_v: 1500,
+    bifaciality: 0.70,
+  },
+  'longi-lr5-72htd-580m': {
+    model: 'LR5-72HTD-580M 580W',
+    brand: '隆基绿能 (LONGi)',
+    stc_w: 580,
+    length_m: 2.278,
+    width_m: 1.134,
+    weight_kg: 32.6,
+    vmp_v: 43.2,
+    imp_a: 13.43,
+    voc_v: 51.8,
+    isc_a: 14.25,
+    beta_voc_pct_c: -0.26,
+    gamma_pmax_pct_c: -0.29,
+    alpha_isc_pct_c: 0.045,
+    noct_c: 45,
+    max_system_v: 1500,
+    bifaciality: 0.75,
+  },
+  'tongwei-twmnd-72hs620': {
+    model: 'TWMND-72HS620 620W',
+    brand: '通威太阳能 (Tongwei)',
+    stc_w: 620,
+    length_m: 2.382,
+    width_m: 1.134,
+    weight_kg: 33.5,
+    vmp_v: 41.2,
+    imp_a: 15.05,
+    voc_v: 49.5,
+    isc_a: 15.92,
+    beta_voc_pct_c: -0.25,
+    gamma_pmax_pct_c: -0.29,
+    alpha_isc_pct_c: 0.045,
+    noct_c: 45,
+    max_system_v: 1500,
+    bifaciality: 0.80,
+  },
+};
+
+const KNOWN_INVERTER_PRESETS = {
+  'sungrow-sg100cx-p2': { model: 'SG100CX-P2', brand: '阳光电源', rated_ac_kw: 99.99, mppt_count: 12, strings_per_mppt: 2, max_mppt_current_a: 30, max_short_current_a: 50, mppt_v_min: 180, mppt_v_max: 1000, max_dc_v: 1100, mppt_full_load_v_min: 550, mppt_full_load_v_max: 850, max_eff_pct: 98.5, euro_eff_pct: 98.3 },
+  'sungrow-sg110cx-p2': { model: 'SG110CX-P2', brand: '阳光电源', rated_ac_kw: 110, mppt_count: 9, strings_per_mppt: 2, max_mppt_current_a: 30, max_short_current_a: 40, mppt_v_min: 200, mppt_v_max: 1000, max_dc_v: 1100, mppt_full_load_v_min: 550, mppt_full_load_v_max: 850, max_eff_pct: 98.7, euro_eff_pct: 98.5 },
+  'sungrow-sg50cx-p2': { model: 'SG50CX-P2', brand: '阳光电源', rated_ac_kw: 50, mppt_count: 4, strings_per_mppt: 2, max_mppt_current_a: 30, max_short_current_a: 40, mppt_v_min: 160, mppt_v_max: 1000, max_dc_v: 1100, mppt_full_load_v_min: 500, mppt_full_load_v_max: 800, max_eff_pct: 98.5, euro_eff_pct: 98.3 },
+  'sungrow-sg36cx-p2': { model: 'SG36CX-P2', brand: '阳光电源', rated_ac_kw: 36, mppt_count: 4, strings_per_mppt: 2, max_mppt_current_a: 30, max_short_current_a: 40, mppt_v_min: 200, mppt_v_max: 1000, max_dc_v: 1100, mppt_full_load_v_min: 500, mppt_full_load_v_max: 800, max_eff_pct: 98.5, euro_eff_pct: 98.3 },
+  'sungrow-sg125cx-p2': { model: 'SG125CX-P2', brand: '阳光电源', rated_ac_kw: 125, mppt_count: 12, strings_per_mppt: 2, max_mppt_current_a: 30, max_short_current_a: 40, mppt_v_min: 180, mppt_v_max: 1000, max_dc_v: 1100, mppt_full_load_v_min: 550, mppt_full_load_v_max: 850, max_eff_pct: 98.5, euro_eff_pct: 98.3 },
+  'huawei-sun2000-100ktl-m2': { model: 'SUN2000-100KTL-M2', brand: '华为', rated_ac_kw: 100, mppt_count: 10, strings_per_mppt: 2, max_mppt_current_a: 30, max_short_current_a: 40, mppt_v_min: 200, mppt_v_max: 1000, max_dc_v: 1100, mppt_full_load_v_min: null, mppt_full_load_v_max: null, max_eff_pct: 98.6, euro_eff_pct: 98.4 },
+  'huawei-sun2000-50ktl-m3': { model: 'SUN2000-50KTL-M3', brand: '华为', rated_ac_kw: 50, mppt_count: 4, strings_per_mppt: 2, max_mppt_current_a: 30, max_short_current_a: 40, mppt_v_min: 200, mppt_v_max: 1000, max_dc_v: 1100, mppt_full_load_v_min: null, mppt_full_load_v_max: null, max_eff_pct: 98.5, euro_eff_pct: 98.0 },
+  'huawei-sun2000-115ktl-m2': { model: 'SUN2000-115KTL-M2', brand: '华为', rated_ac_kw: 115, mppt_count: 10, strings_per_mppt: 2, max_mppt_current_a: 30, max_short_current_a: 40, mppt_v_min: 200, mppt_v_max: 1000, max_dc_v: 1100, mppt_full_load_v_min: null, mppt_full_load_v_max: null, max_eff_pct: 98.6, euro_eff_pct: 98.4 },
+  'huawei-sun2000-20ktl-m3': { model: 'SUN2000-20KTL-M3', brand: '华为', rated_ac_kw: 20, mppt_count: 2, strings_per_mppt: 2, max_mppt_current_a: 27, max_short_current_a: 39, mppt_v_min: 160, mppt_v_max: 1000, max_dc_v: 1100, mppt_full_load_v_min: 480, mppt_full_load_v_max: 800, max_eff_pct: 98.6, euro_eff_pct: 98.1 },
+};
+
 /**
  * Enrich a PV module object with full IEC 61215 / manufacturer datasheet coefficients.
  */
-export function enrichModuleSpec(mod) {
-  if (!mod) return null;
-  const stcW = Number(mod.stc_w) || 580;
+export function enrichModuleSpec(rawMod) {
+  if (!rawMod) return null;
+  const modKey = String(rawMod.id ?? rawMod.module_id ?? '').trim().toLowerCase();
+  const mod = modKey && KNOWN_MODULE_PRESETS[modKey]
+    ? { ...KNOWN_MODULE_PRESETS[modKey], ...rawMod }
+    : rawMod;
+  const stcW = Number(mod.stc_w ?? mod.pmax_w) || 580;
   const lenM = Number(mod.length_m) || 2.278;
   const widM = Number(mod.width_m) || 1.134;
   const areaM2 = Math.max(0.5, lenM * widM);
-  const isNType = /N|TOPCon|BDV|NEG|HTD|HS/i.test(String(mod.model || ''));
-  return {
+  const maxSysV = Number(mod.max_system_v ?? mod.max_system_voltage_v) || 1500;
+  const modelStr = String(mod.model || mod.name || mod.id || mod.module_id || `${stcW}Wp 双面单晶组件`).trim() || `${stcW}Wp 双面单晶组件`;
+  const isNType = /N|TOPCon|BDV|NEG|HTD|HS/i.test(modelStr);
+  const rawVmp = Number(mod.vmp_v ?? mod.vmpp_v);
+  const vmpV = Number.isFinite(rawVmp) && rawVmp > 0
+    ? rawVmp
+    : Number((stcW >= 600 ? 40.5 : stcW <= 560 ? 41.95 : 42.3).toFixed(2));
+  const rawVoc = Number(mod.voc_v);
+  const vocV = Number.isFinite(rawVoc) && rawVoc > 0
+    ? rawVoc
+    : Number((vmpV * 1.205).toFixed(2));
+  const rawImp = Number(mod.imp_a ?? mod.impp_a);
+  const impA = Number.isFinite(rawImp) && rawImp > 0
+    ? rawImp
+    : Number((stcW / Math.max(10, vmpV)).toFixed(2));
+  const rawIsc = Number(mod.isc_a);
+  const iscA = Number.isFinite(rawIsc) && rawIsc > 0
+    ? rawIsc
+    : Number((impA * 1.06).toFixed(2));
+  const out = {
     ...mod,
+    model: modelStr,
     stc_w: stcW,
+    pmax_w: Number.isFinite(Number(mod.pmax_w)) && Number(mod.pmax_w) > 0 ? Number(mod.pmax_w) : stcW,
+    vmp_v: vmpV,
+    voc_v: vocV,
+    imp_a: impA,
+    isc_a: iscA,
     length_m: lenM,
     width_m: widM,
     area_m2: Number(areaM2.toFixed(3)),
@@ -34,34 +232,63 @@ export function enrichModuleSpec(mod) {
     alpha_isc_pct_c: Number.isFinite(Number(mod.alpha_isc_pct_c))
       ? Number(mod.alpha_isc_pct_c)
       : 0.045,
-    noct_c: Number(mod.noct_c) || 45,
-    max_system_v: Number(mod.max_system_v) || 1500,
-    weight_kg: Number(mod.weight_kg) || (lenM > 2.32 ? 33.5 : 31.8),
+    noct_c: Number.isFinite(Number(mod.noct_c)) && Number(mod.noct_c) > 0 ? Number(mod.noct_c) : 45,
+    max_system_v: maxSysV,
+    max_system_voltage_v: maxSysV,
+    weight_kg: Number.isFinite(Number(mod.weight_kg)) && Number(mod.weight_kg) > 0
+      ? Number(mod.weight_kg)
+      : (lenM > 2.32 ? 33.5 : 31.8),
     cells_in_series: Number(mod.cells_in_series) || 144,
     bifaciality: Number.isFinite(Number(mod.bifaciality)) ? Number(mod.bifaciality) : 0.80,
     technology_zh: mod.technology_zh || (isNType ? 'N型双面双玻单晶组件' : '高效双面单晶组件'),
   };
+  if (mod.nmot_c !== undefined) {
+    out.nmot_c = parseOptionalSpecNum(mod.nmot_c, null);
+  }
+  return out;
 }
 
 /**
  * Enrich a string inverter object with full efficiency & MPPT full-load window specs.
+ * Preserves explicit `null` / `"规格书未给出"` without overwriting with heuristic defaults.
  */
-export function enrichInverterSpec(inv) {
-  if (!inv) return null;
+export function enrichInverterSpec(rawInv) {
+  if (!rawInv) return null;
+  const invKey = String(rawInv.id ?? rawInv.inverter_id ?? '').trim().toLowerCase();
+  const inv = invKey && KNOWN_INVERTER_PRESETS[invKey]
+    ? { ...KNOWN_INVERTER_PRESETS[invKey], ...rawInv }
+    : rawInv;
   const acKw = Number(inv.rated_ac_kw) || 110;
-  const maxDcV = Number(inv.max_dc_v) || 1100;
-  const mpptMin = Number(inv.mppt_v_min) || 200;
-  const mpptMax = Number(inv.mppt_v_max) || 1000;
+  const modelStr = String(inv.model || inv.name || inv.id || inv.inverter_id || `SG${Math.round(acKw)}CX`).trim() || `SG${Math.round(acKw)}CX`;
+  const maxDcV = Number(inv.max_dc_v ?? inv.max_dc_voltage_v) || 1100;
+  const mpptMin = Number(inv.mppt_v_min ?? inv.mppt_min_v) || 200;
+  const mpptMax = Number(inv.mppt_v_max ?? inv.mppt_max_v) || 1000;
+  const mpptCount = Math.max(1, Math.round(Number(inv.mppt_count) || 9));
+  const stringsPerMppt = Math.max(1, Math.round(Number(inv.strings_per_mppt) || 2));
+  const maxMpptCurr = Number(inv.max_mppt_current_a ?? inv.max_input_current_per_mppt_a) || 30;
+  const maxShortCurr = Number(
+    inv.max_isc_per_mppt_a ?? inv.max_short_current_a ?? inv.max_short_circuit_current_per_mppt_a
+  ) || 40;
+  const rawFlMin = inv.mppt_full_load_v_min !== undefined ? inv.mppt_full_load_v_min : inv.full_load_mppt_min_v;
+  const rawFlMax = inv.mppt_full_load_v_max !== undefined ? inv.mppt_full_load_v_max : inv.full_load_mppt_max_v;
+  const rawMaxEff = inv.max_eff_pct !== undefined ? inv.max_eff_pct : inv.max_efficiency_pct;
+  const rawEuroEff = inv.euro_eff_pct !== undefined ? inv.euro_eff_pct : inv.weighted_efficiency_pct;
   return {
     ...inv,
+    model: modelStr,
     rated_ac_kw: acKw,
     max_dc_v: maxDcV,
+    mppt_count: mpptCount,
+    strings_per_mppt: stringsPerMppt,
+    max_mppt_current_a: maxMpptCurr,
+    max_short_current_a: maxShortCurr,
+    max_isc_per_mppt_a: maxShortCurr,
     mppt_v_min: mpptMin,
     mppt_v_max: mpptMax,
-    mppt_full_load_v_min: Number(inv.mppt_full_load_v_min) || (acKw >= 80 ? 520 : acKw >= 30 ? 480 : 320),
-    mppt_full_load_v_max: Number(inv.mppt_full_load_v_max) || Math.min(850, mpptMax),
-    max_eff_pct: Number(inv.max_eff_pct) || (acKw >= 100 ? 98.8 : 98.6),
-    euro_eff_pct: Number(inv.euro_eff_pct) || (acKw >= 100 ? 98.5 : 98.2),
+    mppt_full_load_v_min: parseOptionalSpecNum(rawFlMin, acKw >= 80 ? 520 : acKw >= 30 ? 480 : 320),
+    mppt_full_load_v_max: parseOptionalSpecNum(rawFlMax, Math.min(850, mpptMax)),
+    max_eff_pct: parseOptionalSpecNum(rawMaxEff, acKw >= 100 ? 98.8 : 98.6),
+    euro_eff_pct: parseOptionalSpecNum(rawEuroEff, acKw >= 100 ? 98.5 : 98.2),
     nominal_ac_v: Number(inv.nominal_ac_v) || (acKw >= 150 ? 800 : 400),
   };
 }
@@ -225,7 +452,7 @@ export function parseOndFile(text) {
 export function serializeOndFile(invInput) {
   const inv = enrichInverterSpec(invInput);
   const nbInputs = inv.mppt_count * inv.strings_per_mppt;
-  return [
+  const lines = [
     'PVObject_=pvGInverter',
     '  Version=Guangzhu-2026.11',
     '  PVObject_Commercial=pvCommercial',
@@ -244,11 +471,11 @@ export function serializeOndFile(invInput) {
     `  IScMaxPerMPPT=${inv.max_short_current_a}`,
     `  IMaxDC=${(inv.max_mppt_current_a * inv.mppt_count).toFixed(1)}`,
     `  IScMax=${(inv.max_short_current_a * inv.mppt_count).toFixed(1)}`,
-    `  EfficMax=${inv.max_eff_pct}`,
-    `  EfficEuro=${inv.euro_eff_pct}`,
-    'End of PVObject pvGInverter',
-    '',
-  ].join('\r\n');
+  ];
+  if (inv.max_eff_pct != null) lines.push(`  EfficMax=${inv.max_eff_pct}`);
+  if (inv.euro_eff_pct != null) lines.push(`  EfficEuro=${inv.euro_eff_pct}`);
+  lines.push('End of PVObject pvGInverter', '');
+  return lines.join('\r\n');
 }
 
 /* ============================================================================
@@ -332,11 +559,14 @@ function calcPolylineLenM(pts) {
 export function computeStringSizingAndCables({
   module: rawMod,
   inverter: rawInv,
-  modulesPerString = 18,
+  modulesPerString = null,
+  totalModules = null,
   lat = 32.46,
   lon = 119.92,
   customTminC = null,
   customTcellHotC = null,
+  tminC = null,
+  tmaxCellC = null,
   strings = [],
   dcSectionMm2 = 4,
   acMaterial = 'cu',
@@ -346,23 +576,30 @@ export function computeStringSizingAndCables({
   const mod = enrichModuleSpec(rawMod);
   const inv = enrichInverterSpec(rawInv);
   const climate = estimateSiteClimateExtremes(lat, lon);
-  const tMinC = customTminC != null && Number.isFinite(Number(customTminC)) ? Number(customTminC) : climate.tMinC;
-  const tCellHotC = customTcellHotC != null && Number.isFinite(Number(customTcellHotC)) ? Number(customTcellHotC) : climate.tCellHotC;
+  const rawTmin = customTminC != null ? customTminC : tminC;
+  const rawThot = customTcellHotC != null ? customTcellHotC : tmaxCellC;
+  const tMinC = rawTmin != null && Number.isFinite(Number(rawTmin)) ? Number(rawTmin) : climate.tMinC;
+  const tCellHotC = rawThot != null && Number.isFinite(Number(rawThot)) ? Number(rawThot) : climate.tCellHotC;
 
   const betaVoc = mod.beta_voc_pct_c / 100; // negative, e.g. -0.0025 / °C
-  const betaVmp = (mod.gamma_pmax_pct_c - 0.03) / 100; // Vmp temp coeff slightly steeper than Voc
+  const betaVmp = mod.gamma_pmax_pct_c / 100; // aligned with backend electrical.py
+  const alphaIsc = (mod.alpha_isc_pct_c ?? 0.045) / 100;
 
   const vocSingleCold = mod.voc_v * (1 + betaVoc * (tMinC - 25));
   const vmpSingleCold = mod.vmp_v * (1 + betaVmp * (tMinC - 25));
   const vmpSingleHot = mod.vmp_v * (1 + betaVmp * (tCellHotC - 25));
+  const iscSingleHot = mod.isc_a * (1 + alphaIsc * (tCellHotC - 25));
 
   const maxAllowedSysV = Math.min(inv.max_dc_v, mod.max_system_v);
   const maxModsVoc = Math.floor(maxAllowedSysV / Math.max(1, vocSingleCold));
-  const maxModsMppt = Math.floor(inv.mppt_v_max / Math.max(1, vmpSingleCold * 0.96));
+  const maxModsMppt = Math.floor(inv.mppt_v_max / Math.max(1, vmpSingleCold));
   const nMax = Math.max(1, Math.min(maxModsVoc, maxModsMppt));
 
+  const effFullLoadMinV = inv.mppt_full_load_v_min != null ? inv.mppt_full_load_v_min : inv.mppt_v_min;
+  const effFullLoadMaxV = inv.mppt_full_load_v_max != null ? inv.mppt_full_load_v_max : inv.mppt_v_max;
+
   const nMinMppt = Math.ceil(inv.mppt_v_min / Math.max(1, vmpSingleHot));
-  const nMinFullLoad = Math.ceil(inv.mppt_full_load_v_min / Math.max(1, vmpSingleHot));
+  const nMinFullLoad = Math.ceil(effFullLoadMinV / Math.max(1, vmpSingleHot));
   const nMin = Math.max(4, nMinMppt);
 
   // Target 640~740V nominal Vmp for 1100V three-phase inverter peak efficiency
@@ -370,7 +607,8 @@ export function computeStringSizingAndCables({
   let nOpt = Math.round(targetNominalV / Math.max(1, mod.vmp_v));
   nOpt = Math.max(Math.min(nMax, Math.max(nMin, nMinFullLoad)), Math.min(nMax, nOpt));
 
-  const ns = Math.max(1, Math.round(Number(modulesPerString) || nOpt));
+  const explicitZero = modulesPerString === 0 || totalModules === 0;
+  const ns = explicitZero ? 0 : Math.max(1, Math.round(Number(modulesPerString) || nOpt));
   const vmpStcV = Number((ns * mod.vmp_v).toFixed(1));
   const vocStcV = Number((ns * mod.voc_v).toFixed(1));
   const vocColdV = Number((ns * vocSingleCold).toFixed(1));
@@ -379,8 +617,8 @@ export function computeStringSizingAndCables({
 
   const vocSafe = vocColdV <= maxAllowedSysV;
   const vmpColdSafe = vmpColdV <= inv.mppt_v_max;
-  const mpptSafe = vmpHotV >= inv.mppt_v_min && vmpStcV <= inv.mppt_v_max && vmpColdSafe;
-  const fullLoadSafe = vmpHotV >= inv.mppt_full_load_v_min;
+  const mpptSafe = ns > 0 && vmpHotV >= inv.mppt_v_min && vmpStcV <= inv.mppt_v_max && vmpColdSafe;
+  const fullLoadSafe = ns > 0 && vmpHotV >= effFullLoadMinV && vmpStcV <= effFullLoadMaxV;
 
   // Per-string physical DC cable routing length & ohmic voltage drop
   // Copper resistivity at 70°C: 0.0214 Ω·mm²/m
@@ -461,9 +699,18 @@ export function computeStringSizingAndCables({
     nOpt,
     nMinFullLoad,
     modulesPerString: ns,
+    recN: ns,
+    totalStrings: Array.isArray(strings) && strings.length > 0
+      ? strings.length
+      : (totalModules != null && Number.isFinite(Number(totalModules))
+        ? (Number(totalModules) > 0 && ns > 0 ? Math.floor(Number(totalModules) / ns) : 0)
+        : 0),
     vocSingleCold,
     vmpSingleCold,
     vmpSingleHot,
+    iscSingleHot,
+    effFullLoadMinV,
+    effFullLoadMaxV,
     vmpStcV,
     vocStcV,
     vocColdV,

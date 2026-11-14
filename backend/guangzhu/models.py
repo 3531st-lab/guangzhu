@@ -568,12 +568,13 @@ def normalize_inverter_brand(value):
     """Stable IDs shared by project validation and installation catalogs."""
     aliases = {'sungrow': 'Sungrow', '阳光电源': 'Sungrow', 'huawei': 'Huawei', '华为': 'Huawei',
                'ginlong': 'Ginlong', 'ginlong solis': 'Ginlong', 'solis': 'Ginlong', '锦浪': 'Ginlong',
-               'goodwe': 'GoodWe', '固德威': 'GoodWe'}
+               'goodwe': 'GoodWe', '固德威': 'GoodWe',
+               'growatt': 'Growatt', '古瑞瓦特': 'Growatt'}
     return aliases.get(' '.join(value.split()).casefold(), value) if isinstance(value, str) else value
 
 
 class Equipment(Record):
-    inverter_brand: Literal['Sungrow', 'Huawei', 'Ginlong', 'GoodWe'] | None = None
+    inverter_brand: Literal['Sungrow', 'Huawei', 'Ginlong', 'GoodWe', 'Growatt'] | None = None
     module_id: str
     inverter_id: str | None = None
     racking: str = "ballast_tilt"

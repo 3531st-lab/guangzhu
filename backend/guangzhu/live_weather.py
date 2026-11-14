@@ -87,11 +87,21 @@ def wmo_code_to_zh(code: int | float | None) -> str:
     return "雷阵雨"
 
 
+def _finite_float(val: Any, name: str) -> float:
+    if isinstance(val, bool):
+        raise ValueError(f"{name} must be a finite number, not bool.")
+    out = float(val)
+    if not math.isfinite(out):
+        raise ValueError(f"{name} must be a finite number.")
+    return out
+
+
 def _validate_coords(lat: float, lon: float) -> tuple[float, float]:
-    lat_f, lon_f = float(lat), float(lon)
-    if not math.isfinite(lat_f) or not -90.0 <= lat_f <= 90.0:
+    lat_f = _finite_float(lat, "lat")
+    lon_f = _finite_float(lon, "lon")
+    if not -90.0 <= lat_f <= 90.0:
         raise ValueError("Latitude must be finite and within [-90, 90].")
-    if not math.isfinite(lon_f) or not -180.0 <= lon_f <= 180.0:
+    if not -180.0 <= lon_f <= 180.0:
         raise ValueError("Longitude must be finite and within [-180, 180].")
     return lat_f, lon_f
 
@@ -141,6 +151,14 @@ def _compute_poa_and_power_series(
     tilt_deg: float,
     azimuth_deg: float,
     ac_kw: float | None = None,
+    sub_arrays: list[dict[str, Any]] | None = None,
+    bifacial: bool = False,
+    bifaciality: float = 0.75,
+    albedo: float = 0.25,
+    gamma_pdc_pct_c: float = -0.34,
+    inverter_eff_nom: float = 0.982,
+    uc_w_m2k: float = 29.0,
+    uv_w_m2k_ms: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Compute hourly/instantaneous POA (W/m2), Faiman cell temp (°C), and AC power (kW)."""
     ghi = np.clip(np.nan_to_num(np.asarray(ghi, dtype=float), nan=0.0), 0.0, 1450.0)
@@ -156,38 +174,73 @@ def _compute_poa_and_power_series(
     dni_extra = pvlib.irradiance.get_extra_radiation(times_local).to_numpy(dtype=float)
     airmass = np.nan_to_num(pvlib.atmosphere.get_relative_airmass(zenith), nan=1.5)
 
-    irrad = pvlib.irradiance.get_total_irradiance(
-        surface_tilt=float(tilt_deg),
-        surface_azimuth=float(azimuth_deg),
-        solar_zenith=zenith,
-        solar_azimuth=s_azimuth,
-        ghi=ghi,
-        dni=dni,
-        dhi=dhi,
-        dni_extra=dni_extra,
-        airmass=airmass,
-        albedo=0.22,
-        model="isotropic",
-    )
-    poa = np.nan_to_num(np.asarray(irrad["poa_global"], dtype=float), nan=0.0)
-    poa = np.where((ghi <= 0.0) | (zenith >= 91.5), 0.0, np.clip(poa, 0.0, 1500.0))
+    eff_albedo = max(0.05, min(0.85, float(albedo)))
+    eff_bifi = max(0.0, min(1.25, float(bifaciality))) if bifacial else 0.0
+    temp_coeff = abs(float(gamma_pdc_pct_c)) / 100.0
+    inv_eff = max(0.85, min(1.0, float(inverter_eff_nom)))
 
-    # Faiman cell temperature model: T_cell = T_amb + alpha * POA / (Uc + Uv * wind)
-    t_cell = temp_c + (0.78 * poa) / (29.0 + 1.2 * wind_ms)
+    planes: list[tuple[float, float, float]] = []
+    if isinstance(sub_arrays, list):
+        for sa in sub_arrays:
+            if not isinstance(sa, dict):
+                continue
+            sa_kw = float(sa.get("dc_kw") or 0.0)
+            if sa_kw > 0.01:
+                planes.append((
+                    sa_kw,
+                    float(np.clip(float(sa.get("tilt_deg", tilt_deg)), 0.0, 90.0)),
+                    float(sa.get("azimuth_deg", azimuth_deg)) % 360.0,
+                ))
+    if not planes:
+        planes = [(max(0.0, float(dc_kw)), float(tilt_deg), float(azimuth_deg) % 360.0)]
 
-    # Instantaneous AC power model with IAM/soiling, temperature coefficient (-0.30%/°C),
-    # bifacial/system factor, and inverter clipping at DC/AC = 1.20
-    eff_poa = poa * 0.965 * 1.032  # net after IAM, soiling, and modest bifacial contribution
-    temp_factor = np.clip(1.0 - 0.0030 * (t_cell - 25.0), 0.72, 1.12)
+    total_plane_kw = sum(p[0] for p in planes)
+    poa_accum = np.zeros_like(ghi, dtype=float)
+    tcell_accum = np.zeros_like(ghi, dtype=float)
+    dc_power_accum = np.zeros_like(ghi, dtype=float)
+
+    for sa_kw, sa_tilt, sa_az in planes:
+        irrad = pvlib.irradiance.get_total_irradiance(
+            surface_tilt=sa_tilt,
+            surface_azimuth=sa_az,
+            solar_zenith=zenith,
+            solar_azimuth=s_azimuth,
+            ghi=ghi,
+            dni=dni,
+            dhi=dhi,
+            dni_extra=dni_extra,
+            airmass=airmass,
+            albedo=eff_albedo,
+            model="isotropic",
+        )
+        sa_poa = np.nan_to_num(np.asarray(irrad["poa_global"], dtype=float), nan=0.0)
+        sa_poa = np.where((ghi <= 0.0) | (zenith >= 91.5), 0.0, np.clip(sa_poa, 0.0, 1500.0))
+
+        sa_rear = np.zeros_like(sa_poa, dtype=float)
+        if eff_bifi > 0.0:
+            rear_vf = 0.50 * (1.0 + math.cos(math.radians(sa_tilt))) * 0.48
+            sa_rear = np.where((ghi <= 0.0) | (zenith >= 91.5), 0.0, ghi * eff_albedo * rear_vf * eff_bifi)
+
+        # Faiman cell temperature model: T_cell = T_amb + alpha * POA / (Uc + Uv * wind)
+        u_denom = np.maximum(4.0, float(uc_w_m2k) + float(uv_w_m2k_ms) * np.maximum(0.0, wind_ms))
+        sa_tcell = temp_c + (0.78 * sa_poa) / u_denom
+        sa_eff_poa = sa_poa * 0.965 + sa_rear * 0.95
+        sa_temp_factor = np.clip(1.0 - temp_coeff * (sa_tcell - 25.0), 0.70, 1.12)
+
+        weight = (sa_kw / total_plane_kw) if total_plane_kw > 0.0 else (1.0 / len(planes))
+        poa_accum += sa_poa * weight
+        tcell_accum += sa_tcell * weight
+        dc_power_accum += sa_kw * (sa_eff_poa / 1000.0) * sa_temp_factor * 0.965
+
     if float(dc_kw) <= 0.0 or (ac_kw is not None and float(ac_kw) <= 0.0):
-        ac_power_kw = np.zeros_like(poa, dtype=float)
+        ac_power_kw = np.zeros_like(poa_accum, dtype=float)
     else:
-        dc_power_kw = float(dc_kw) * (eff_poa / 1000.0) * temp_factor * 0.965
-        ac_unclipped_kw = dc_power_kw * 0.984
+        dc_scale = (float(dc_kw) / total_plane_kw) if total_plane_kw > 0.0 else 0.0
+        ac_unclipped_kw = (dc_power_accum * dc_scale) * inv_eff
         ac_cap_kw = float(ac_kw) if (ac_kw is not None and float(ac_kw) > 0.0) else (float(dc_kw) / 1.15)
         ac_power_kw = np.clip(ac_unclipped_kw, 0.0, ac_cap_kw)
-        ac_power_kw = np.where(poa < 3.0, 0.0, ac_power_kw)
-    return poa, t_cell, ac_power_kw
+        ac_power_kw = np.where(poa_accum < 3.0, 0.0, ac_power_kw)
+    return poa_accum, tcell_accum, ac_power_kw
 
 
 def _synthesize_offline_payload(lat: float, lon: float) -> dict[str, Any]:
@@ -347,24 +400,61 @@ def fetch_live_weather(
     ac_kw: float | None = None,
     tilt_deg: float = 15.0,
     azimuth_deg: float = 180.0,
+    sub_arrays: list[dict[str, Any]] | None = None,
+    bifacial: bool = False,
+    bifaciality: float = 0.75,
+    albedo: float = 0.25,
+    gamma_pdc_pct_c: float = -0.34,
+    inverter_eff_nom: float = 0.982,
+    uc_w_m2k: float = 29.0,
+    uv_w_m2k_ms: float = 0.0,
     offline: bool = False,
 ) -> dict[str, Any]:
     """Fetch official real-time & 7-day forecast weather + solar irradiance with disk cache and TMY fallback."""
     lat, lon = _validate_coords(lat, lon)
-    dc_kw = float(dc_kw)
-    if not np.isfinite(dc_kw) or dc_kw < 0.0:
+    dc_kw = _finite_float(dc_kw, "dc_kw")
+    if dc_kw < 0.0:
         raise ValueError("dc_kw must be a finite number >= 0.")
     if ac_kw is not None:
-        ac_kw = float(ac_kw)
-        if not np.isfinite(ac_kw) or ac_kw < 0.0:
+        ac_kw = _finite_float(ac_kw, "ac_kw")
+        if ac_kw < 0.0:
             raise ValueError("ac_kw must be a finite number >= 0.")
-    tilt_deg = float(tilt_deg)
-    if not np.isfinite(tilt_deg) or not (0.0 <= tilt_deg <= 90.0):
+    uc_w_m2k = _finite_float(uc_w_m2k, "uc_w_m2k")
+    uv_w_m2k_ms = _finite_float(uv_w_m2k_ms, "uv_w_m2k_ms")
+    if uc_w_m2k <= 0.0:
+        raise ValueError("uc_w_m2k must be a finite number > 0.")
+    if uv_w_m2k_ms < 0.0:
+        raise ValueError("uv_w_m2k_ms must be a finite number >= 0.")
+    tilt_deg = _finite_float(tilt_deg, "tilt_deg")
+    if not (0.0 <= tilt_deg <= 90.0):
         raise ValueError("tilt_deg must be within [0, 90].")
-    azimuth_deg = float(azimuth_deg)
-    if not np.isfinite(azimuth_deg):
-        raise ValueError("azimuth_deg must be finite.")
-    azimuth_deg = float(azimuth_deg % 360.0)
+    azimuth_deg = float(_finite_float(azimuth_deg, "azimuth_deg") % 360.0)
+    albedo = _finite_float(albedo, "albedo")
+    if not (0.0 <= albedo <= 1.0):
+        raise ValueError("albedo must be within [0, 1].")
+    bifaciality = _finite_float(bifaciality, "bifaciality")
+    if not (0.0 <= bifaciality <= 1.25):
+        raise ValueError("bifaciality must be within [0, 1.25].")
+    gamma_pdc_pct_c = _finite_float(gamma_pdc_pct_c, "gamma_pdc_pct_c")
+    if not (-2.0 <= gamma_pdc_pct_c <= 0.5):
+        raise ValueError("gamma_pdc_pct_c must be within [-2.0, 0.5].")
+    inverter_eff_nom = _finite_float(inverter_eff_nom, "inverter_eff_nom")
+    if not (0.0 < inverter_eff_nom <= 1.0):
+        raise ValueError("inverter_eff_nom must be within (0, 1].")
+    if sub_arrays is not None:
+        if not isinstance(sub_arrays, list):
+            raise ValueError("sub_arrays must be a list.")
+        for sa in sub_arrays:
+            if not isinstance(sa, dict):
+                raise ValueError("Each sub_arrays entry must be an object.")
+            if sa.get("dc_kw") is not None and _finite_float(sa["dc_kw"], "sub_arrays.dc_kw") < 0.0:
+                raise ValueError("sub_arrays.dc_kw must be >= 0.")
+            if sa.get("tilt_deg") is not None:
+                sa_t = _finite_float(sa["tilt_deg"], "sub_arrays.tilt_deg")
+                if not (0.0 <= sa_t <= 90.0):
+                    raise ValueError("sub_arrays.tilt_deg must be within [0, 90].")
+            if sa.get("azimuth_deg") is not None:
+                _finite_float(sa["azimuth_deg"], "sub_arrays.azimuth_deg")
 
     payload: dict[str, Any] | None = None
     mode = "live_official_api"
@@ -431,6 +521,14 @@ def fetch_live_weather(
         tilt_deg=tilt_deg,
         azimuth_deg=azimuth_deg,
         ac_kw=ac_kw,
+        sub_arrays=sub_arrays,
+        bifacial=bifacial,
+        bifaciality=bifaciality,
+        albedo=albedo,
+        gamma_pdc_pct_c=gamma_pdc_pct_c,
+        inverter_eff_nom=inverter_eff_nom,
+        uc_w_m2k=uc_w_m2k,
+        uv_w_m2k_ms=uv_w_m2k_ms,
     )
 
     # Current conditions
@@ -469,6 +567,14 @@ def fetch_live_weather(
         tilt_deg=tilt_deg,
         azimuth_deg=azimuth_deg,
         ac_kw=ac_kw,
+        sub_arrays=sub_arrays,
+        bifacial=bifacial,
+        bifaciality=bifaciality,
+        albedo=albedo,
+        gamma_pdc_pct_c=gamma_pdc_pct_c,
+        inverter_eff_nom=inverter_eff_nom,
+        uc_w_m2k=uc_w_m2k,
+        uv_w_m2k_ms=uv_w_m2k_ms,
     )
     cur_poa = float(cur_poa_arr[0])
     cur_tcell = float(cur_tcell_arr[0])

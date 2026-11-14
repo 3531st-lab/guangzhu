@@ -14,11 +14,25 @@ from shapely.geometry import Polygon
 
 from .config import ROOT, SHADING_THRESHOLD_PCT
 from .models import Design, GzError, validate_project, validated, obstacle_polygon
-from .shading_geometry import build_scene, sample_points, ray_hits, ray_candidates, candidate_hits, sun_vector, beam_fractions, shadow_polygons, pole_shadow
+from .shading_geometry import (
+    build_scene,
+    sample_points,
+    ray_hits,
+    ray_candidates,
+    candidate_hits,
+    candidate_hits_coded,
+    sun_vector,
+    beam_fractions,
+    beam_fractions_coded,
+    shadow_polygons,
+    pole_shadow,
+)
 from .solar import sun_position, poa_irradiance
 from .weather import load_nasa_hourly
 from .runtime_diagnostics import stage
 from . import orientation
+
+_DEFAULT_RAY_HITS = ray_hits
 
 
 def _front_mask(design):
@@ -174,19 +188,28 @@ def analyze_design(project, design, *, offline=False, _site=None, _ray_hits=None
     beam=np.zeros(len(design.modules))
     causes=defaultdict(lambda: np.zeros(len(design.modules)))
     orientations=[m.orientation for m in design.modules]
+    landscape_mask = np.asarray(orientations) == "landscape"
+    use_coded_fastpath = (_ray_hits is None) and (ray_hits is _DEFAULT_RAY_HITS) and (scene is not None) and (scene.cause_codes is not None)
+    points_shape = points.shape[:-1]
+    pitched_normal = None
+    if project.roof.type in ('pitched', 'carport'):
+        beta, bearing = np.radians([params.tilt_deg, params.azimuth_deg])
+        pitched_normal = np.array([np.sin(beta) * np.sin(bearing), np.sin(beta) * np.cos(bearing), np.cos(beta)])
     daylight=0
     with stage("shading.rays"):
         for instant,position in positions.iterrows():
             if position.elevation<=0:
                 continue
-            if project.roof.type in ('pitched', 'carport'):
-                beta, bearing = np.radians([params.tilt_deg, params.azimuth_deg])
-                normal = np.array([np.sin(beta) * np.sin(bearing), np.sin(beta) * np.cos(bearing), np.cos(beta)])
-                if np.dot(normal, sun_vector(position.elevation, position.azimuth)) <= 0:
-                    continue
+            s_vec = sun_vector(position.elevation, position.azimuth)
+            if pitched_normal is not None and np.dot(pitched_normal, s_vec) <= 0:
+                continue
             daylight+=1
-            hits=(_ray_hits or ray_hits)(scene,points,sun_vector(position.elevation,position.azimuth),owners)
-            fraction,shares=beam_fractions(hits,orientations)
+            if use_coded_fastpath:
+                hit_codes = candidate_hits_coded(scene, points_shape, ray_candidates(scene, points, s_vec, owners))
+                fraction, shares = beam_fractions_coded(hit_codes, landscape_mask, scene.cause_names)
+            else:
+                hits=(_ray_hits or ray_hits)(scene,points,s_vec,owners)
+                fraction,shares=beam_fractions(hits,orientations)
             weight=weights[instant.month-1,instant.hour]
             beam+=weight*fraction
             for cause,share in shares.items():

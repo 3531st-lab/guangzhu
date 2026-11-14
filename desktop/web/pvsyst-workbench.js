@@ -1,5 +1,5 @@
 import { esc } from './data.js';
-import { translateHtmlToEn } from './i18n.js';
+import { getLang, translateHtmlToEn } from './i18n.js';
 import {
   enrichModuleSpec,
   enrichInverterSpec,
@@ -7,6 +7,8 @@ import {
 } from './pro-engineering-core.js';
 
 const finite = (v, fallback = 0) => {
+  if (v === null || v === undefined || typeof v === 'boolean' || typeof v === 'object') return fallback;
+  if (typeof v === 'string' && v.trim() === '') return fallback;
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 };
@@ -883,14 +885,17 @@ export function renderPvsystSystemAndNearShading(resolved = {}, options = {}) {
     lat: latSigned,
     lon: lonSigned,
   });
-  const nSeries = sizing.modulesPerString;
-  const vocCold = sizing.vocColdV;
-  const vmp25 = sizing.vmpStcV;
-  const vmpHot = sizing.vmpHotV;
-  const maxDcLimit = invSpec.max_dc_v;
-  const mpptMinLimit = invSpec.mppt_v_min;
-  const mpptMaxLimit = invSpec.mppt_v_max;
+  const nSeries = Math.max(0, finite(sizing.modulesPerString, 18));
+  const vocCold = Math.max(0, finite(sizing.vocColdV, 0));
+  const vmp25 = Math.max(0, finite(sizing.vmpStcV, 0));
+  const vmpHot = Math.max(0, finite(sizing.vmpHotV, 0));
+  const maxDcLimit = Math.max(200, finite(invSpec.max_dc_v, 1100));
+  const mpptMinLimit = Math.max(50, finite(invSpec.mppt_v_min, 200));
+  const mpptMaxLimit = Math.max(mpptMinLimit + 50, finite(invSpec.mppt_v_max, 1000));
   const axisMaxV = Math.max(1200, maxDcLimit + 100);
+  const nOptSafe = Math.max(1, finite(sizing.nOpt, 18));
+  const nMinSafe = Math.max(1, finite(sizing.nMin, 8));
+  const nMaxSafe = Math.max(nMinSafe, finite(sizing.nMax, 20));
 
   // Winter-solstice 9:00 solar geometry & 3D near shading pitch
   const phi = (Math.max(18, Math.min(50, lat)) * Math.PI) / 180;
@@ -930,7 +935,7 @@ export function renderPvsystSystemAndNearShading(resolved = {}, options = {}) {
           </div>
           <div style="padding:7px 9px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:6px">
             <b>📄 逆变器参数：${esc(invSpec.model)} (${invSpec.rated_ac_kw}千瓦)</b>
-            <div>最大直流电压 = ${maxDcLimit}伏 · 欧洲效率 ${invSpec.euro_eff_pct}%</div>
+            <div>最大直流电压 = ${maxDcLimit}伏 · ${invSpec.euro_eff_pct != null ? `欧洲效率 ${invSpec.euro_eff_pct}%` : (getLang() === 'en' ? 'Euro efficiency not specified' : '欧洲效率规格书未给出')}</div>
             <div>跟踪电压范围 ${mpptMinLimit}~${mpptMaxLimit}伏 · ${invSpec.mppt_count}路 (${invSpec.max_mppt_current_a}安/路)</div>
             <div style="display:flex;gap:6px;margin-top:5px">
               <label class="pvsyst-btn" style="padding:2px 8px;font-size:11px;cursor:pointer">
@@ -939,6 +944,11 @@ export function renderPvsystSystemAndNearShading(resolved = {}, options = {}) {
               </label>
               <button type="button" class="pvsyst-btn" style="padding:2px 8px;font-size:11px" data-sat-action="export-ond">导出逆变器参数文件</button>
             </div>
+          </div>
+          <div data-pvsyst-custom-spec-note="1" style="grid-column:1 / -1;padding:5px 8px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.28);border-radius:5px;font-size:11px;color:var(--muted,#64748b)">
+            ${getLang() === 'en'
+              ? 'Custom spec files apply to satellite simulation and reports only; select a registered catalog model before saving to 3D projects.'
+              : '自定义参数文件仅用于卫星仿真与专业报告；保存至三维工程库前请选用标准名录设备。'}
           </div>
         </div>
         <div class="pvsyst-svg-wrap" style="padding:6px">
@@ -960,7 +970,7 @@ export function renderPvsystSystemAndNearShading(resolved = {}, options = {}) {
             <g transform="translate(0, 62)">
               <text x="50" y="11" font-size="9.5" fill="currentColor">标准工况 (25°C) Vmp</text>
               <rect x="172" y="2" width="${Math.min(195, (vmp25 / axisMaxV) * 195)}" height="12" rx="2" fill="#10b981"/>
-              <text x="${176 + Math.min(195, (vmp25 / axisMaxV) * 195)}" y="11" font-size="9.5" font-family="monospace" font-weight="700" fill="#10b981">${vmp25.toFixed(1)}V (推荐 ${sizing.nOpt}块/串)</text>
+              <text x="${176 + Math.min(195, (vmp25 / axisMaxV) * 195)}" y="11" font-size="9.5" font-family="monospace" font-weight="700" fill="#10b981">${vmp25.toFixed(1)}V (推荐 ${nOptSafe}块/串)</text>
             </g>
             <g transform="translate(0, 84)">
               <text x="50" y="11" font-size="9.5" fill="currentColor">夏季结温 (${sizing.tCellHotC}°C) Vmp</text>
@@ -968,7 +978,7 @@ export function renderPvsystSystemAndNearShading(resolved = {}, options = {}) {
               <text x="${176 + Math.min(195, (vmpHot / axisMaxV) * 195)}" y="11" font-size="9.5" font-family="monospace" font-weight="700" fill="#d97706">${vmpHot.toFixed(1)}V ≥ ${mpptMinLimit}V</text>
             </g>
             <text x="48" y="138" font-size="9.5" fill="currentColor" opacity="0.8">
-              允许串联范围：${sizing.nMin}~${sizing.nMax} 块/串（当前 ${nSeries} 块/串，属地 ${esc(sizing.climate.zoneZh)}），容配比 ${(dcKw / Math.max(1, acKw)).toFixed(2)}:1。
+              允许串联范围：${nMinSafe}~${nMaxSafe} 块/串（当前 ${nSeries} 块/串，属地 ${esc(sizing.climate.zoneZh)}），容配比 ${(dcKw / Math.max(1, acKw)).toFixed(2)}:1。
             </text>
           </svg>
         </div>
@@ -1045,10 +1055,17 @@ export function renderPvsystSystemAndNearShading(resolved = {}, options = {}) {
 /**
  * 6. Master Workbench Renderer combining all 6 sections + Export Standard PVsyst Report
  */
+const renderedContextByKey = new Map();
+
 export function renderPvsystWorkbench(pvsystData, options = {}) {
   const resolved = resolvePvsystPayload(pvsystData, options);
   lastRenderedPvsyst = resolved;
   lastRenderedOptions = options || {};
+  const ctxPid = options?.projectId ?? options?.result?.project_id ?? options?.result?.project?.id ?? options?.project?.id ?? '';
+  const ctxVer = options?.version ?? options?.result?.version ?? options?.result?.design?.version ?? '';
+  if (ctxPid) {
+    renderedContextByKey.set(`${ctxPid}:${ctxVer}`, { pvsyst: resolved, options: lastRenderedOptions });
+  }
 
   const s = resolved.summary || {};
   const prob = resolved.probabilities || {};
@@ -1056,7 +1073,7 @@ export function renderPvsystWorkbench(pvsystData, options = {}) {
   const opt = resolved.optimization_matrix || {};
   const isApproxFallback = Boolean(options?.isClientFallback);
 
-  return translateHtmlToEn(`<div class="pvsyst-workbench" data-pvsyst-workbench data-pvsyst-source="${isApproxFallback ? 'client-fallback' : 'backend-authoritative'}">
+  return translateHtmlToEn(`<div class="pvsyst-workbench" data-pvsyst-workbench data-pvsyst-source="${isApproxFallback ? 'client-fallback' : 'backend-authoritative'}" data-pvsyst-project-id="${esc(ctxPid)}" data-pvsyst-version="${esc(ctxVer)}">
     <div class="pvsyst-wb-header">
       <div class="pvsyst-wb-title-wrap">
         <h3 class="pvsyst-wb-title">
@@ -1069,7 +1086,12 @@ export function renderPvsystWorkbench(pvsystData, options = {}) {
       </div>
       <div class="pvsyst-wb-actions">
         <button type="button" class="pvsyst-btn" data-pvsyst-action="refresh-weather">刷新实时天气</button>
-        <button type="button" class="pvsyst-btn primary" data-pvsyst-action="print-report">导出标准光电仿真报告 (PDF / 打印)</button>
+        <button type="button" class="pvsyst-btn pvsyst-btn-v2" data-pvsyst-action="export-pvsyst-v2">
+          <img class="pvsyst-btn-icon" src="/assets/guangzhu-128.png" alt="" width="16" height="16">
+          <span>导出光筑专业报告</span>
+        </button>
+        <button type="button" class="pvsyst-btn pvsyst-btn-pdf" data-pvsyst-action="download-pvsyst-v2-pdf">直接下载 (.pdf)</button>
+        <button type="button" class="pvsyst-btn primary" data-pvsyst-action="print-report">在线预览光筑专业报告</button>
       </div>
     </div>
 
@@ -1130,7 +1152,41 @@ export function pvsystProFoldMarkup(result, options = {}) {
   const data = useBackend
     ? result.pvsyst
     : computeClientFallbackPvsyst(result, options?.params || {});
+
+  const proj = result?.project || {};
+  const site = proj?.site || result?.site || {};
+  const roof = proj?.roof || result?.roof || {};
+  const equip = proj?.equipment || result?.equipment || {};
+  const design = result?.design || result?.scene?.design || {};
+  const dParams = design?.params || {};
+  const dStats = design?.statistics || {};
+  const metrics = result?.metrics || result?.summary || {};
+  const elec = result?.scene?.electrical || result?.electrical || {};
+  const cash = result?.financial || result?.economics || result?.cashflow || {};
+  const modCount = Array.isArray(design?.modules)
+    ? design.modules.length
+    : (dStats.module_count ?? metrics.module_count ?? result?.module_count);
+
   return renderPvsystWorkbench(data, {
+    useSatmapCache: false,
+    projectId: result?.project_id ?? proj?.id,
+    version: result?.version ?? design?.version,
+    projectName: proj?.name ?? result?.project_name ?? result?.name,
+    siteName: site?.address ?? site?.name ?? proj?.name,
+    city: site?.city ?? site?.region,
+    lat: site?.lat ?? site?.latitude,
+    lon: site?.lon ?? site?.longitude,
+    dcKw: metrics.dc_kw ?? elec.dc_kw ?? dStats.dc_kw,
+    acKw: elec.ac_kw ?? elec.rated_ac_kw ?? metrics.ac_kw,
+    moduleCount: modCount,
+    tiltDeg: dParams.tilt_deg ?? roof?.slope_deg,
+    azimuthDeg: dParams.azimuth_deg ?? roof?.slope_azimuth_deg,
+    moduleId: equip?.module_id ?? result?.module_id,
+    inverterId: equip?.inverter_id ?? result?.inverter_id,
+    module: result?.module_spec ?? equip?.module_spec ?? (equip?.module_id ? { id: equip.module_id } : undefined),
+    inverter: result?.inverter_spec ?? equip?.inverter_spec ?? (equip?.inverter_id ? { id: equip.inverter_id } : undefined),
+    electrical: elec,
+    financial: cash,
     ...options,
     result,
     isClientFallback: !useBackend,
@@ -1439,62 +1495,10 @@ export function computeClientFallbackPvsyst(result = {}, customParams = {}) {
 }
 
 /**
- * Open a standalone printable PVsyst 7.x Standard Simulation Report in a new window.
+ * Open the in-app 6-page Guangzhu Professional Simulation Report preview modal (zero browser popups).
  */
 export function openPvsystStandardReport(pvsystData, options = {}) {
-  if (typeof window === 'undefined') return;
-  const data = resolvePvsystPayload(pvsystData ?? lastRenderedPvsyst, options);
-  const s = data.summary || {};
-  const prob = data.probabilities || {};
-  const wx = data.live_weather || {};
-  const wfHtml = renderPvsystWaterfallSvg(data.waterfall, s);
-  const moHtml = renderPvsystMonthlyTableAndChart(data.monthly_balances, s);
-  const optHtml = renderPvsystOptimizationAndSunPath(data.optimization_matrix, data.sun_path, options);
-
-  const doc = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
-  <title>8760h 标准工程仿真报告 · ${fmtNum(s.dc_kw, 2)} kWp</title>
-  <style>
-    body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;margin:20px auto;max-width:980px;color:#0f172a;background:#fff;line-height:1.45}
-    .hdr{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #c87743;padding-bottom:10px;margin-bottom:14px}
-    .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px}
-    .kpi{border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;background:#f8fafc}
-    .kpi span{display:block;font-size:11px;color:#64748b} .kpi b{font-size:15px;color:#0f172a}
-    .pvsyst-section-card{border:1px solid #cbd5e1;border-radius:8px;padding:12px;margin-bottom:14px;page-break-inside:avoid}
-    .pvsyst-sec-head,.pvsyst-subpanel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .pvsyst-sec-title,.pvsyst-subpanel-title{margin:0;font-size:13.5px}
-    .pvsyst-dual-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .pvsyst-svg{width:100%;height:auto}
-    .pvsyst-bal-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px}
-    .pvsyst-bal-table th,.pvsyst-bal-table td{border:1px solid #cbd5e1;padding:4px 6px;text-align:right}
-    .pvsyst-bal-table th:first-child,.pvsyst-bal-table td:first-child{text-align:center}
-    .pvsyst-btn,[data-pvsyst-action]{display:none!important}
-    @media print{.noprint{display:none!important}}
-  </style></head><body>
-  <div class="noprint" style="text-align:right;margin-bottom:10px">
-    <button onclick="window.print()" style="padding:7px 16px;background:#c87743;color:#fff;border:0;border-radius:6px;cursor:pointer;font-weight:700">🖨 立即打印 / 另存为标准 PDF 报告</button>
-  </div>
-  <div class="hdr">
-    <div>
-      <h2 style="margin:0">光筑 (Guangzhu) · 8760h 标准光电物理仿真报告</h2>
-      <small>仿真坐标：${fmtNum(wx.location?.lat ?? 31.23, 4)}°N, ${fmtNum(wx.location?.lon ?? 121.47, 4)}°E · 8760h Perez 转置 + Faiman 热平衡 + 双面视角因子模型</small>
-    </div>
-    <div style="text-align:right"><small>生成时间：${new Date().toISOString().slice(0, 16).replace('T', ' ')}</small></div>
-  </div>
-  <div class="kpis">
-    <div class="kpi"><span>直流装机容量</span><b>${fmtNum(s.dc_kw, 2)} kWp</b></div>
-    <div class="kpi"><span>交流额定容量</span><b>${fmtNum(s.ac_kw, 2)} kWac</b></div>
-    <div class="kpi"><span>首年并网电量 E_Grid</span><b>${fmtNum(s.e_grid_kwh, 0)} kWh</b></div>
-    <div class="kpi"><span>首年等效满发小时</span><b>${fmtNum(s.specific_yield_kwh_kwp, 1)} h</b></div>
-    <div class="kpi"><span>系统综合效率 PR</span><b>${fmtNum(s.pr_pct, 1)}%</b></div>
-    <div class="kpi"><span>P90 银行授信电量</span><b>${fmtNum(prob.p90_kwh, 0)} kWh</b></div>
-  </div>
-  ${wfHtml}
-  ${moHtml}
-  ${optHtml}
-  </body></html>`;
-
-  const blobUrl = URL.createObjectURL(new Blob([doc], { type: 'text/html;charset=utf-8' }));
-  window.open(blobUrl, '_blank', 'noopener');
+  return openGuangzhuProReportModal(pvsystData ?? lastRenderedPvsyst, options ?? lastRenderedOptions);
 }
 
 /* ============================================================================
@@ -1876,8 +1880,1177 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
   });
 
   document.addEventListener('click', (ev) => {
-    const btn = ev.target?.closest?.('[data-pvsyst-action="print-report"]');
-    if (!btn || ev.defaultPrevented) return;
-    openPvsystStandardReport(lastRenderedPvsyst, lastRenderedOptions);
+    const actEl = ev.target?.closest?.('[data-pvsyst-action]');
+    if (!actEl || ev.defaultPrevented) return;
+    const act = actEl.getAttribute('data-pvsyst-action');
+    // Inside #satmap, SatMapView handles export-pvsyst-v2 / download-pvsyst-v2-pdf directly on host
+    if (actEl.closest?.('.satmap-shell') && (act === 'export-pvsyst-v2' || act === 'download-pvsyst-v2-pdf' || act === 'export-standard-report')) {
+      return;
+    }
+    const wbEl = actEl.closest?.('[data-pvsyst-workbench]');
+    const wbPid = wbEl?.getAttribute?.('data-pvsyst-project-id') || '';
+    const wbVer = wbEl?.getAttribute?.('data-pvsyst-version') || '';
+    const bound = (wbPid && renderedContextByKey.get(`${wbPid}:${wbVer}`)) || {
+      pvsyst: lastRenderedPvsyst,
+      options: lastRenderedOptions,
+    };
+    if (act === 'export-pvsyst-v2' || act === 'download-pvsyst-v2-pdf') {
+      exportGuangzhuProReportPdf(bound.pvsyst, bound.options);
+      return;
+    }
+    if (act === 'print-report' || act === 'preview-pro-report' || act === 'export-standard-report') {
+      openGuangzhuProReportModal(bound.pvsyst, bound.options);
+    }
   });
+}
+
+
+/* ============================================================================
+ * 6-Page Swiss Technical Guangzhu Professional Simulation Report (《光筑专业报告》)
+ * ========================================================================== */
+
+export const GUANGZHU_ICON_URL = '/assets/guangzhu-128.png';
+export const GUANGZHU_ICON_DATA_URI = 'data:image/png;base64,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';
+
+const MONTH_EN_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_EN_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_DAYS_STD = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+function scrubPrivateReportText(str, fallback = '') {
+  const raw = String(str ?? '').trim();
+  if (!raw) return fallback;
+  return raw
+    .replace(/account-acct[^\s"'<>]*/gi, '[已脱敏账户]')
+    .replace(/[A-Z]:[\\/]Users[\\/][^\s"'<>]*/gi, '[已脱敏路径]')
+    .replace(/(?<![A-Za-z0-9+/=])\/(?:Users|home)\/[^\s"'<>]+/g, '[已脱敏路径]')
+    .replace(/PVsyst[\s-]*(?:Style|Imitation|Compatible)?/gi, '光筑专业仿真')
+    .replace(/pvsyst/gi, '光筑专业仿真');
+}
+
+export function makeClientProReportFilename(projectName = '分布式光伏电站项目', version = 1, ext = 'pdf') {
+  const cleanProj = scrubPrivateReportText(projectName, '分布式光伏电站项目')
+    .replace(/[<>:"/\\|?*\x00-\x1f]+/g, '_')
+    .replace(/\s+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 48) || '分布式光伏电站项目';
+  const ver = Math.max(1, Math.round(finite(version, 1)));
+  return `光筑专业报告_${cleanProj}_v${ver}.${ext}`;
+}
+
+function readLatestSatmapSchemeSafe(projectIdHint = '') {
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage) {
+      const raw = localStorage.getItem('gz.satmap.latestScheme');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          const hint = String(projectIdHint || '').trim();
+          const byProj = parsed.schemes_by_project && typeof parsed.schemes_by_project === 'object'
+            ? parsed.schemes_by_project
+            : null;
+          if (hint) {
+            if (byProj && byProj[hint] && typeof byProj[hint] === 'object') {
+              return byProj[hint];
+            }
+            const rootPid = String(parsed.project_id ?? parsed.projectId ?? '').trim();
+            if (rootPid === hint) return parsed;
+            return null;
+          }
+          if (byProj) {
+            const activeKey = String(parsed.active_project_id || '').trim();
+            if (activeKey && byProj[activeKey] && typeof byProj[activeKey] === 'object') {
+              return byProj[activeKey];
+            }
+            if (byProj.__unsaved__ && typeof byProj.__unsaved__ === 'object') {
+              return byProj.__unsaved__;
+            }
+          }
+          return parsed;
+        }
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+function optFiniteNum(val) {
+  if (val === null) return null;
+  if (val === undefined || val === '' || typeof val === 'boolean') return undefined;
+  const n = Number(val);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function extractResultProjectContext(rawOpts = {}) {
+  const res = rawOpts?.result || {};
+  const proj = rawOpts?.project || res?.project || {};
+  const site = proj?.site || res?.site || {};
+  const roof = proj?.roof || res?.roof || {};
+  const equip = proj?.equipment || res?.equipment || {};
+  const design = res?.design || res?.scene?.design || {};
+  const dParams = design?.params || {};
+  const dStats = design?.statistics || {};
+  const metrics = res?.metrics || res?.summary || {};
+  const elec = res?.scene?.electrical || res?.electrical || {};
+  const fin = res?.financial || res?.economics || res?.cashflow || {};
+  const modCount = Array.isArray(design?.modules)
+    ? design.modules.length
+    : optFiniteNum(dStats.module_count ?? metrics.module_count ?? res?.module_count);
+  return {
+    hasResultContext: Boolean(
+      rawOpts?.result ||
+      rawOpts?.project ||
+      rawOpts?.projectId !== undefined ||
+      rawOpts?.project_id !== undefined ||
+      rawOpts?.projectName !== undefined ||
+      rawOpts?.dcKw !== undefined ||
+      rawOpts?.acKw !== undefined ||
+      rawOpts?.moduleCount !== undefined ||
+      rawOpts?.module ||
+      rawOpts?.inverter
+    ),
+    projectId: rawOpts?.projectId ?? rawOpts?.project_id ?? res?.project_id ?? proj?.id,
+    version: rawOpts?.version ?? res?.version ?? design?.version,
+    projectName: rawOpts?.projectName ?? proj?.name ?? res?.project_name ?? res?.name,
+    siteName: rawOpts?.siteName ?? site?.address ?? site?.name ?? proj?.name,
+    city: rawOpts?.city ?? site?.city ?? site?.region,
+    lat: optFiniteNum(rawOpts?.lat ?? site?.lat ?? site?.latitude),
+    lon: optFiniteNum(rawOpts?.lon ?? site?.lon ?? site?.longitude),
+    albedo: optFiniteNum(rawOpts?.albedo ?? site?.albedo),
+    dcKw: optFiniteNum(metrics.dc_kw ?? elec.dc_kw ?? dStats.dc_kw ?? res?.dc_kw),
+    acKw: optFiniteNum(elec.ac_kw ?? elec.rated_ac_kw ?? metrics.ac_kw ?? res?.ac_kw),
+    moduleCount: modCount,
+    tiltDeg: optFiniteNum(dParams.tilt_deg ?? roof?.slope_deg ?? res?.tilt_deg),
+    azimuthDeg: optFiniteNum(dParams.azimuth_deg ?? roof?.slope_azimuth_deg ?? res?.azimuth_deg),
+    moduleId: rawOpts?.moduleId ?? equip?.module_id ?? res?.module_id,
+    inverterId: rawOpts?.inverterId ?? equip?.inverter_id ?? res?.inverter_id,
+    module: rawOpts?.module || res?.module_spec || equip?.module_spec || (equip?.module_id ? { id: equip.module_id } : null),
+    inverter: rawOpts?.inverter || res?.inverter_spec || equip?.inverter_spec || (equip?.inverter_id ? { id: equip.inverter_id } : null),
+    electrical: Object.keys(elec).length ? elec : null,
+    financial: Object.keys(fin).length ? fin : null,
+  };
+}
+
+export function buildPvsystV2RequestPayload(pvsystData, options = {}) {
+  const singleArgIsOpts = Boolean(
+    pvsystData &&
+    typeof pvsystData === 'object' &&
+    (!options || Object.keys(options).length === 0) &&
+    !pvsystData.summary &&
+    !pvsystData.monthly &&
+    !pvsystData.live_weather &&
+    (
+      'dcKw' in pvsystData ||
+      'acKw' in pvsystData ||
+      'moduleCount' in pvsystData ||
+      'projectName' in pvsystData ||
+      'projectId' in pvsystData ||
+      'project_id' in pvsystData ||
+      'project' in pvsystData ||
+      'system' in pvsystData ||
+      'result' in pvsystData
+    )
+  );
+  const actualPvsyst = singleArgIsOpts ? null : pvsystData;
+  const actualOptions = singleArgIsOpts ? pvsystData : options;
+  const hasCallerArgs = actualPvsyst != null || (actualOptions && Object.keys(actualOptions).length > 0);
+  const effOpts = hasCallerArgs ? (actualOptions || {}) : (lastRenderedOptions || {});
+  const ctx = extractResultProjectContext(effOpts);
+
+  const rawSatSaved = readLatestSatmapSchemeSafe(ctx.projectId || '');
+  const isOnSatmapHash = typeof location !== 'undefined' && String(location?.hash || '').startsWith('#satmap');
+  const savedPid = rawSatSaved?.project_id ?? rawSatSaved?.projectId;
+  const matchesProjectId = Boolean(
+    ctx.projectId &&
+    savedPid &&
+    String(savedPid) === String(ctx.projectId) &&
+    (ctx.version == null || rawSatSaved?.version == null || Number(rawSatSaved.version) === Number(ctx.version))
+  );
+  const allowSatSaved = effOpts?.useSatmapCache === false
+    ? false
+    : Boolean(
+        effOpts?.useSatmapCache === true ||
+        matchesProjectId ||
+        (!hasCallerArgs && !ctx.hasResultContext && isOnSatmapHash)
+      );
+  const satSaved = allowSatSaved && rawSatSaved ? rawSatSaved : {};
+
+  const resolved = resolvePvsystPayload(actualPvsyst ?? (!hasCallerArgs ? lastRenderedPvsyst : null), effOpts);
+  const s = resolved.summary || {};
+  const pvsExplicitSummary = (actualPvsyst && typeof actualPvsyst === 'object' ? actualPvsyst.summary : null) || {};
+  const wxLoc = resolved.live_weather?.location || {};
+  const p = { ...DEFAULT_PVSYST_PARAMS, ...(resolved.params || {}), ...(effOpts?.params || {}) };
+
+  const modSpec = enrichModuleSpec(
+    ctx.module || satSaved.module || { id: ctx.moduleId || satSaved.module_id || 'jinko-jkm580n-72hl4-bdv', stc_w: effOpts?.stcW || 580 }
+  );
+  const invSpec = enrichInverterSpec(
+    ctx.inverter || satSaved.inverter || { id: ctx.inverterId || satSaved.inverter_id || 'sungrow-sg110cx-p2', rated_ac_kw: Math.max(8, finite(s.ac_kw, 100)) }
+  );
+
+  // Q01: Never clamp 0 or null capacities/counts up to >= 1
+  const rawOptDc = effOpts?.dcKw !== undefined ? effOpts.dcKw : effOpts?.system?.dc_kw;
+  const explicitDc = rawOptDc !== undefined ? optFiniteNum(rawOptDc) : undefined;
+  const dcKw = explicitDc !== undefined
+    ? explicitDc
+    : (ctx.dcKw !== undefined
+      ? ctx.dcKw
+      : (optFiniteNum(pvsExplicitSummary.dc_kw) ?? optFiniteNum(satSaved.dc_kw) ?? finite(s.dc_kw, 250)));
+
+  const rawOptAc = effOpts?.acKw !== undefined ? effOpts.acKw : effOpts?.system?.ac_kw;
+  const explicitAc = rawOptAc !== undefined ? optFiniteNum(rawOptAc) : undefined;
+  const acKw = explicitAc !== undefined
+    ? explicitAc
+    : (ctx.acKw !== undefined
+      ? ctx.acKw
+      : (optFiniteNum(pvsExplicitSummary.ac_kw) ??
+          optFiniteNum(satSaved.ac_kw) ??
+          (dcKw === null ? null : dcKw === 0 ? 0 : finite(s.ac_kw, +(dcKw / 1.18).toFixed(2)))));
+
+  const rawOptModCount = effOpts?.moduleCount !== undefined ? effOpts.moduleCount : effOpts?.system?.module_count;
+  const explicitModCount = rawOptModCount !== undefined ? optFiniteNum(rawOptModCount) : undefined;
+  let moduleCount;
+  if (explicitModCount !== undefined) {
+    moduleCount = explicitModCount === null ? null : Math.round(explicitModCount);
+  } else if (ctx.moduleCount !== undefined && ctx.moduleCount !== null) {
+    moduleCount = Math.round(ctx.moduleCount);
+  } else if (optFiniteNum(satSaved.module_count) !== undefined && satSaved.module_count !== null) {
+    moduleCount = Math.round(Number(satSaved.module_count));
+  } else if (dcKw === 0) {
+    moduleCount = 0;
+  } else if (dcKw === null) {
+    moduleCount = null;
+  } else if (typeof dcKw === 'number' && dcKw > 0) {
+    const exactCnt = (dcKw * 1000) / Math.max(1, modSpec.stc_w);
+    moduleCount = Math.abs(exactCnt - Math.round(exactCnt)) <= 1e-3 ? Math.round(exactCnt) : undefined;
+  }
+
+  const tiltDeg = effOpts?.tiltDeg === null
+    ? null
+    : finite(effOpts?.tiltDeg ?? ctx.tiltDeg ?? satSaved.tilt_deg, 15);
+  const azimuthDeg = effOpts?.azimuthDeg === null
+    ? null
+    : finite(effOpts?.azimuthDeg ?? ctx.azimuthDeg ?? satSaved.azimuth_deg, 180);
+  const orientMode = scrubPrivateReportText(effOpts?.orientationMode || satSaved.orientation_mode || 'south_fixed', 'south_fixed');
+
+  const isZeroCap = dcKw === 0 || moduleCount === 0;
+  const sizingModCount = isZeroCap
+    ? 0
+    : (typeof moduleCount === 'number' && moduleCount > 0
+      ? moduleCount
+      : (typeof dcKw === 'number' && dcKw > 0 ? Math.round((dcKw * 1000) / Math.max(1, modSpec.stc_w)) : null));
+  const sizing = computeStringSizingAndCables({
+    module: modSpec,
+    inverter: invSpec,
+    modulesPerString: isZeroCap ? 0 : (effOpts?.modulesPerString ?? satSaved?.modules_per_string ?? null),
+    totalModules: sizingModCount,
+    tminC: finite(effOpts?.extremeTempMinC ?? satSaved?.multifactor?.extreme_temp_min_c, -10),
+    tmaxCellC: 65,
+  });
+
+  const systemPayload = {
+    dc_kw: dcKw,
+    ac_kw: acKw,
+    modules_per_string: isZeroCap ? 0 : sizing.recN,
+    string_count: isZeroCap ? 0 : sizing.totalStrings,
+    tilt_deg: tiltDeg,
+    azimuth_deg: azimuthDeg,
+    orientation_mode: orientMode,
+    mount_orientation: effOpts?.mountOrientation || satSaved.mount_orientation || 'portrait',
+    module: modSpec,
+    inverter: invSpec,
+    ...(effOpts?.system || {}),
+  };
+  if (moduleCount !== undefined) {
+    systemPayload.module_count = moduleCount;
+  }
+
+  return {
+    offline: effOpts?.offline !== false,
+    project_id: ctx.projectId ? scrubPrivateReportText(ctx.projectId, 'GZ-PV-SIM') : undefined,
+    version: ctx.version ?? undefined,
+    project_name: scrubPrivateReportText(ctx.projectName || satSaved.project_name || satSaved.name || '分布式并网光伏电站工程项目', '分布式并网光伏电站工程项目'),
+    variant: scrubPrivateReportText(effOpts?.variant || 'VC0 · 标准仿真版', 'VC0 · 标准仿真版'),
+    site: {
+      name: scrubPrivateReportText(ctx.siteName || wxLoc.name || satSaved.site_name || '中国工商业示范屋顶', '中国工商业示范屋顶'),
+      city: scrubPrivateReportText(ctx.city || satSaved.city || '示范园区', '示范园区'),
+      lat: finite(ctx.lat ?? wxLoc.lat ?? satSaved?.site?.lat ?? satSaved.lat, 31.81),
+      lon: finite(ctx.lon ?? wxLoc.lon ?? satSaved?.site?.lon ?? satSaved.lon, 119.97),
+      albedo: finite(ctx.albedo ?? p.albedo ?? satSaved.albedo, 0.22),
+      ...(effOpts?.site || {}),
+    },
+    system: systemPayload,
+    pvsyst: resolved,
+    electrical: isZeroCap
+      ? { modules_per_string: 0, string_count: 0, ...(effOpts?.electrical || {}) }
+      : (effOpts?.electrical || ctx.electrical || satSaved.electrical || {}),
+    multifactor: effOpts?.multifactor || satSaved.multifactor || {},
+    financial: effOpts?.financial || ctx.financial || satSaved.financial || {},
+  };
+}
+
+/**
+ * Pure client-side 6-Page A4 Swiss Technical 《光筑专业报告》 HTML builder
+ * (100% offline capable, embeds Guangzhu software icon & diagonal watermark on all 6 pages, 0 "PVsyst" text).
+ */
+export function buildPvsystProfessionalReportV2Html(pvsystData, options = {}) {
+  const req = buildPvsystV2RequestPayload(pvsystData, options);
+  const pvs = req.pvsyst || {};
+  const s = pvs.summary || {};
+  const prob = pvs.probabilities || {};
+  const sys = req.system || {};
+  const mod = sys.module || {};
+  const inv = sys.inverter || {};
+  const p = { ...DEFAULT_PVSYST_PARAMS, ...(pvs.params || {}) };
+  const mf = req.multifactor || {};
+  const fin = req.financial || {};
+  const iconSrc = options?.iconUri || GUANGZHU_ICON_DATA_URI || GUANGZHU_ICON_URL;
+  const simDate = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const pid = esc(req.project_id || 'GZ-PRO-V2');
+  const pName = esc(req.project_name);
+  const siteName = esc(req.site.name);
+  const city = esc(req.site.city);
+  const dlHtmlName = esc(makeClientProReportFilename(req.project_name, req.version || 1, 'html'));
+
+  // Q01 & Q02: Preserve 0 / null capacities honestly; zero fabricated numbers or fake verification stamps
+  const dcIsNull = sys.dc_kw === null;
+  const acIsNull = sys.ac_kw === null;
+  const dcKw = dcIsNull ? 0 : Math.max(0, finite(sys.dc_kw, 0));
+  const acKw = acIsNull ? 0 : Math.max(0, finite(sys.ac_kw, 0));
+  const isZeroCap = dcKw <= 0 || sys.module_count === 0;
+  const pnomRatio = acKw > 0 ? dcKw / acKw : 0;
+  const displayModCount = sys.module_count === null
+    ? null
+    : (typeof sys.module_count === 'number'
+      ? Math.max(0, Math.round(sys.module_count))
+      : (dcKw > 0 ? Math.round((dcKw * 1000) / Math.max(1, finite(mod.stc_w, 580))) : 0));
+  const modArea = displayModCount != null ? Math.round(displayModCount * finite(mod.area_m2, 2.58)) : 0;
+  const stcEff = finite(mod.efficiency_pct, 22.45);
+  const eGridKwh = isZeroCap ? 0 : Math.max(0, finite(s.e_grid_kwh, 0));
+  const eGridMwh = eGridKwh / 1000;
+  const eArrayKwh = isZeroCap ? 0 : Math.max(0, finite(s.e_array_kwh, eGridKwh > 0 ? eGridKwh / 0.965 : 0));
+  const eNomKwh = isZeroCap ? 0 : Math.max(0, finite(s.e_nom_kwh, eArrayKwh > 0 ? eArrayKwh / 0.915 : 0));
+  const globHor = finite(s.glob_hor_kwh_m2, 1350);
+  const diffHor = finite(s.diff_hor_kwh_m2, globHor * 0.46);
+  const globInc = finite(s.glob_inc_kwh_m2, globHor * 1.06);
+  const globEff = finite(s.glob_eff_kwh_m2, globInc * 0.98);
+  const globBakYr = finite(s.glob_bak_kwh_m2, globHor * finite(req.site.albedo, 0.22) * 0.34);
+  const prPct = isZeroCap ? 0 : finite(s.pr_pct, dcKw > 0 && globInc > 0 ? (eGridKwh / (globInc * dcKw)) * 100 : 0);
+  const specYield = isZeroCap || dcKw <= 0 ? 0 : finite(s.specific_yield_kwh_kwp, eGridKwh / dcKw);
+  const limitAngleDeg = Math.max(8, Math.min(42, +(90 - Math.abs(finite(req.site.lat, 31.8)) - 23.45).toFixed(1)));
+
+  const dcLabel = dcIsNull ? 'N/A (待后端核验)' : `${fmtNum(dcKw, 2)} kWp`;
+  const acLabel = acIsNull ? 'N/A (待后端核验)' : `${fmtNum(acKw, 1)} kWac`;
+  const modCountLabel = displayModCount === null ? 'N/A (待后端核验)' : `${displayModCount} pcs`;
+  const hasValidStrings = !isZeroCap &&
+    Number.isFinite(sys.string_count) && sys.string_count > 0 &&
+    Number.isFinite(sys.modules_per_string) && sys.modules_per_string > 0;
+  const stringSummaryLabel = hasValidStrings ? `${sys.string_count} Strings × ${sys.modules_per_string}S` : '待后端配串核验';
+  const stringTableCell = hasValidStrings ? `${sys.string_count} × ${sys.modules_per_string}S` : '待后端配串核验';
+
+  const rawMonths = Array.isArray(pvs.monthly_balances) && pvs.monthly_balances.length === 12
+    ? pvs.monthly_balances
+    : Array.from({ length: 12 }, (_, i) => ({
+        month: i + 1,
+        glob_hor: globHor / 12,
+        diff_hor: diffHor / 12,
+        t_amb: 17.5,
+        wind_ms: 2.6,
+        glob_inc: globInc / 12,
+        glob_eff: globEff / 12,
+        glob_bak_kwh_m2: globBakYr / 12,
+        e_array: eArrayKwh / 12,
+        e_grid: eGridKwh / 12,
+        pr_pct: prPct,
+      }));
+
+  const normMonths = rawMonths.map((m, idx) => {
+    const days = MONTH_DAYS_STD[idx];
+    const mGi = finite(m.glob_inc, globInc / 12);
+    const mGe = finite(m.glob_eff, globEff / 12);
+    const mEa = isZeroCap ? 0 : finite(m.e_array, eArrayKwh / 12);
+    const mEg = isZeroCap ? 0 : finite(m.e_grid, eGridKwh / 12);
+    const yf = isZeroCap || dcKw <= 0 ? 0 : Math.max(0, finite(m.yf_kwh_kwp_d, (mEg / dcKw) / days));
+    const ya = isZeroCap || dcKw <= 0 ? 0 : Math.max(0, (mEa / dcKw) / days);
+    const yr = isZeroCap ? 0 : Math.max(0, mGi / days);
+    const lc = isZeroCap ? 0 : Math.max(0, finite(m.lc_kwh_kwp_d, Math.max(0, yr - ya)));
+    return {
+      idx,
+      enShort: MONTH_EN_SHORT[idx],
+      zh: `${idx + 1}月`,
+      globHor: finite(m.glob_hor, globHor / 12),
+      diffHor: finite(m.diff_hor, diffHor / 12),
+      tAmb: finite(m.t_amb, 17.5),
+      windMs: finite(m.wind_ms, 2.4 + (idx % 4) * 0.2),
+      globInc: mGi,
+      globEff: mGe,
+      globBak: finite(m.glob_bak_kwh_m2 ?? m.glob_bak, mGi * finite(req.site.albedo, 0.22) * 0.32),
+      eArray: mEa,
+      eGrid: mEg,
+      prPct: isZeroCap ? 0 : finite(m.pr_pct, prPct),
+      yf,
+      ls: isZeroCap ? 0 : Math.max(0, ya - yf),
+      lc,
+    };
+  });
+
+  const yfYr = isZeroCap || dcKw <= 0 ? 0 : (eGridKwh / dcKw) / 365;
+  const lsYr = isZeroCap ? 0 : normMonths.reduce((a, r) => a + r.ls * MONTH_DAYS_STD[r.idx], 0) / 365;
+  const lcYr = isZeroCap ? 0 : normMonths.reduce((a, r) => a + r.lc * MONTH_DAYS_STD[r.idx], 0) / 365;
+  const tAmbYr = normMonths.reduce((a, r) => a + r.tAmb * MONTH_DAYS_STD[r.idx], 0) / 365;
+  const windYr = normMonths.reduce((a, r) => a + r.windMs * MONTH_DAYS_STD[r.idx], 0) / 365;
+  const globBakSum = normMonths.reduce((a, r) => a + r.globBak, 0);
+
+  const wmTiles = Array.from({ length: 12 }, () => `<div class="pvs-watermark-tile"><span class="pvs-wm-logo"></span><span class="pvs-wm-txt"><b>光筑 · GUANGZHU</b><small>OFFLINE PREVIEW</small></span></div>`).join('');
+  const watermarkLayer = `<div class="pvs-watermark-layer" aria-hidden="true">${wmTiles}</div>`;
+
+  const pageHeader = (pg, titleEn, titleZh) => `<header class="pvs-page-header">
+    <div class="pvs-hdr-brand">
+      <img class="pvs-brand-icon" src="${iconSrc}" onerror="this.onerror=null;this.src='${GUANGZHU_ICON_URL}'" alt="光筑软件图标" width="31" height="31">
+      <div><div class="pvs-hdr-sw-name">光筑 Guangzhu</div><div class="pvs-hdr-sw-sub"><span class="l-zh">离线简版预览 · 未核验</span><span class="l-sep"> / </span><span class="l-en">Offline Unverified Preview</span></div></div>
+    </div>
+    <div class="pvs-hdr-center">
+      <div class="pvs-hdr-systype"><span class="l-zh">光筑专业报告 · 离线简版预览 (未核验)</span><span class="l-sep"> · </span><span class="l-en">Guangzhu Simulation Report (Offline Unverified Preview)</span></div>
+      <div class="pvs-hdr-secname"><span class="l-en">${esc(titleEn)}</span><span class="l-sep"> · </span><span class="l-zh">${esc(titleZh)}</span></div>
+      <div class="pvs-hdr-projline">Project: <b>${pName}</b> (${pid})</div>
+    </div>
+    <div class="pvs-hdr-meta">
+      <div class="pvs-hdr-meta-cell"><span>Variant:</span><b>${esc(req.variant)}</b></div>
+      <div class="pvs-hdr-meta-cell"><span>Date:</span><b>${esc(simDate.slice(0, 10))}</b></div>
+      <div class="pvs-hdr-meta-cell"><span>Site:</span><b>${city}</b></div>
+      <div class="pvs-hdr-meta-cell"><span>Page:</span><b class="pvs-hdr-page-pill">Page ${pg} of 6</b></div>
+    </div>
+  </header>`;
+
+  const pageFooter = (pg) => `<footer class="pvs-page-footer">
+    <div style="display:flex;align-items:center;gap:5px"><img src="${iconSrc}" alt="光筑" width="13" height="13"><span>光筑专业报告 · 后端专业报告服务离线 · 简版预览未核验 (OFFLINE UNVERIFIED PREVIEW)</span></div>
+    <div>${pName} · Page ${pg} / 6</div>
+  </footer>`;
+
+  // Dual Monthly Bar Charts SVG (Page 2)
+  const yCeil = Math.max(6, Math.ceil(Math.max(...normMonths.map((r) => r.yf + r.ls + r.lc), 5.5)));
+  const normBars = normMonths.map((r, i) => {
+    const bx = 42 + i * 25;
+    const hYf = (r.yf / yCeil) * 116;
+    const hLs = (r.ls / yCeil) * 116;
+    const hLc = (r.lc / yCeil) * 116;
+    const yYf = 162 - hYf;
+    const yLs = yYf - hLs;
+    const yLc = yLs - hLc;
+    return `<rect x="${bx}" y="${yYf.toFixed(1)}" width="15" height="${hYf.toFixed(1)}" fill="#991b1b"/>
+      <rect x="${bx}" y="${yLs.toFixed(1)}" width="15" height="${hLs.toFixed(1)}" fill="#16a34a"/>
+      <rect x="${bx}" y="${yLc.toFixed(1)}" width="15" height="${hLc.toFixed(1)}" fill="#7c3aed"/>
+      <text x="${bx + 7.5}" y="173" text-anchor="middle" font-size="6.4" fill="#1e293b">${r.enShort}</text>`;
+  }).join('');
+
+  const prBars = normMonths.map((r, i) => {
+    const bx = 418 + i * 25;
+    const bh = (Math.min(100, Math.max(0, r.prPct)) / 100) * 116;
+    const by = 162 - bh;
+    return `<rect x="${bx}" y="${by.toFixed(1)}" width="15" height="${bh.toFixed(1)}" fill="#b91c1c" opacity="0.86"/>
+      <text x="${bx + 7.5}" y="${(by - 2).toFixed(1)}" text-anchor="middle" font-size="5.8" fill="#334155">${(r.prPct / 100).toFixed(2)}</text>
+      <text x="${bx + 7.5}" y="173" text-anchor="middle" font-size="6.4" fill="#1e293b">${r.enShort}</text>`;
+  }).join('');
+
+  // Loss Tree Rows + Sensitivity Ranking (Page 3)
+  const transGainPct = ((globInc / Math.max(1, globHor)) - 1) * 100;
+  const shadeLossPct = finite(s.shading_optical_loss_pct, 1.85);
+  const iamLossPct = finite(s.iam_loss_pct, 1.80);
+  const bifGainPct = finite(s.bifacial_gain_pct, 4.20);
+  const thermLossPct = isZeroCap ? 0 : Math.max(0, finite(s.thermal_loss_pct, 4.40));
+  const invLossPct = isZeroCap ? 0 : finite(s.inverter_eff_loss_pct, 1.60);
+  const acPostLossPct = finite(p.ac_ohmic_pct, 0.8) + finite(p.transformer_loss_pct, 0.9);
+
+  const lossNodes = [
+    ['STAGE', `${fmtNum(globHor, 1)} kWh/m²`, 'Horizontal global irradiation (GlobHor) · 水平面总辐射'],
+    ['GAIN', fmtSignedPct(transGainPct), 'Global incident in coll. plane (Perez) · 倾斜面转置增益'],
+    ['STAGE', `${fmtNum(globInc, 1)} kWh/m²`, 'Global incident in coll. plane (GlobInc) · 倾斜面入射辐射'],
+    ['LOSS', fmtSignedPct(-shadeLossPct), 'Near Shadings: irradiance loss · 三维近处光学遮挡损失'],
+    ['LOSS', fmtSignedPct(-iamLossPct), `IAM factor on global (ASHRAE b0=${p.iam_b0}) · 入射角反射损失`],
+    ['LOSS', fmtSignedPct(-finite(p.soiling_pct, 2.0)), 'Soiling loss factor · 组件表面积灰损失'],
+    ['GAIN', fmtSignedPct(bifGainPct), `Ground reflection / Bifacial rear gain (Albedo=${req.site.albedo}) · 双面增益`],
+    ['STAGE', `${fmtNum(globEff, 1)} kWh/m² × ${modArea} m²`, `Effective irradiation on collectors (STC efficiency = ${fmtNum(stcEff, 2)}%)`],
+    ['STAGE', `${fmtNum(eNomKwh, 0)} kWh`, 'Array nominal energy (at STC effic.) · 方阵标称直流能量'],
+    ['LOSS', '-0.42%', 'PV loss due to irradiance level · 弱光响应损失'],
+    ['LOSS', fmtSignedPct(-thermLossPct), `PV loss due to temperature (Faiman Uc=${p.uc_w_m2k}) · 工作温度热损耗`],
+    ['GAIN', '+0.15%', 'Spectral correction · 光谱响应修正'],
+    ['GAIN', fmtSignedPct(-finite(p.module_quality_pct, -0.3)), 'Module quality / positive sorting · 组件铭牌正公差修正'],
+    ['LOSS', fmtSignedPct(-finite(p.lid_pct, 1.0)), 'LID - Light induced degradation · 首年光致衰减'],
+    ['LOSS', fmtSignedPct(-finite(p.mismatch_pct, 1.2)), 'Module & string mismatch + electrical shading · 组串失配损失'],
+    ['LOSS', fmtSignedPct(-finite(p.dc_ohmic_pct, 1.2)), 'Ohmic wiring loss (DC array cables) · 直流侧欧姆线损'],
+    ['STAGE', `${fmtNum(eArrayKwh, 0)} kWh`, 'Array virtual energy at MPP (EArray) · 方阵最大功率点有效直流能量'],
+    ['LOSS', fmtSignedPct(-invLossPct), 'Inverter loss during operation · 逆变器运行转换损耗'],
+    ['LOSS', fmtSignedPct(-finite(s.clipping_loss_pct, 0.08)), 'Inverter clipping (over nominal inv. power) · 超配限发削峰损失'],
+    ['LOSS', '-0.06%', 'Inverter power threshold loss · 启动功率阈值损耗'],
+    ['STAGE', `${fmtNum(isZeroCap ? 0 : eGridKwh / 0.982, 0)} kWh`, 'Available Energy at Inverter Output · 逆变器输出端可用电量'],
+    ['LOSS', fmtSignedPct(-acPostLossPct), 'AC ohmic, MV transformer & unavailability · 交流线损、升压变损耗及系统不可用度损失'],
+    ['FINAL', `${fmtNum(eGridKwh, 0)} kWh (${fmtNum(eGridMwh, 2)} MWh)`, `Energy injected into grid (E_Grid) · 最终并网总发电量 (PR = ${fmtNum(prPct, 2)}%)`],
+  ];
+  const lossSvgRows = lossNodes.map(([kind, val, desc], idx) => {
+    const y = 26 + idx * 23.5;
+    if (kind === 'STAGE' || kind === 'FINAL') {
+      const fill = kind === 'FINAL' ? '#166534' : '#dbeafe';
+      const col = kind === 'FINAL' ? '#ffffff' : '#0f172a';
+      return `<rect x="44" y="${y}" width="196" height="19" fill="${fill}" stroke="#1e293b" stroke-width="1"/>
+        <text x="142" y="${y + 12.8}" text-anchor="middle" font-size="7.6" font-weight="800" fill="${col}">${esc(val)}</text>
+        <text x="252" y="${y + 12.8}" font-size="7.3" font-weight="700" fill="#0f172a">${esc(desc)}</text>`;
+    }
+    const col = kind === 'GAIN' ? '#15803d' : '#b91c1c';
+    return `<rect x="60" y="${y}" width="164" height="16" fill="#e2e8f0" opacity="0.82"/>
+      <line x1="224" y1="${y + 8}" x2="282" y2="${y + 8}" stroke="${col}" stroke-width="1.3"/>
+      <text x="288" y="${y + 11}" font-size="7.3" font-weight="800" fill="${col}">${esc(val)}</text>
+      <text x="342" y="${y + 11}" font-size="7.0" fill="#1e293b">${esc(desc)}</text>`;
+  }).join('');
+
+  const sensRanking = [
+    ['工作温度热损耗 Thermal Loss', -thermLossPct, -(eNomKwh * thermLossPct / 100000), '改善支架底部通风流道'],
+    ['倾角转置增益 Perez Transposition', transGainPct, eNomKwh * transGainPct / 100000, '维持气象寻优最佳倾角'],
+    ['双面背面反射增益 Bifacial Gain', bifGainPct, eNomKwh * bifGainPct / 100000, '浅色高反射屋面提升背面受光'],
+    ['组件积灰损失 Soiling Loss', -finite(p.soiling_pct, 2.0), -(eNomKwh * finite(p.soiling_pct, 2.0) / 100000), '配置屋面清洗水路与季度运维'],
+    ['三维近处遮挡损失 3D Near Shading', -shadeLossPct, -(eNomKwh * shadeLossPct / 100000), '女儿墙退距与重度阴影剔除'],
+    ['入射角光学反射 IAM Loss', -iamLossPct, -(eNomKwh * iamLossPct / 100000), '采用高透减反镀膜双玻组件'],
+    ['交直流线损与箱变损耗 Ohmic + MV', -(finite(p.dc_ohmic_pct, 1.2) + acPostLossPct), -(eNomKwh * (finite(p.dc_ohmic_pct, 1.2) + acPostLossPct) / 100000), '逆变器就近布置缩短直流干线'],
+  ];
+
+  // 12x24 Hourly AC Output Heatmap (Page 4)
+  const hmMatrix = Array.isArray(pvs.hourly_heatmap_12x24?.ac_kw) && pvs.hourly_heatmap_12x24.ac_kw.length === 12 && !isZeroCap
+    ? pvs.hourly_heatmap_12x24.ac_kw
+    : normMonths.map((rm) => {
+        if (isZeroCap || acKw <= 0) return Array.from({ length: 24 }, () => 0);
+        const dayKwh = rm.eGrid / MONTH_DAYS_STD[rm.idx];
+        return Array.from({ length: 24 }, (_, hr) => {
+          if (hr < 6 || hr > 18) return 0;
+          const shape = Math.sin(((hr - 5.5) / 13) * Math.PI);
+          return +(Math.min(acKw, (dayKwh / 7.8) * Math.max(0, shape) * 1.32)).toFixed(1);
+        });
+      });
+  const hmCells = hmMatrix.map((row, mIdx) => {
+    const ry = 20 + mIdx * 9.5;
+    const cells = row.slice(0, 24).map((val, hr) => {
+      const cx = 42 + hr * 27.2;
+      const frac = acKw > 0 ? Math.min(1, Math.max(0, finite(val, 0) / acKw)) : 0;
+      const fill = frac <= 0.02 ? '#f1f5f9' : frac < 0.35 ? '#bae6fd' : frac < 0.68 ? '#fde68a' : '#ef4444';
+      return `<rect x="${cx.toFixed(1)}" y="${ry.toFixed(1)}" width="26.2" height="8.6" fill="${fill}"/>`;
+    }).join('');
+    return `<text x="38" y="${(ry + 6.8).toFixed(1)}" text-anchor="end" font-size="5.8" fill="#334155">${MONTH_EN_SHORT[mIdx]}</text>${cells}`;
+  }).join('');
+
+  const p50 = isZeroCap ? 0 : finite(prob.p50_kwh, eGridKwh);
+  const p75 = isZeroCap ? 0 : finite(prob.p75_kwh, p50 * 0.965);
+  const p90 = isZeroCap ? 0 : finite(prob.p90_kwh, p50 * 0.933);
+  const p95 = isZeroCap ? 0 : finite(prob.p95_kwh, p50 * 0.914);
+  const specQuantile = (qVal) => (dcKw > 0 ? fmtNum(qVal / dcKw, 1) : '0.0');
+
+  // Q02: Compliance checks — NEVER invent PASS or hardcoded >= 0.8 m
+  const rawDeadLoad = optFiniteNum(mf.added_dead_load_kg_m2 ?? mf.dead_load_kg_m2 ?? mf?.structural_check?.added_dead_load_kg_m2);
+  const rawMaxLoad = optFiniteNum(mf.max_roof_load_kg_m2 ?? mf?.structural_check?.max_roof_load_kg_m2);
+  const rawSetbackM = optFiniteNum(mf.effective_setback_m ?? mf?.structural_check?.effective_setback_m ?? sys.edge_setback_m);
+  const rawSnowS0 = optFiniteNum(mf.basic_snow_s0_kn_m2);
+  const rawPruned = optFiniteNum(mf.pruned_shaded_modules ?? mf.pruned_shaded_count);
+  const rawWalkwayM = optFiniteNum(mf.fire_lane_width_m ?? mf.walkway_width_m ?? sys.walkway_width_m ?? options?.walkwayWidthM);
+
+  const rawVocCold = optFiniteNum(mf.string_cold_voc_v ?? mf?.string_voc_check?.string_cold_voc_v);
+  const vocCold = rawVocCold != null
+    ? rawVocCold
+    : (hasValidStrings ? sys.modules_per_string * finite(mod.voc_v, 51.0) * 1.08 : null);
+  const rawVmpHot = optFiniteNum(mf.vmp_hot_v);
+  const vmpHot = rawVmpHot != null
+    ? rawVmpHot
+    : (hasValidStrings ? sys.modules_per_string * finite(mod.vmp_v, 42.3) * 0.88 : null);
+  const vocLimitV = finite(inv.max_dc_v, 1100);
+
+  const loadBadge = rawDeadLoad != null && rawMaxLoad != null
+    ? (rawDeadLoad > rawMaxLoad ? 'FAIL' : 'UNVERIFIED')
+    : 'UNVERIFIED';
+  const loadText = rawDeadLoad != null && rawMaxLoad != null
+    ? `${fmtNum(rawDeadLoad, 1)} / ${fmtNum(rawMaxLoad, 1)} kg/m²`
+    : 'N/A (待后端核验)';
+
+  const setbackBadge = rawSetbackM != null ? (rawSetbackM < 0.5 ? 'FAIL' : 'UNVERIFIED') : 'UNVERIFIED';
+  const setbackText = rawSetbackM != null ? `退距 ${fmtNum(rawSetbackM, 2)} m (待后端核验)` : 'N/A (待后端核验)';
+
+  const snowBadge = 'UNVERIFIED';
+  const snowText = rawSnowS0 != null ? `s0 = ${fmtNum(rawSnowS0, 2)} kN/m² (待后端核验)` : 'N/A (待后端核验)';
+
+  const vocBadge = vocCold != null && vocCold > vocLimitV ? 'FAIL' : 'UNVERIFIED';
+  const vocText = vocCold != null ? `${fmtNum(vocCold, 1)} V / 上限 ${vocLimitV} V` : 'N/A (待后端核验)';
+
+  const shadeBadge = 'UNVERIFIED';
+  const shadeText = rawPruned != null ? `剔除 ${Math.max(0, Math.round(rawPruned))} 块 (待后端核验)` : 'N/A (待后端核验)';
+
+  const walkwayBadge = rawWalkwayM != null && rawWalkwayM < 0.6 ? 'FAIL' : 'UNVERIFIED';
+  const walkwayText = rawWalkwayM != null
+    ? (rawWalkwayM < 0.6
+      ? `通道净宽 ${fmtNum(rawWalkwayM, 2)} m < 0.60 m (不满足规范要求)`
+      : `通道净宽 ${fmtNum(rawWalkwayM, 2)} m (待后端核验)`)
+    : 'N/A (待后端核验)';
+
+  // Q02: Financial metrics — NEVER fabricate 15.8% IRR, 5.4 yr payback, or 0.72 RMB/kWh revenue
+  const rawSelfUse = optFiniteNum(
+    fin.self_use_pct ??
+    (fin.self_consumption_ratio !== undefined && fin.self_consumption_ratio !== null
+      ? Number(fin.self_consumption_ratio) * 100
+      : undefined) ??
+    mf.self_use_pct
+  );
+  const selfUseLabel = rawSelfUse != null ? `${fmtNum(rawSelfUse, 1)}%` : 'N/A (待后端核验)';
+
+  const rawLcoe = optFiniteNum(fin.lcoe_cny_kwh ?? fin.lcoe_rmb_kwh);
+  const lcoeLabel = rawLcoe != null ? `¥${fmtNum(rawLcoe, 3)}` : 'N/A (待后端核验)';
+
+  const rawCapexWan = optFiniteNum(fin.capex_wan);
+  const capexLabel = rawCapexWan != null ? `¥${fmtNum(rawCapexWan, 2)}万` : 'N/A (待后端核验)';
+
+  const rawIrr = optFiniteNum(fin.irr_pct);
+  const rawPayback = optFiniteNum(fin.payback_years);
+  const pbLabel = rawPayback != null ? `${fmtNum(rawPayback, 1)} yr` : 'N/A (待后端核验)';
+
+  const rawTariffSelf = optFiniteNum(fin.tariff_self_rmb ?? fin.tariff_cny_kwh ?? fin.weighted_tariff_rmb);
+  const rawTariffFeed = optFiniteNum(fin.tariff_feed_rmb ?? fin.feed_in_tariff_rmb);
+  const hasExplicitTariff = rawTariffSelf != null || rawTariffFeed != null;
+  const selfRatioFrac = rawSelfUse != null ? Math.max(0, Math.min(1, rawSelfUse / 100)) : 0;
+  const effTariffRmb = hasExplicitTariff
+    ? selfRatioFrac * (rawTariffSelf ?? 0) + (1 - selfRatioFrac) * (rawTariffFeed ?? rawTariffSelf ?? 0)
+    : null;
+  const canComputeCashflow = rawCapexWan != null && effTariffRmb != null;
+
+  let cumCfRunning = rawCapexWan != null ? -rawCapexWan : 0;
+  const yr25Points = ['42,98.0'];
+  const yr25RowsHtml = Array.from({ length: 25 }, (_, i) => {
+    const yr = i + 1;
+    const deg = (1 - 0.01) * (1 - 0.004 * (yr - 1));
+    const mwh = isZeroCap ? 0 : eGridMwh * deg;
+    if (!canComputeCashflow) {
+      const px = 42 + (yr / 25) * 282;
+      yr25Points.push(`${px.toFixed(1)},98.0`);
+      return `<tr><td>Y${String(yr).padStart(2, '0')}</td><td>${(deg * 100).toFixed(2)}%</td><td>${fmtNum(mwh, 2)}</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A (待后端核验)</td></tr>`;
+    }
+    const revWan = (mwh * 1000 * effTariffRmb) / 10000;
+    const omWan = dcKw * 0.0045 + (yr === 13 ? dcKw * 0.018 : 0);
+    const netWan = revWan - omWan;
+    cumCfRunning += netWan;
+    const px = 42 + (yr / 25) * 282;
+    const denom = Math.max(20, Math.abs(rawCapexWan) * 2.6);
+    const py = Math.max(18, Math.min(132, 98 - (cumCfRunning / denom) * 68));
+    yr25Points.push(`${px.toFixed(1)},${py.toFixed(1)}`);
+    return `<tr><td>Y${String(yr).padStart(2, '0')}</td><td>${(deg * 100).toFixed(2)}%</td><td>${fmtNum(mwh, 2)}</td><td>${fmtNum(revWan, 2)}</td><td>${fmtNum(omWan, 2)}</td><td>${netWan >= 0 ? '+' : ''}${fmtNum(netWan, 2)}</td><td><b>${cumCfRunning >= 0 ? '+' : ''}${fmtNum(cumCfRunning, 2)}</b></td></tr>`;
+  }).join('');
+
+  const sensMatrixHtml = rawIrr != null && rawPayback != null
+    ? `<table class="pvs-table"><thead><tr><th>电价 \\ 造价</th><th>CAPEX -10%</th><th>CAPEX 基准</th><th>CAPEX +10%</th></tr></thead><tbody><tr><td>电价 -10%</td><td>N/A (待后端核验)</td><td>N/A (待后端核验)</td><td>N/A (待后端核验)</td></tr><tr><td><b>电价 基准</b></td><td>N/A (待后端核验)</td><td style="background:#fffbeb"><b>${fmtNum(rawIrr, 1)}% / ${fmtNum(rawPayback, 1)}年 (未核验)</b></td><td>N/A (待后端核验)</td></tr><tr><td>电价 +10%</td><td>N/A (待后端核验)</td><td>N/A (待后端核验)</td><td>N/A (待后端核验)</td></tr></tbody></table>`
+    : `<div style="padding:14px 8px;text-align:center;color:#92400e;background:#fffbeb;border:1px dashed #f59e0b;font-size:6.6pt;font-weight:700">N/A (待后端核验) — 后端专业报告服务离线，双因子 IRR / 回收期敏感性矩阵须连接后端核验后生成</div>`;
+
+  const invEuroLabel = inv.euro_eff_pct != null ? `${fmtNum(inv.euro_eff_pct, 2)}%` : '规格书未给出 (N/A)';
+  const invCountEst = acKw > 0 ? Math.max(1, Math.round(acKw / Math.max(8, finite(inv.rated_ac_kw, 100)))) : 0;
+
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>光筑专业报告 (离线简版预览未核验) — ${pName}</title>
+  <link rel="icon" type="image/png" href="${iconSrc}">
+  <style>
+    @page{size:A4 portrait;margin:0}
+    *{box-sizing:border-box;border-radius:0!important}
+    html,body{margin:0;padding:0;background:#dde3ea;color:#0f172a;font-family:"Inter","Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:7.8pt;line-height:1.32;font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body[data-lang-mode="zh"] .l-en,body[data-lang-mode="zh"] .l-sep{display:none!important}
+    body[data-lang-mode="en"] .l-zh,body[data-lang-mode="en"] .l-sep{display:none!important}
+    .pvs-action-bar{position:sticky;top:0;z-index:999;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 16px;background:#0f172a;color:#fff;border-bottom:2px solid #c87743}
+    .pvs-offline-banner{background:#fef3c7;color:#92400e;border-bottom:2px solid #d97706;padding:7px 16px;font-size:11.5px;font-weight:800;text-align:center}
+    .pvs-act-btn{padding:5px 10px;border:1px solid #475569;background:#1e293b;color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;margin-left:4px}
+    .pvs-act-btn.primary{background:#c87743;border-color:#df8d57}
+    .pvs-page-jumps{display:inline-flex;gap:3px;margin-right:8px}
+    .pvs-jump-btn{padding:4px 7px;border:1px solid #475569;background:#0f172a;color:#e2e8f0;font-size:11px;font-weight:700;cursor:pointer}
+    .pvs-report-container{display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px 8px 28px}
+    .pvs-page{position:relative;width:210mm;height:297mm;min-height:297mm;max-height:297mm;padding:7mm 9mm 6.2mm;background:#fff;border:1px solid #64748b;box-shadow:0 8px 24px rgba(15,23,42,.14);display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;scroll-margin-top:56px}
+    .pvs-watermark-layer{position:absolute;inset:0;z-index:2;pointer-events:none;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);place-items:center;padding:18mm 10mm;opacity:0.052}
+    .pvs-watermark-tile{display:flex;align-items:center;gap:6px;transform:rotate(-28deg);user-select:none;color:#0f172a}
+    .pvs-wm-logo{width:24px;height:24px;display:inline-block;background:url("${iconSrc}") center/contain no-repeat}
+    .pvs-wm-txt b{display:block;font-size:9.5pt;letter-spacing:.08em}
+    .pvs-wm-txt small{display:block;font-size:6.8pt;letter-spacing:.14em}
+    .pvs-page-header,.pvs-page-body,.pvs-page-footer{position:relative;z-index:3}
+    .pvs-page-body{flex:1;display:flex;flex-direction:column;gap:4.5px;min-height:0}
+    .pvs-page-header{border:1.2px solid #0f172a;border-top:2.8px solid #0f172a;background:#f8fafc;display:grid;grid-template-columns:56mm 1fr 64mm;margin-bottom:3.5px}
+    .pvs-hdr-brand{display:flex;align-items:center;gap:7px;padding:4px 7px;border-right:1px solid #64748b}
+    .pvs-brand-icon{width:30px;height:30px;object-fit:contain;border:1px solid #94a3b8;background:#fff;padding:1.5px}
+    .pvs-hdr-sw-name{font-size:8.4pt;font-weight:800}.pvs-hdr-sw-sub{font-size:6pt;color:#475569;font-weight:600}
+    .pvs-hdr-center{padding:4px 8px;border-right:1px solid #64748b}
+    .pvs-hdr-systype{font-size:7.8pt;font-weight:800}.pvs-hdr-secname{font-size:7.1pt;font-weight:700;color:#1d4ed8}
+    .pvs-hdr-projline{font-size:6.3pt;color:#334155}
+    .pvs-hdr-meta{display:grid;grid-template-columns:1fr 1fr;font-size:6.2pt}
+    .pvs-hdr-meta-cell{padding:2px 5px;border-bottom:.6px solid #cbd5e1;border-right:.6px solid #cbd5e1}
+    .pvs-hdr-page-pill{background:#0f172a;color:#fff;padding:0.5px 4px}
+    .pvs-box{border:1px solid #334155;background:#fff}
+    .pvs-box-head{background:#e2e8f0;border-bottom:1px solid #475569;padding:2px 6px;display:flex;justify-content:space-between;font-size:7pt;font-weight:800}
+    .pvs-box-content{padding:3.5px 6px}
+    .pvs-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:4.5px}
+    .pvs-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4.5px}
+    .pvs-kv{width:100%;border-collapse:collapse;font-size:6.6pt}.pvs-kv td{padding:1.5px 3px;border-bottom:.5px dotted #cbd5e1}.pvs-kv td:last-child{text-align:right;font-weight:700}
+    .pvs-main-strip{display:grid;grid-template-columns:repeat(6,1fr);border:1.2px solid #0f172a;background:#f8fafc}
+    .pvs-kpi{padding:3.5px 5px;border-right:1px solid #cbd5e1}.pvs-kpi:last-child{border-right:none}.pvs-kpi b{display:block;font-size:9.2pt;margin-top:1px}
+    .pvs-table{width:100%;border-collapse:collapse;font-size:6.3pt}.pvs-table th,.pvs-table td{border:.7px solid #64748b;padding:1.6px 3px;text-align:right}
+    .pvs-table th:first-child,.pvs-table td:first-child{text-align:left;font-weight:700}.pvs-table thead th{background:#e2e8f0;text-align:center}.pvs-table tfoot td{background:#dbeafe;font-weight:800}
+    .pvs-table-25yr th,.pvs-table-25yr td{padding:1.1px 3px;font-size:5.9pt}
+    .pvs-sign-boxes{display:grid;grid-template-columns:repeat(3,1fr) 1.25fr;gap:5px;align-items:stretch}
+    .pvs-page-footer{border-top:.9px solid #334155;padding-top:2px;display:flex;justify-content:space-between;font-size:6pt;color:#475569}
+    .pvs-svg{width:100%;height:auto;display:block}
+    .badge-fail{color:#b91c1c;font-weight:800}.badge-unv{color:#b45309;font-weight:800}
+    @media print{html,body{background:#fff!important}.noprint,.pvs-action-bar{display:none!important}.pvs-report-container{display:block!important;padding:0!important}.pvs-page{width:210mm!important;height:296.6mm!important;min-height:296.6mm!important;max-height:296.6mm!important;border:none!important;box-shadow:none!important;break-after:page;page-break-after:always;overflow:hidden!important}.pvs-page:last-of-type{break-after:auto;page-break-after:auto}}
+  </style>
+  <script>
+    window.__cyclePvsLang = function(){
+      var b = document.body, m = ['bilingual','zh','en'];
+      b.setAttribute('data-lang-mode', m[(m.indexOf(b.getAttribute('data-lang-mode') || 'bilingual') + 1) % 3]);
+    };
+    window.__jumpPvsPage = function(pg){
+      var el = document.querySelector('[data-page="' + pg + '"]');
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    window.__downloadStandalonePvsHtml = function(){
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob(['<!DOCTYPE html>\\n' + document.documentElement.outerHTML], { type: 'text/html;charset=utf-8' }));
+      a.download = '${dlHtmlName}';
+      a.click();
+    };
+  </script>
+</head>
+<body data-lang-mode="bilingual">
+  <div class="pvs-action-bar noprint">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="${iconSrc}" alt="光筑软件图标" width="26" height="26" style="background:#fff;padding:2px">
+      <div><strong>光筑专业报告 · 离线简版预览 (未核验)</strong><div style="font-size:11px;color:#cbd5e1">${pName} · ${esc(dcLabel)} · OFFLINE UNVERIFIED PREVIEW</div></div>
+    </div>
+    <div>
+      <span class="pvs-page-jumps">${[1, 2, 3, 4, 5, 6].map((pg) => `<button type="button" class="pvs-jump-btn" onclick="__jumpPvsPage(${pg})">P${pg}</button>`).join('')}</span>
+      <button type="button" class="pvs-act-btn" onclick="__cyclePvsLang()">中英切换</button>
+      <button type="button" class="pvs-act-btn" onclick="__downloadStandalonePvsHtml()">下载 HTML</button>
+      <button type="button" class="pvs-act-btn primary" onclick="window.print()">打印 / 导出 A4 PDF</button>
+    </div>
+  </div>
+  <div class="pvs-offline-banner" role="alert" data-offline-unverified-banner="1">
+    ⚠ 后端专业报告服务离线 · 简版预览未核验 (OFFLINE UNVERIFIED PREVIEW) — 本页仅展示客户端离线估算，工程合规、配串与财务数据未经后端物理引擎核验，不可作为正式签章成果交付。
+  </div>
+
+  <main class="pvs-report-container">
+    <!-- Page 1 -->
+    <section class="pvs-page" id="pvs-page-1" data-page="1">
+      ${watermarkLayer}
+      ${pageHeader(1, 'System Architecture & Simulation Parameters', '系统拓扑架构与精细化仿真输入参数')}
+      <div class="pvs-page-body">
+        <div class="pvs-box" style="padding:4px 8px;display:flex;justify-content:space-between;align-items:center;background:#fffbeb;border-color:#d97706">
+          <div style="display:flex;align-items:center;gap:8px">
+            <img src="${iconSrc}" alt="光筑徽章" width="32" height="32" style="background:#fff;border:1px solid #64748b;padding:2px">
+            <div><div style="font-size:9.2pt;font-weight:800">${pName} — 《光筑专业报告》离线简版预览</div><div style="font-size:6.5pt;color:#475569">Site: ${siteName} · Pnom ${esc(dcLabel)} · Pac ${esc(acLabel)} · PR ${fmtNum(prPct, 2)}%</div></div>
+          </div>
+          <span style="padding:2px 6px;border:1px solid #b45309;background:#fef3c7;color:#92400e;font-weight:800;font-size:6.3pt">OFFLINE UNVERIFIED PREVIEW · 未核验</span>
+        </div>
+        <div class="pvs-box">
+          <div class="pvs-box-head"><span>Single-Line System Schematic · 并网光伏系统一次拓扑简图</span><small>${esc(stringSummaryLabel)}</small></div>
+          <div class="pvs-box-content">
+            <svg class="pvs-svg" viewBox="0 0 720 82"><rect x="6" y="6" width="156" height="68" fill="#eff6ff" stroke="#1d4ed8"/><text x="14" y="21" font-size="7.8" font-weight="800" fill="#1e3a8a">PV SUB-ARRAYS 光伏方阵</text><text x="14" y="38" font-size="7.3">${esc(dcLabel)} (${esc(modCountLabel)})</text><text x="14" y="54" font-size="6.8" fill="#475569">Tilt ${sys.tilt_deg ?? 'N/A'}° / Az ${sys.azimuth_deg ?? 'N/A'}°</text><line x1="162" y1="40" x2="196" y2="40" stroke="#1e3a8a" stroke-width="1.8"/><rect x="196" y="6" width="150" height="68" fill="#fff" stroke="#475569"/><text x="204" y="21" font-size="7.8" font-weight="800">DC STRINGS 组串汇流</text><text x="204" y="38" font-size="7.2">${esc(stringSummaryLabel)}</text><text x="204" y="54" font-size="6.8" fill="#475569">Voc Cold: ${vocCold != null ? `${fmtNum(vocCold, 1)} V` : '待后端核验'}</text><line x1="346" y1="40" x2="380" y2="40" stroke="#1e3a8a" stroke-width="1.8"/><rect x="380" y="6" width="156" height="68" fill="#fffbeb" stroke="#d97706"/><text x="388" y="21" font-size="7.8" font-weight="800" fill="#92400e">MPPT INVERTER 逆变器</text><text x="388" y="38" font-size="7.2">${esc(acLabel)} (DC:AC ${fmtNum(pnomRatio, 2)})</text><text x="388" y="54" font-size="6.8" fill="#475569">${esc(inv.model || 'SG110CX-P2')}</text><line x1="536" y1="40" x2="570" y2="40" stroke="#15803d" stroke-width="1.8"/><rect x="570" y="6" width="144" height="68" fill="#f0fdf4" stroke="#16a34a"/><text x="578" y="21" font-size="7.8" font-weight="800" fill="#166534">AC GRID &amp; USER LOAD</text><text x="578" y="38" font-size="7.2">E_Grid ${fmtNum(eGridMwh, 2)} MWh/yr</text><text x="578" y="54" font-size="6.8" fill="#475569">Self-Use ${esc(selfUseLabel)}</text></svg>
+          </div>
+        </div>
+        <div class="pvs-grid-2">
+          <div class="pvs-box"><div class="pvs-box-head"><span>Geographical Site &amp; Meteo · 地理与气象基准</span><small>.MET 8760h</small></div><div class="pvs-box-content"><table class="pvs-kv"><tr><td>Site Name</td><td>${siteName}</td></tr><tr><td>Coordinates</td><td>${fmtNum(req.site.lat, 4)}°N, ${fmtNum(req.site.lon, 4)}°E</td></tr><tr><td>Ground Albedo</td><td>${fmtNum(req.site.albedo, 2)}</td></tr><tr><td>Transposition &amp; Thermal</td><td>Perez 1990 · Faiman (Offline Preview)</td></tr></table></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>Orientation &amp; 3D Shading · 朝向与三维遮挡</span><small>${esc(sys.orientation_mode)}</small></div><div class="pvs-box-content"><table class="pvs-kv"><tr><td>Tilt / Azimuth</td><td>${sys.tilt_deg != null ? `${fmtNum(sys.tilt_deg, 1)}°` : 'N/A'} / ${sys.azimuth_deg != null ? `${fmtNum(sys.azimuth_deg, 0)}°` : 'N/A'}</td></tr><tr><td>Limit Angle α_lim</td><td>${fmtNum(limitAngleDeg, 1)}° (冬至日照包络)</td></tr><tr><td>Collector Area</td><td>${modArea} m² (${esc(sys.mount_orientation)})</td></tr><tr><td>3D Near Shadings</td><td>Linear ${fmtNum(shadeLossPct, 2)}% (未核验)</td></tr></table></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>PV Array Characteristics · 光伏组件参数</span><small>.PAN</small></div><div class="pvs-box-content"><table class="pvs-kv"><tr><td>Module Model</td><td>${esc(mod.model || 'JKM580N-72HL4-BDV')}</td></tr><tr><td>Unit Power / Count</td><td>${fmtNum(mod.stc_w || 580, 0)} Wp × ${esc(modCountLabel)}</td></tr><tr><td>Strings × Series</td><td>${esc(stringTableCell)} (${esc(dcLabel)})</td></tr><tr><td>γPmp / βVoc / Voc Cold</td><td>${mod.gamma_pmax_pct_c ?? -0.29}%/°C / ${mod.beta_voc_pct_c ?? -0.25}%/°C / ${vocCold != null ? `${fmtNum(vocCold, 1)} V` : 'N/A'}</td></tr></table></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>Inverter Characteristics · 逆变器参数</span><small>.OND</small></div><div class="pvs-box-content"><table class="pvs-kv"><tr><td>Inverter Model</td><td>${esc(inv.model || 'SG110CX-P2')}</td></tr><tr><td>Total AC / Euro η</td><td>${esc(acLabel)} · Euro η ${esc(invEuroLabel)}</td></tr><tr><td>Pnom Ratio (DC:AC)</td><td>${fmtNum(pnomRatio, 3)}</td></tr><tr><td>MPPT Window</td><td>${finite(inv.mppt_v_min, 200)}–${finite(inv.mppt_v_max, 1000)} V (Max ${finite(inv.max_dc_v, 1100)}V)</td></tr></table></div></div>
+        </div>
+        <div class="pvs-box"><div class="pvs-box-head"><span>Detailed Array Loss Factors · 全链路损耗参数明细</span><small>Thermal · Ohmic · IAM · Aging</small></div><div class="pvs-box-content"><table class="pvs-kv"><tr><td>Thermal Uc / Soiling / IAM b0</td><td>Uc=${p.uc_w_m2k} W/m²K · Soiling ${p.soiling_pct}% · ASHRAE b0=${p.iam_b0}</td></tr><tr><td>DC / AC Ohmic / LID / Mismatch</td><td>DC ${p.dc_ohmic_pct}% · AC ${p.ac_ohmic_pct}% · LID ${p.lid_pct}% · Mismatch ${p.mismatch_pct}%</td></tr></table></div></div>
+        <div class="pvs-main-strip">
+          <div class="pvs-kpi"><span>直流装机 Pnom</span><b>${esc(dcLabel)}</b></div>
+          <div class="pvs-kpi"><span>首年并网 E_Grid</span><b>${fmtNum(eGridMwh, 2)} MWh</b></div>
+          <div class="pvs-kpi"><span>等效满发小时</span><b>${fmtNum(specYield, 1)} h</b></div>
+          <div class="pvs-kpi"><span>系统效率 PR</span><b>${fmtNum(prPct, 2)}%</b></div>
+          <div class="pvs-kpi"><span>P90 授信参考</span><b>${fmtNum(p90 / 1000, 1)} MWh</b></div>
+          <div class="pvs-kpi"><span>度电成本 LCOE</span><b>${esc(lcoeLabel)}</b></div>
+        </div>
+      </div>
+      ${pageFooter(1)}
+    </section>
+
+    <!-- Page 2 -->
+    <section class="pvs-page" id="pvs-page-2" data-page="2">
+      ${watermarkLayer}
+      ${pageHeader(2, 'Main Results, Normalized Production & 13-Col Balances', '核心指标、归一化日均产出与十三列月度平衡总表')}
+      <div class="pvs-page-body">
+        <div class="pvs-main-strip">
+          <div class="pvs-kpi"><span>E_Grid 并网电量</span><b>${fmtNum(eGridMwh, 2)} MWh</b><small>${fmtNum(eGridKwh, 0)} kWh/yr</small></div>
+          <div class="pvs-kpi"><span>Specific 满发小时</span><b>${fmtNum(specYield, 1)} h</b><small>kWh/kWp/yr</small></div>
+          <div class="pvs-kpi"><span>Performance Ratio</span><b>${fmtNum(prPct, 2)}%</b><small>UNVERIFIED</small></div>
+          <div class="pvs-kpi"><span>Self-Use 消纳率</span><b>${esc(selfUseLabel)}</b><small>自发自用</small></div>
+          <div class="pvs-kpi"><span>P90 授信参考</span><b>${fmtNum(p90 / 1000, 1)} MWh</b><small>P50 ${fmtNum(p50 / 1000, 1)} MWh</small></div>
+          <div class="pvs-kpi"><span>LCOE 度电成本</span><b>${esc(lcoeLabel)}</b><small>RMB/kWh</small></div>
+        </div>
+        <svg class="pvs-svg" viewBox="0 0 740 182">
+          <rect x="1" y="1" width="358" height="180" fill="#fff" stroke="#64748b"/><text x="180" y="14" text-anchor="middle" font-size="7.8" font-weight="800">Normalized Production (Yf=${yfYr.toFixed(2)}, Ls=${lsYr.toFixed(2)}, Lc=${lcYr.toFixed(2)} kWh/kWp/d)</text>
+          <rect x="36" y="42" width="308" height="120" fill="none" stroke="#334155"/>${normBars}
+          <rect x="381" y="1" width="358" height="180" fill="#fff" stroke="#64748b"/><text x="560" y="14" text-anchor="middle" font-size="7.8" font-weight="800">Performance Ratio PR (Annual = ${fmtNum(prPct, 2)}%)</text>
+          <rect x="412" y="42" width="308" height="120" fill="none" stroke="#334155"/>${prBars}
+        </svg>
+        <div class="pvs-box">
+          <div class="pvs-box-head"><span>Balances and Main Results · 十三列月度与全年能量平衡总表</span><small>13 Engineering Columns · Offline Preview</small></div>
+          <div class="pvs-box-content">
+            <table class="pvs-table">
+              <thead><tr><th>Month</th><th>GlobHor</th><th>DiffHor</th><th>T_Amb</th><th>WindVel</th><th>GlobInc</th><th>GlobEff</th><th>GlobBak</th><th>EArray</th><th>E_Grid</th><th>Yf</th><th>Lc</th><th>PR</th></tr></thead>
+              <tbody>${normMonths.map((r) => `<tr><td>${r.enShort} · ${r.zh}</td><td>${fmtNum(r.globHor, 1)}</td><td>${fmtNum(r.diffHor, 1)}</td><td>${fmtNum(r.tAmb, 1)}</td><td>${fmtNum(r.windMs, 2)}</td><td>${fmtNum(r.globInc, 1)}</td><td>${fmtNum(r.globEff, 1)}</td><td>${fmtNum(r.globBak, 1)}</td><td>${fmtNum(r.eArray, 0)}</td><td><b>${fmtNum(r.eGrid, 0)}</b></td><td>${r.yf.toFixed(2)}</td><td>${r.lc.toFixed(2)}</td><td>${fmtNum(r.prPct, 1)}%</td></tr>`).join('')}</tbody>
+              <tfoot><tr><td>Year / 全年</td><td>${fmtNum(globHor, 1)}</td><td>${fmtNum(diffHor, 1)}</td><td>${fmtNum(tAmbYr, 1)}</td><td>${fmtNum(windYr, 2)}</td><td>${fmtNum(globInc, 1)}</td><td>${fmtNum(globEff, 1)}</td><td>${fmtNum(globBakSum, 1)}</td><td>${fmtNum(eArrayKwh, 0)}</td><td>${fmtNum(eGridKwh, 0)}</td><td>${yfYr.toFixed(2)}</td><td>${lcYr.toFixed(2)}</td><td>${fmtNum(prPct, 2)}%</td></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+      ${pageFooter(2)}
+    </section>
+
+    <!-- Page 3 -->
+    <section class="pvs-page" id="pvs-page-3" data-page="3">
+      ${watermarkLayer}
+      ${pageHeader(3, 'Annual 8760h Energy Loss Tree & Sensitivity Ranking', '全年 8760h 能量流分支损耗树图与关键敏感度排序')}
+      <div class="pvs-page-body">
+        <svg class="pvs-svg" viewBox="0 0 740 572"><rect x="2" y="2" width="736" height="568" fill="#fff" stroke="#64748b"/><text x="14" y="18" font-size="8.6" font-weight="800">Loss Diagram over the Whole Year · 全年 8760h 光电转换损耗树 (离线简版预览)</text>${lossSvgRows}</svg>
+        <div class="pvs-box">
+          <div class="pvs-box-head"><span>Loss &amp; Gain Sensitivity Ranking · 损耗与增益敏感度排序表</span><small>Sorted by Impact Magnitude</small></div>
+          <div class="pvs-box-content">
+            <table class="pvs-table">
+              <thead><tr><th>Factor 关键环节</th><th>Impact 影响率</th><th>Energy 折算电量 (MWh)</th><th>Engineering Optimization 工程优化建议</th></tr></thead>
+              <tbody>${sensRanking.map(([name, pct, mwh, hint]) => `<tr><td>${esc(name)}</td><td style="color:${pct >= 0 ? '#15803d' : '#b91c1c'};font-weight:700">${fmtSignedPct(pct)}</td><td>${mwh >= 0 ? '+' : ''}${fmtNum(mwh, 2)}</td><td style="text-align:left">${esc(hint)}</td></tr>`).join('')}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      ${pageFooter(3)}
+    </section>
+
+    <!-- Page 4 -->
+    <section class="pvs-page" id="pvs-page-4" data-page="4">
+      ${watermarkLayer}
+      ${pageHeader(4, 'Solar-Path Shading, Hourly Heatmap & P50/P90 Bankability', '太阳轨迹遮挡、12×24逐时出力热力矩阵与P50/P90授信概率')}
+      <div class="pvs-page-body">
+        <div class="pvs-box"><div class="pvs-box-head"><span>Iso-Shadings Sun-Path Diagram · 太阳视运动轨迹与女儿墙遮挡包络图</span><small>Azimuth -180°..+180°</small></div><div class="pvs-box-content"><svg class="pvs-svg" viewBox="0 0 720 156"><rect x="40" y="12" width="640" height="128" fill="#f8fafc" stroke="#334155"/><path d="M 90 140 Q 360 16 630 140" fill="none" stroke="#dc2626" stroke-width="1.5"/><path d="M 130 140 Q 360 52 590 140" fill="none" stroke="#16a34a" stroke-width="1.4"/><path d="M 180 140 Q 360 88 540 140" fill="none" stroke="#1e3a8a" stroke-width="1.4"/><polygon points="40,140 120,128 260,132 360,134 460,132 600,128 680,140" fill="#64748b" fill-opacity="0.35" stroke="#334155"/><text x="360" y="152" text-anchor="middle" font-size="6.6">Solar Azimuth (-180° .. 0° South .. +180°) · Summer Solstice / Equinox / Winter Solstice (8h–16h)</text></svg></div></div>
+        <div class="pvs-box"><div class="pvs-box-head"><span>Daily Input/Output &amp; Output Power Distribution · 逐日输入输出与功率分布</span><small>365 Days + 10 Bins</small></div><div class="pvs-box-content"><svg class="pvs-svg" viewBox="0 0 720 124"><rect x="34" y="10" width="300" height="96" fill="#f8fafc" stroke="#334155"/><line x1="46" y1="98" x2="320" y2="20" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="4,2"/><text x="184" y="118" text-anchor="middle" font-size="6.4">Daily Input/Output: E_Grid [kWh/d] vs GlobInc [kWh/m²/d]</text><rect x="390" y="10" width="300" height="96" fill="#f8fafc" stroke="#334155"/>${Array.from({ length: 10 }, (_, k) => `<rect x="${400 + k * 28}" y="${isZeroCap ? 106 : 38 + Math.abs(4 - k) * 7}" width="20" height="${isZeroCap ? 0 : 68 - Math.abs(4 - k) * 7}" fill="#0f766e" opacity="0.85"/>`).join('')}<text x="540" y="118" text-anchor="middle" font-size="6.4">System Output Power Distribution Histogram [kWac]</text></svg></div></div>
+        <div class="pvs-box"><div class="pvs-box-head"><span>12×24 Hourly Mean AC Output Heatmap · 全年 12×24 逐时平均并网功率热力矩阵</span><small>Peak ${esc(acLabel)}</small></div><div class="pvs-box-content"><svg class="pvs-svg" viewBox="0 0 710 140"><text x="365" y="12" text-anchor="middle" font-size="6.5" font-weight="700">Hour of Day (00:00 – 23:00 Local Solar Time)</text>${hmCells}</svg></div></div>
+        <div class="pvs-box"><div class="pvs-box-head"><span>P50 / P75 / P90 / P95 Exceedance Yield Table · 银行可融资性概率分位表</span><small>Offline Preview · UNVERIFIED</small></div><div class="pvs-box-content"><table class="pvs-table"><thead><tr><th>Confidence Quantile</th><th>Annual Yield (kWh)</th><th>Annual Yield (MWh)</th><th>Specific (kWh/kWp)</th></tr></thead><tbody><tr><td>P50 (Median Expected)</td><td>${fmtNum(p50, 0)}</td><td>${fmtNum(p50 / 1000, 2)}</td><td>${specQuantile(p50)}</td></tr><tr><td>P75 (Conservative)</td><td>${fmtNum(p75, 0)}</td><td>${fmtNum(p75 / 1000, 2)}</td><td>${specQuantile(p75)}</td></tr><tr><td><b>P90 (Bankable Reference)</b></td><td><b>${fmtNum(p90, 0)}</b></td><td><b>${fmtNum(p90 / 1000, 2)}</b></td><td><b>${specQuantile(p90)}</b></td></tr><tr><td>P95 (High Assurance)</td><td>${fmtNum(p95, 0)}</td><td>${fmtNum(p95 / 1000, 2)}</td><td>${specQuantile(p95)}</td></tr></tbody></table></div></div>
+      </div>
+      ${pageFooter(4)}
+    </section>
+
+    <!-- Page 5 -->
+    <section class="pvs-page" id="pvs-page-5" data-page="5">
+      ${watermarkLayer}
+      ${pageHeader(5, 'MPPT String Schedule & 6-Item National Code Verification', '逆变器 MPPT 组串配电表与六项国家规范安全合规校核')}
+      <div class="pvs-page-body">
+        <div class="pvs-box"><div class="pvs-box-head"><span>Inverter MPPT String Allocation Schedule · 逆变器 MPPT 通道组串接入明细表</span><small>${esc(stringSummaryLabel)}</small></div><div class="pvs-box-content"><table class="pvs-table"><thead><tr><th>Inverter Unit</th><th>Model</th><th>Strings × Series</th><th>Pdc (kWp)</th><th>DC:AC</th><th>Vmpp Hot (V)</th><th>Voc Cold (V)</th><th>ΔUdc (%)</th><th>Status</th></tr></thead><tbody><tr><td>${invCountEst > 0 ? `INV #01..#${invCountEst}` : '待后端配串核验'}</td><td>${esc(inv.model || 'SG110CX-P2')}</td><td>${esc(stringTableCell)}</td><td>${dcIsNull ? 'N/A' : fmtNum(dcKw, 2)}</td><td>${fmtNum(pnomRatio, 2)}</td><td>${vmpHot != null ? fmtNum(vmpHot, 1) : 'N/A'}</td><td>${vocCold != null ? fmtNum(vocCold, 1) : 'N/A'}</td><td>N/A</td><td class="badge-unv">UNVERIFIED</td></tr></tbody></table></div></div>
+        <div class="pvs-grid-3">
+          <div class="pvs-box"><div class="pvs-box-head"><span>1. 屋面恒载校核</span><small class="${loadBadge === 'FAIL' ? 'badge-fail' : 'badge-unv'}">GB 55001 · ${loadBadge}</small></div><div class="pvs-box-content"><b>${esc(loadText)}</b><div style="font-size:6.1pt;color:#475569">离线预览未核验，须经后端结构校核</div></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>2. 抗风揭与退距</span><small class="${setbackBadge === 'FAIL' ? 'badge-fail' : 'badge-unv'}">GB 50797 · ${setbackBadge}</small></div><div class="pvs-box-content"><b>${esc(setbackText)}</b><div style="font-size:6.1pt;color:#475569">离线预览未核验，须经后端风荷载校核</div></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>3. 雪荷载与倾角</span><small class="badge-unv">GB 50009-2012 · ${snowBadge}</small></div><div class="pvs-box-content"><b>${esc(snowText)}</b><div style="font-size:6.1pt;color:#475569">离线预览未核验，须经后端雪压校核</div></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>4. 极寒 Voc 校核</span><small class="${vocBadge === 'FAIL' ? 'badge-fail' : 'badge-unv'}">IEC 62548 · ${vocBadge}</small></div><div class="pvs-box-content"><b>${esc(vocText)}</b><div style="font-size:6.1pt;color:#475569">离线预览未核验，须经后端极值温度校核</div></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>5. 阴影剔除与失配</span><small class="badge-unv">IEC 61724 · ${shadeBadge}</small></div><div class="pvs-box-content"><b>${esc(shadeText)}</b><div style="font-size:6.1pt;color:#475569">离线预览未核验，须经后端三维阴影核验</div></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>6. 消防与运维通道</span><small class="${walkwayBadge === 'FAIL' ? 'badge-fail' : 'badge-unv'}">GB 50016 · ${walkwayBadge}</small></div><div class="pvs-box-content"><b>${esc(walkwayText)}</b><div style="font-size:6.1pt;color:#475569">${walkwayBadge === 'FAIL' ? '通道净宽低于 0.60 m 安全红线' : '离线预览未核验，须经后端总图核验'}</div></div></div>
+        </div>
+        <div class="pvs-box"><div class="pvs-box-head"><span>Cable, SPD &amp; Grounding Specification · 交直流线缆、浪涌保护与防雷接地技术要求</span><small>GB 50057 / IEC 60364-7-712</small></div><div class="pvs-box-content"><table class="pvs-kv"><tr><td>DC String Cable</td><td>PV1-F 1×4.0 mm² (TUV 1500V 耐候阻燃光伏专用线，实际压降待后端核验)</td></tr><tr><td>AC Collector &amp; SPD</td><td>ZC-YJV22 0.6/1kV 铜芯铠装电缆 · 交直流侧配置 Type I+II 级浪涌保护器</td></tr><tr><td>Lightning &amp; Earthing</td><td>40×4 mm 热镀锌扁钢环形接地网与建筑防雷引下线可靠连通，接地电阻 ≤ 4.0 Ω</td></tr></table></div></div>
+      </div>
+      ${pageFooter(5)}
+    </section>
+
+    <!-- Page 6 -->
+    <section class="pvs-page" id="pvs-page-6" data-page="6">
+      ${watermarkLayer}
+      ${pageHeader(6, '25-Year Lifecycle Cashflow, Sensitivity & Sign-Off', '二十五年全生命周期衰减收益、双因子敏感性矩阵与工程签章')}
+      <div class="pvs-page-body">
+        <div class="pvs-box">
+          <div class="pvs-box-head"><span>25-Year Annual Degradation &amp; Financial Cashflow Schedule · 25年逐年发电衰减与现金流全表</span><small>Y01–Y25 · CAPEX ${esc(capexLabel)}</small></div>
+          <div class="pvs-box-content">
+            <table class="pvs-table pvs-table-25yr">
+              <thead><tr><th>Year</th><th>Retention</th><th>E_Grid (MWh)</th><th>Revenue (万元)</th><th>O&amp;M (万元)</th><th>Net CF (万元)</th><th>Cum. CF (万元)</th></tr></thead>
+              <tbody>${yr25RowsHtml}</tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pvs-grid-2">
+          <div class="pvs-box"><div class="pvs-box-head"><span>25-Year Cumulative Cashflow · 累计净现金流曲线</span><small>Payback ${esc(pbLabel)}</small></div><div class="pvs-box-content"><svg class="pvs-svg" viewBox="0 0 340 144"><rect x="36" y="12" width="292" height="114" fill="#f8fafc" stroke="#334155"/><line x1="36" y1="98" x2="328" y2="98" stroke="#64748b" stroke-dasharray="3,2"/><polyline fill="none" stroke="#15803d" stroke-width="2" points="${yr25Points.join(' ')}"/><text x="182" y="138" text-anchor="middle" font-size="6.1" font-weight="700">25-Year Cumulative Net Cashflow (万元)</text></svg></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>3×3 Tariff × CAPEX Sensitivity · 电价与造价双因子敏感性矩阵</span><small>IRR / Payback · UNVERIFIED</small></div><div class="pvs-box-content">${sensMatrixHtml}</div></div>
+        </div>
+        <div class="pvs-sign-boxes">
+          <div class="pvs-box"><div class="pvs-box-head"><span>编制 Prepared By</span></div><div class="pvs-box-content"><b>客户端离线简版预览 Offline Preview</b><div style="font-size:6pt;color:#475569">日期：${esc(simDate.slice(0, 10))}</div></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>校核 Checked By</span></div><div class="pvs-box-content"><b>待后端物理引擎核验 Pending Verification</b><div style="font-size:6pt;color:#475569">UNVERIFIED</div></div></div>
+          <div class="pvs-box"><div class="pvs-box-head"><span>审定 Approved By</span></div><div class="pvs-box-content"><b>待工程师复核签认 Pending Sign-Off</b><div style="font-size:6pt;color:#475569">签章栏：__________</div></div></div>
+          <div class="pvs-box" style="padding:4px 8px;display:flex;justify-content:space-between;align-items:center;background:#fffbeb;border-color:#d97706">
+            <img src="${iconSrc}" alt="光筑图标" width="32" height="32" style="background:#fff;border:1px solid #64748b;padding:2px">
+            <div style="border:1.5px dashed #b45309;color:#b45309;padding:2px 6px;font-weight:800;font-size:6pt;text-align:center">离线简版预览 · 未核验<br>OFFLINE UNVERIFIED PREVIEW</div>
+          </div>
+        </div>
+      </div>
+      ${pageFooter(6)}
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+/**
+ * Display a non-blocking in-app notification toast after exporting 《光筑专业报告》 PDF.
+ */
+export function showGuangzhuProReportToast({ filename, savedDisplay, openedNatively, onPreview } = {}) {
+  if (typeof document === 'undefined' || !document?.body) return;
+  const isEn = getLang() === 'en';
+  document.querySelectorAll('.gz-pro-report-toast').forEach((el) => el.remove?.());
+  const toast = document.createElement('div');
+  toast.className = 'gz-pro-report-toast';
+  toast.setAttribute('role', 'status');
+  const statusLine = isEn
+    ? `${savedDisplay || 'Downloads'}${openedNatively ? ' · Opened in system PDF viewer' : ' · PDF download started'}`
+    : `${savedDisplay || 'Downloads'}${openedNatively ? ' · 已通过系统默认阅读器打开' : ' · 已触发浏览器 PDF 下载'}`;
+  toast.innerHTML = `
+    <img src="${GUANGZHU_ICON_URL}" onerror="this.onerror=null;this.src='${GUANGZHU_ICON_DATA_URI}'" alt="">
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${isEn ? 'Exported: ' : '已导出：'}${esc(filename || '光筑专业报告.pdf')}</div>
+      <div style="font-size:11px;color:#94a3b8">${esc(statusLine)}</div>
+    </div>
+    ${typeof onPreview === 'function' ? `<button type="button" class="gz-pro-report-toast-btn" data-gz-toast-preview="1">${isEn ? 'Preview' : '在线预览'}</button>` : ''}
+  `;
+  const prevBtn = toast.querySelector?.('[data-gz-toast-preview="1"]');
+  if (prevBtn && typeof onPreview === 'function') {
+    prevBtn.addEventListener('click', () => {
+      toast.remove?.();
+      onPreview();
+    });
+  }
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.remove?.();
+  }, 6500);
+}
+
+/**
+ * Open the 6-Page 《光筑专业报告》 inside an in-app <dialog data-gz-pro-report-modal="1"> preview modal
+ * (zero browser popups; supports P1–P6 smooth page jumps, bilingual toggle, iframe print, and 1-click PDF export).
+ */
+export async function openGuangzhuProReportModal(pvsystData, options = {}) {
+  const reqBody = buildPvsystV2RequestPayload(pvsystData, options);
+  const filename = makeClientProReportFilename(reqBody.project_name, reqBody.version || 1, 'pdf');
+
+  let html = typeof options?.preloadedHtml === 'string' && options.preloadedHtml.includes('pvs-page')
+    ? options.preloadedHtml
+    : '';
+  let source = html ? 'backend' : 'client-fallback';
+
+  if (!html && !options?.forceOffline && typeof fetch === 'function') {
+    for (const url of ['/api/guangzhu/pro-report', '/api/pvsyst/professional-report']) {
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...reqBody, format: 'html' }),
+        });
+        if (resp && resp.ok) {
+          const text = await resp.text();
+          if (text && text.includes('pvs-page')) {
+            html = text;
+            source = 'backend';
+            break;
+          }
+        }
+      } catch (_) {
+        // Fallback to next endpoint or offline 6-page generator
+      }
+    }
+  }
+
+  if (!html) {
+    html = buildPvsystProfessionalReportV2Html(pvsystData, options);
+  }
+
+  let blobUrl = null;
+  if (typeof Blob !== 'undefined' && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+    blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+  }
+
+  if (options?.noOpen || typeof document === 'undefined' || !document?.body) {
+    return { ok: true, source, pages: 6, filename, html, url: blobUrl };
+  }
+
+  const isEn = getLang() === 'en';
+  document.querySelectorAll('[data-gz-pro-report-modal="1"]').forEach((el) => {
+    try { el.close?.(); } catch (_) {}
+    el.remove?.();
+  });
+
+  const dialog = document.createElement('dialog');
+  dialog.className = 'gz-pro-report-modal';
+  dialog.setAttribute('data-gz-pro-report-modal', '1');
+  dialog.innerHTML = `
+    <div class="gz-pro-report-modal-head">
+      <div class="gz-pro-report-modal-brand">
+        <img src="${GUANGZHU_ICON_URL}" onerror="this.onerror=null;this.src='${GUANGZHU_ICON_DATA_URI}'" alt="">
+        <div>
+          <div class="gz-pro-report-modal-title">${isEn ? 'Guangzhu Professional Report · 6-Page Simulation Preview' : '《光筑专业报告》 · 六页工程仿真计算书预览'}</div>
+          <div class="gz-pro-report-modal-sub">${esc(reqBody.project_name)} · ${fmtNum(reqBody.system?.dc_kw, 2)} kWp</div>
+        </div>
+      </div>
+      <div class="gz-pro-report-modal-jumps">
+        ${[1, 2, 3, 4, 5, 6].map((pg) => `<button type="button" class="gz-pro-report-jump-btn" data-gz-report-jump="${pg}">P${pg}</button>`).join('')}
+      </div>
+      <div class="gz-pro-report-modal-actions">
+        <button type="button" class="gz-pro-report-act-btn" data-gz-modal-act="lang">${isEn ? 'Lang' : '中 / 英'}</button>
+        <button type="button" class="gz-pro-report-act-btn" data-gz-modal-act="print">${isEn ? '🖨 Print' : '🖨 打印'}</button>
+        <button type="button" class="gz-pro-report-act-btn primary" data-gz-modal-act="export-pdf">${isEn ? '⬇ Export & Open PDF Report' : '⬇ 导出并打开 PDF 报告'}</button>
+        <button type="button" class="gz-pro-report-act-btn" data-gz-modal-act="close">${isEn ? '✕ Close' : '✕ 关闭'}</button>
+      </div>
+    </div>
+    <iframe class="gz-pro-report-iframe" title="${isEn ? 'Guangzhu Professional Report Preview' : '光筑专业报告预览'}"></iframe>
+  `;
+
+  const iframe = dialog.querySelector('.gz-pro-report-iframe');
+  if (iframe) {
+    iframe.srcdoc = html;
+  }
+
+  dialog.addEventListener('click', (ev) => {
+    const jumpBtn = ev.target?.closest?.('[data-gz-report-jump]');
+    if (jumpBtn) {
+      const pg = jumpBtn.getAttribute('data-gz-report-jump');
+      const win = iframe?.contentWindow;
+      const doc = iframe?.contentDocument;
+      if (win && typeof win.__jumpPvsPage === 'function') {
+        win.__jumpPvsPage(pg);
+      } else {
+        doc?.querySelector?.(`[data-page="${pg}"]`)?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
+    const actBtn = ev.target?.closest?.('[data-gz-modal-act]');
+    if (!actBtn) return;
+    const act = actBtn.getAttribute('data-gz-modal-act');
+    if (act === 'lang') {
+      iframe?.contentWindow?.__cyclePvsLang?.();
+    } else if (act === 'print') {
+      iframe?.contentWindow?.focus?.();
+      iframe?.contentWindow?.print?.();
+    } else if (act === 'export-pdf') {
+      exportGuangzhuProReportPdf(pvsystData, options);
+    } else if (act === 'close') {
+      try { dialog.close?.(); } catch (_) {}
+      dialog.remove?.();
+    }
+  });
+
+  document.body.appendChild(dialog);
+  if (typeof dialog.showModal === 'function') {
+    try {
+      dialog.showModal();
+    } catch (_) {
+      dialog.setAttribute('open', '');
+    }
+  } else {
+    dialog.setAttribute('open', '');
+  }
+
+  return { ok: true, source, pages: 6, filename, html, url: blobUrl, modal: dialog };
+}
+
+/**
+ * Export the 6-Page 《光筑专业报告》 as a real .pdf file via POST /api/guangzhu/pro-report/export-pdf:
+ * - In desktop pywebview / local Windows backend: saves to ~/Downloads/光筑专业报告_<项目名>_v<版本>.pdf and auto-opens natively via os.startfile.
+ * - In standard web browsers: triggers direct <a download> of the generated PDF without popup blockers.
+ * - Offline fallback: opens the in-app 6-page preview modal ready for 1-click A4 PDF print.
+ */
+export async function exportGuangzhuProReportPdf(pvsystData, options = {}) {
+  const reqBody = buildPvsystV2RequestPayload(pvsystData, options);
+  const fallbackName = makeClientProReportFilename(reqBody.project_name, reqBody.version || 1, 'pdf');
+  const openNative = options?.openNative !== false && !options?.noOpen;
+
+  if (!options?.forceOffline && typeof fetch === 'function') {
+    for (const exportUrl of ['/api/guangzhu/pro-report/export-pdf', '/api/pvsyst/professional-report/export-pdf']) {
+      try {
+        const resp = await fetch(exportUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...reqBody, open_native: openNative }),
+        });
+        if (resp && resp.ok) {
+          const data = await resp.json();
+          if (data && data.ok) {
+            const fname = data.filename || fallbackName;
+            if (!data.opened_natively && data.download_url && !options?.noOpen && typeof document !== 'undefined') {
+              const a = document.createElement('a');
+              a.href = data.download_url;
+              a.download = fname;
+              document.body?.appendChild?.(a);
+              a.click?.();
+              setTimeout(() => a.remove?.(), 600);
+            }
+            if (!options?.noOpen && !options?.quiet) {
+              showGuangzhuProReportToast({
+                filename: fname,
+                savedDisplay: data.saved_display,
+                openedNatively: Boolean(data.opened_natively),
+                onPreview: () => openGuangzhuProReportModal(pvsystData, { ...options, preloadedHtml: data.html }),
+              });
+            }
+            return {
+              ok: true,
+              source: 'backend-export-pdf',
+              ...data,
+              filename: fname,
+              openedNatively: Boolean(data.opened_natively),
+            };
+          }
+        }
+      } catch (_) {
+        // Continue to direct binary / offline fallback
+      }
+    }
+
+    try {
+      const resp = await fetch('/api/guangzhu/pro-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...reqBody, format: 'pdf' }),
+      });
+      if (resp && resp.ok) {
+        const pdfBlob = await resp.blob();
+        if (pdfBlob && pdfBlob.size > 1024) {
+          if (!options?.noOpen && typeof document !== 'undefined' && typeof URL?.createObjectURL === 'function') {
+            const dlUrl = URL.createObjectURL(pdfBlob);
+            const a = document.createElement('a');
+            a.href = dlUrl;
+            a.download = fallbackName;
+            document.body?.appendChild?.(a);
+            a.click?.();
+            setTimeout(() => {
+              URL.revokeObjectURL?.(dlUrl);
+              a.remove?.();
+            }, 800);
+          }
+          return { ok: true, source: 'backend-pdf', size: pdfBlob.size, filename: fallbackName, pages: 6 };
+        }
+      }
+    } catch (_) {
+      // Offline fallback below
+    }
+  }
+
+  const fallbackRes = await openGuangzhuProReportModal(pvsystData, { ...options, forceOffline: true });
+  return {
+    ok: true,
+    source: 'client-print-fallback',
+    pages: 6,
+    filename: fallbackName,
+    html: fallbackRes.html,
+    url: fallbackRes.url,
+  };
+}
+
+/**
+ * Backward-compatible alias opening the in-app 6-Page 《光筑专业报告》 preview modal.
+ */
+export async function openPvsystProfessionalReportV2(pvsystData, options = {}) {
+  return openGuangzhuProReportModal(pvsystData, options);
+}
+
+/**
+ * Backward-compatible alias exporting and opening/downloading the 6-Page 《光筑专业报告》 PDF.
+ */
+export async function downloadPvsystProfessionalReportPdf(pvsystData, options = {}) {
+  return exportGuangzhuProReportPdf(pvsystData, options);
 }

@@ -1378,6 +1378,31 @@ def open_target(payload: dict = Body(...)):
             raise ValueError("仅支持打开 dxf、xlsx、pdf 或 drawing-pdf 导出文件")
         resp = download_project_export(pid, ftype, ver)
         os.startfile(Path(resp.path))
+    elif kind == "pro_report_pdf":
+        raw_fid = str(payload.get("file_id") or "").strip()
+        if raw_fid:
+            fid = re.sub(r"[^A-Za-z0-9_-]+", "", raw_fid)
+            pro_dir = safe(ROOT, "data/cache/pdf/pro-report")
+            pdf_target = pro_dir / f"{fid}.pdf"
+            meta_target = pro_dir / f"{fid}.meta.json"
+            if not pdf_target.is_file():
+                raise HTTPException(404, "未找到光筑专业报告 PDF 文件")
+            meta_info = json.loads(meta_target.read_text(encoding="utf-8")) if meta_target.is_file() else {}
+            dl_name = str(meta_info.get("filename") or f"光筑专业报告_{fid}.pdf")
+        else:
+            pid = identifier(payload.get("project_id"))
+            try:
+                ver = int(payload.get("version") or 1)
+            except (TypeError, ValueError):
+                raise HTTPException(400, "版本号格式不正确")
+            bundle_info = _build_and_cache_pro_report({"project_id": pid, "version": ver})
+            pdf_target = bundle_info["pdf_path"]
+            dl_name = bundle_info["filename"]
+        open_path = _copy_pro_report_to_downloads(pdf_target, dl_name)
+        try:
+            os.startfile(open_path)
+        except Exception:
+            reveal_in_file_manager(open_path)
     else:
         raise ValueError("只允许打开会话、方案书、导出或执行记录")
     return {"ok": True}
@@ -1576,6 +1601,351 @@ def project_report_html(project_id: str, version: int | None = Query(None, ge=1)
     with park_store.transaction(base if archived_folder is None else ROOT / "projects"):
         result = result_data(pid, version, folder=archived_folder)
         return HTMLResponse(render_report(base, result))
+
+
+def _validate_pro_report_body(body: dict) -> None:
+    from .satmap_multifactor import validate_satmap_common_inputs
+
+    if not isinstance(body, dict):
+        raise ValueError("Report payload must be a JSON object.")
+    validate_satmap_common_inputs(body)
+    ver_raw = body.get("version")
+    if ver_raw is not None and ver_raw != "":
+        if isinstance(ver_raw, bool) or int(ver_raw) < 1:
+            raise ValueError("version must be an integer >= 1.")
+
+
+def _resolve_pro_report_project_result(body: dict) -> dict | None:
+    raw_pid = body.get("project_id")
+    if not raw_pid:
+        return None
+    has_live_fields = any(
+        body.get(k)
+        for k in (
+            "site",
+            "roof",
+            "system",
+            "pvsyst",
+            "summary",
+            "electrical",
+            "multifactor",
+            "multifactor_params",
+            "financial",
+            "financial_dcf",
+            "losses",
+        )
+    )
+    try:
+        pid = identifier(str(raw_pid))
+        base, archived_folder = _resolve_project_or_run_base(pid)
+        ver_q = int(body["version"]) if body.get("version") is not None else None
+        with park_store.transaction(base if archived_folder is None else ROOT / "projects"):
+            return result_data(pid, ver_q, folder=archived_folder)
+    except (HTTPException, ValueError):
+        if not has_live_fields:
+            raise
+        return None
+
+
+def _copy_pro_report_to_downloads(pdf_path: Path, filename: str, *, allow_user_downloads: bool = True) -> Path:
+    import shutil
+
+    if not allow_user_downloads:
+        return pdf_path
+    dl_dir = Path.home() / "Downloads"
+    if not dl_dir.is_dir():
+        return pdf_path
+    dest = dl_dir / filename
+    try:
+        shutil.copy2(pdf_path, dest)
+        return dest
+    except OSError:
+        alt = dl_dir / f"{dest.stem}_最新{dest.suffix}"
+        try:
+            shutil.copy2(pdf_path, alt)
+            return alt
+        except OSError:
+            return pdf_path
+
+
+def _build_and_cache_pro_report(body: dict) -> dict:
+    from .report.pvsyst_report import (
+        assert_no_private_path_leak,
+        assert_no_pvsyst_visible_text,
+        build_pvsyst_report_context,
+        make_pro_report_filename,
+        render_pvsyst_report_html,
+        render_pvsyst_report_pdf,
+    )
+
+    _validate_pro_report_body(body)
+    proj_result = _resolve_pro_report_project_result(body)
+    ctx = build_pvsyst_report_context(body, project_result=proj_result, offline=bool(body.get("offline", True)))
+    html_doc = render_pvsyst_report_html(ctx)
+    assert_no_private_path_leak(html_doc)
+    assert_no_pvsyst_visible_text(html_doc)
+
+    safe_filename = make_pro_report_filename(
+        ctx["meta"].get("project_name"),
+        ctx["meta"].get("version", 1),
+        "pdf",
+    )
+    slug = re.sub(r"[^A-Za-z0-9_-]+", "-", str(ctx["meta"].get("project_id") or "gz")).strip("-")[:24] or "gz"
+    digest = hashlib.sha1(html_doc.encode("utf-8")).hexdigest()[:12]
+    file_id = f"gzpro-{slug}-{digest}"
+    out_dir = safe(ROOT, "data/cache/pdf/pro-report")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    pdf_target = out_dir / f"{file_id}.pdf"
+    html_target = out_dir / f"{file_id}.html"
+    meta_target = out_dir / f"{file_id}.meta.json"
+
+    html_target.write_text(html_doc, encoding="utf-8")
+    render_pvsyst_report_pdf(ctx, pdf_target, html_str=html_doc)
+    meta_target.write_text(
+        json.dumps(
+            {
+                "file_id": file_id,
+                "filename": safe_filename,
+                "project_id": ctx["meta"].get("project_id"),
+                "project_name": ctx["meta"].get("project_name"),
+                "version": ctx["meta"].get("version", 1),
+                "pages": ctx["meta"].get("total_pages", 6),
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    return {
+        "file_id": file_id,
+        "filename": safe_filename,
+        "pdf_path": pdf_target,
+        "html_path": html_target,
+        "ctx": ctx,
+        "html": html_doc,
+    }
+
+
+@app.get("/api/projects/{project_id}/pro-report-html")
+@app.get("/api/projects/{project_id}/pvsyst-report-html")
+def project_pvsyst_report_html(project_id: str, version: int | None = Query(None, ge=1)):
+    try:
+        pid = identifier(project_id)
+        base, archived_folder = _resolve_project_or_run_base(pid)
+        from .report.pvsyst_report import build_pvsyst_report_context, render_pvsyst_report_html
+
+        with park_store.transaction(base if archived_folder is None else ROOT / "projects"):
+            result = result_data(pid, version, folder=archived_folder)
+        ver_num = int(result.get("version") or version or 1)
+        ctx = build_pvsyst_report_context({"project_id": pid, "version": ver_num}, project_result=result, offline=True)
+        return HTMLResponse(render_pvsyst_report_html(ctx))
+    except HTTPException:
+        raise
+    except GzError as error:
+        return JSONResponse(
+            {"ok": False, "detail": error.message_zh, "errors": [f"{error.message_zh}。{error.fix_hint}"], "error_code": error.error_code},
+            status_code=422,
+        )
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/api/projects/{project_id}/pro-report-pdf")
+@app.get("/api/projects/{project_id}/pvsyst-report-pdf")
+def project_pvsyst_report_pdf(project_id: str, version: int | None = Query(None, ge=1)):
+    try:
+        pid = identifier(project_id)
+        base, archived_folder = _resolve_project_or_run_base(pid)
+        from .report.pvsyst_report import (
+            build_pvsyst_report_context,
+            make_pro_report_filename,
+            render_pvsyst_report_html,
+            render_pvsyst_report_pdf,
+        )
+
+        with park_store.transaction(base if archived_folder is None else ROOT / "projects"):
+            result = result_data(pid, version, folder=archived_folder)
+        ver_num = int(result.get("version") or version or 1)
+        ctx = build_pvsyst_report_context({"project_id": pid, "version": ver_num}, project_result=result, offline=True)
+        html_doc = render_pvsyst_report_html(ctx)
+        out_dir = safe(ROOT, f"data/cache/pdf/{pid}/v{ver_num}")
+        target = out_dir / f"guangzhu-pro-report-v{ver_num}.pdf"
+        render_pvsyst_report_pdf(ctx, target, html_str=html_doc)
+        dl_name = make_pro_report_filename(ctx["meta"].get("project_name"), ver_num, "pdf")
+        return FileResponse(
+            target,
+            media_type="application/pdf",
+            filename=dl_name,
+        )
+    except HTTPException:
+        raise
+    except GzError as error:
+        return JSONResponse(
+            {"ok": False, "detail": error.message_zh, "errors": [f"{error.message_zh}。{error.fix_hint}"], "error_code": error.error_code},
+            status_code=422,
+        )
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/api/guangzhu/pro-report/export-pdf")
+@app.post("/api/pvsyst/professional-report/export-pdf")
+def export_guangzhu_pro_report_pdf(request: Request, payload: dict = Body(default_factory=dict)):
+    from .report.pvsyst_report import assert_no_private_path_leak
+
+    try:
+        if not isinstance(payload, dict):
+            raise ValueError("Report payload must be a JSON object.")
+        body = payload
+        bundle = _build_and_cache_pro_report(body)
+        file_id = bundle["file_id"]
+        safe_filename = bundle["filename"]
+        ctx = bundle["ctx"]
+        html_doc = bundle["html"]
+
+        is_test_req = bool(request.headers.get("X-Guangzhu-Test"))
+        home_str_low = str(Path.home()).lower()
+        is_temp_home = ("pytest" in home_str_low) or ("temp" in home_str_low) or ("tmp" in home_str_low)
+        allow_dl_copy = (not is_test_req) or is_temp_home
+        open_target = _copy_pro_report_to_downloads(bundle["pdf_path"], safe_filename, allow_user_downloads=allow_dl_copy)
+
+        want_open = bool(body.get("open_native", True)) and not is_test_req
+        opened_natively = False
+        if want_open:
+            try:
+                os.startfile(open_target)
+                opened_natively = True
+            except Exception:
+                try:
+                    reveal_in_file_manager(open_target)
+                    opened_natively = True
+                except Exception:
+                    opened_natively = False
+
+        resp_obj = {
+            "ok": True,
+            "report_version": "2.0",
+            "file_id": file_id,
+            "filename": safe_filename,
+            "saved_display": f"Downloads/{safe_filename}",
+            "download_url": f"/api/guangzhu/pro-report/file/{file_id}",
+            "html_url": f"/api/guangzhu/pro-report/html/{file_id}",
+            "opened_natively": opened_natively,
+            "pages": ctx["meta"]["total_pages"],
+            "meta": ctx["meta"],
+            "summary": ctx["results"],
+        }
+        if bool(body.get("include_html", True)):
+            resp_obj["html"] = html_doc
+
+        assert_no_private_path_leak(json.dumps({k: v for k, v in resp_obj.items() if k != "html"}, ensure_ascii=False))
+        return JSONResponse(resp_obj)
+    except HTTPException:
+        raise
+    except GzError as error:
+        return JSONResponse(
+            {"ok": False, "detail": error.message_zh, "errors": [f"{error.message_zh}。{error.fix_hint}"], "error_code": error.error_code},
+            status_code=422,
+        )
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/api/guangzhu/pro-report/file/{file_id}")
+def download_cached_guangzhu_pro_report_pdf(file_id: str):
+    fid = re.sub(r"[^A-Za-z0-9_-]+", "", str(file_id or ""))
+    if not fid:
+        raise HTTPException(400, "无效的报告文件编号")
+    pro_dir = safe(ROOT, "data/cache/pdf/pro-report")
+    pdf_target = pro_dir / f"{fid}.pdf"
+    meta_target = pro_dir / f"{fid}.meta.json"
+    if not pdf_target.is_file():
+        raise HTTPException(404, "未找到光筑专业报告 PDF 文件")
+    meta_info = json.loads(meta_target.read_text(encoding="utf-8")) if meta_target.is_file() else {}
+    dl_name = str(meta_info.get("filename") or f"光筑专业报告_{fid}.pdf")
+    return FileResponse(pdf_target, media_type="application/pdf", filename=dl_name)
+
+
+@app.get("/api/guangzhu/pro-report/html/{file_id}")
+def preview_cached_guangzhu_pro_report_html(file_id: str):
+    fid = re.sub(r"[^A-Za-z0-9_-]+", "", str(file_id or ""))
+    if not fid:
+        raise HTTPException(400, "无效的报告文件编号")
+    pro_dir = safe(ROOT, "data/cache/pdf/pro-report")
+    html_target = pro_dir / f"{fid}.html"
+    if not html_target.is_file():
+        raise HTTPException(404, "未找到光筑专业报告 HTML 预览文件")
+    return HTMLResponse(html_target.read_text(encoding="utf-8"))
+
+
+@app.post("/api/guangzhu/pro-report")
+@app.post("/api/pvsyst/professional-report")
+def generate_pvsyst_professional_report(payload: dict = Body(default_factory=dict)):
+    from .report.pvsyst_report import (
+        assert_no_private_path_leak,
+        assert_no_pvsyst_visible_text,
+        build_pvsyst_report_context,
+        make_pro_report_filename,
+        render_pvsyst_report_html,
+        render_pvsyst_report_pdf,
+    )
+
+    try:
+        if not isinstance(payload, dict):
+            raise ValueError("Report payload must be a JSON object.")
+        body = payload
+        fmt = str(body.get("format") or "html").strip().lower()
+        if fmt not in ("html", "pdf", "json"):
+            raise HTTPException(400, "format 仅支持 html、pdf 或 json")
+
+        _validate_pro_report_body(body)
+        proj_result = _resolve_pro_report_project_result(body)
+        ctx = build_pvsyst_report_context(body, project_result=proj_result, offline=bool(body.get("offline", True)))
+        html_doc = render_pvsyst_report_html(ctx)
+        assert_no_private_path_leak(html_doc)
+        assert_no_pvsyst_visible_text(html_doc)
+
+        if fmt == "json":
+            json_check = json.dumps(ctx, ensure_ascii=False)
+            assert_no_private_path_leak(json_check)
+            dl_name = make_pro_report_filename(ctx["meta"].get("project_name"), ctx["meta"].get("version", 1), "pdf")
+            return JSONResponse(
+                {
+                    "ok": True,
+                    "report_version": "2.0",
+                    "filename": dl_name,
+                    "meta": ctx["meta"],
+                    "summary": ctx["results"],
+                    "probabilities": ctx["probabilities"],
+                    "verification": ctx["verification"],
+                    "report_context": ctx,
+                    "html": html_doc,
+                }
+            )
+
+        if fmt == "pdf":
+            slug = re.sub(r"[^A-Za-z0-9_-]+", "-", str(ctx["meta"]["project_id"] or "gz")).strip("-")[:24] or "gz"
+            digest = hashlib.sha1(html_doc.encode("utf-8")).hexdigest()[:10]
+            out_dir = safe(ROOT, "data/cache/pdf/pro-report")
+            target = out_dir / f"{slug}-{digest}.pdf"
+            render_pvsyst_report_pdf(ctx, target, html_str=html_doc)
+            dl_name = make_pro_report_filename(ctx["meta"].get("project_name"), ctx["meta"].get("version", 1), "pdf")
+            return FileResponse(
+                target,
+                media_type="application/pdf",
+                filename=dl_name,
+            )
+
+        return HTMLResponse(html_doc)
+    except HTTPException:
+        raise
+    except GzError as error:
+        return JSONResponse(
+            {"ok": False, "detail": error.message_zh, "errors": [f"{error.message_zh}。{error.fix_hint}"], "error_code": error.error_code},
+            status_code=422,
+        )
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @app.post("/api/drawings/sample-dxf")

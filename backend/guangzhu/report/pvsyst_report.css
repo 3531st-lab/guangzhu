@@ -1,0 +1,941 @@
+/* 光筑专业报告 (Guangzhu Professional Engineering Simulation Report) — 6-Page Swiss Technical A4 Sheet Styles */
+
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #cfd8e3;
+  color: #0f172a;
+  font-family: "Inter", "DIN Alternate", "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+  font-size: 7.8pt;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Language Toggle Modes */
+body[data-lang-mode="zh"] .l-en,
+body[data-lang-mode="zh"] .l-sep {
+  display: none !important;
+}
+
+body[data-lang-mode="en"] .l-zh,
+body[data-lang-mode="en"] .l-sep {
+  display: none !important;
+}
+
+/* Interactive Top Action Bar (.noprint) */
+.pvs-action-bar {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 18px;
+  background: #0f172a;
+  color: #f8fafc;
+  border-bottom: 2px solid #c87743;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.28);
+}
+
+.pvs-action-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pvs-action-brand img {
+  width: 28px;
+  height: 28px;
+  background: #ffffff;
+  border: 1px solid #94a3b8;
+  padding: 2px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pvs-action-brand-text strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+}
+
+.pvs-action-brand-text small {
+  display: block;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.pvs-action-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pvs-page-jumps {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #475569;
+  background: #1e293b;
+  margin-right: 4px;
+}
+
+.pvs-jump-btn {
+  padding: 5px 8px;
+  border: none;
+  border-right: 1px solid #475569;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.pvs-jump-btn:last-child {
+  border-right: none;
+}
+
+.pvs-jump-btn:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+.pvs-act-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 0;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #f8fafc;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.pvs-act-btn:hover {
+  background: #334155;
+  border-color: #94a3b8;
+}
+
+.pvs-act-btn.primary {
+  background: #c87743;
+  border-color: #e0915c;
+  color: #ffffff;
+}
+
+.pvs-act-btn.primary:hover {
+  background: #b56532;
+}
+
+/* Report Sheet Stack */
+.pvs-report-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 10px 32px;
+}
+
+/* Crisp Swiss Engineering A4 Portrait Sheet (210mm x 297mm, sharp 0px corners) */
+.pvs-page {
+  width: 210mm;
+  height: 297mm;
+  min-height: 297mm;
+  max-height: 297mm;
+  padding: 6.4mm 8.5mm 5.6mm;
+  background: #ffffff;
+  border: 1px solid #64748b;
+  border-radius: 0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  scroll-margin-top: 54px;
+}
+
+/* Diagonal Repeating "光筑" Official Software Watermark on Every Page */
+.pvs-watermark-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  user-select: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  align-items: center;
+  justify-items: center;
+  overflow: hidden;
+}
+
+.pvs-wm-tile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transform: rotate(-28deg);
+  opacity: 0.052;
+  white-space: nowrap;
+  color: #0f172a;
+}
+
+.pvs-wm-tile img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: grayscale(20%);
+}
+
+.pvs-wm-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.08;
+}
+
+.pvs-wm-main {
+  font-size: 10.5pt;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+}
+
+.pvs-wm-sub {
+  font-size: 6.2pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #334155;
+}
+
+.pvs-page-header,
+.pvs-page-body,
+.pvs-page-footer {
+  position: relative;
+  z-index: 2;
+}
+
+.pvs-page-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+
+/* Repeating 3-Cell Swiss Technical Top Frame */
+.pvs-page-header {
+  border: 1.1px solid #0f172a;
+  border-top: 2.4px solid #0f172a;
+  background: #f8fafc;
+  display: grid;
+  grid-template-columns: 54mm 1fr 62mm;
+  align-items: stretch;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.pvs-hdr-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3.5px 6.5px;
+  border-right: 0.85px solid #334155;
+  background: #f1f5f9;
+}
+
+.pvs-brand-icon {
+  width: 29px;
+  height: 29px;
+  object-fit: contain;
+  border-radius: 0;
+  border: 0.8px solid #64748b;
+  background: #ffffff;
+  padding: 1.5px;
+  flex-shrink: 0;
+}
+
+.pvs-hdr-brand-titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pvs-hdr-sw-name {
+  font-size: 9pt;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.12;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.pvs-hdr-sw-sub {
+  font-size: 6.1pt;
+  color: #334155;
+  font-weight: 700;
+  line-height: 1.18;
+  white-space: nowrap;
+}
+
+.pvs-hdr-center {
+  padding: 3px 7px;
+  border-right: 0.85px solid #334155;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.pvs-hdr-systype {
+  font-size: 7.9pt;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pvs-hdr-secname {
+  font-size: 7.2pt;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-top: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pvs-hdr-projline {
+  font-size: 6.3pt;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pvs-hdr-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-size: 6.2pt;
+  line-height: 1.2;
+}
+
+.pvs-hdr-meta-cell {
+  padding: 2px 4.5px;
+  border-bottom: 0.6px solid #94a3b8;
+  border-right: 0.6px solid #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pvs-hdr-meta-cell:nth-child(2n) {
+  border-right: none;
+}
+
+.pvs-hdr-meta-cell:nth-last-child(-n+2) {
+  border-bottom: none;
+}
+
+.pvs-hdr-meta-cell span {
+  color: #475569;
+  margin-right: 2.5px;
+}
+
+.pvs-hdr-meta-cell b {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.pvs-hdr-page-pill {
+  background: #0f172a;
+  color: #ffffff !important;
+  padding: 0.5px 4px;
+  border-radius: 0;
+  font-weight: 800;
+}
+
+/* Page 1 Cover Dossier Strip */
+.pvs-cover-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 4.5px 7px;
+  border: 0.95px solid #1e293b;
+  border-left: 3px solid #0f172a;
+  background: #f8fafc;
+}
+
+.pvs-cover-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pvs-cover-badge-icon {
+  width: 33px;
+  height: 33px;
+  object-fit: contain;
+  border-radius: 0;
+  border: 0.8px solid #64748b;
+  background: #ffffff;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.pvs-cover-title {
+  margin: 0;
+  font-size: 9.2pt;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.18;
+}
+
+.pvs-cover-sub {
+  font-size: 6.5pt;
+  color: #334155;
+  margin-top: 1px;
+}
+
+.pvs-cover-tags {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.pvs-tag-chip {
+  display: inline-block;
+  padding: 1px 5.5px;
+  font-size: 6.2pt;
+  font-weight: 800;
+  border-radius: 0;
+  border: 0.8px solid #1e3a8a;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+.pvs-tag-chip.ok {
+  border-color: #166534;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+/* Swiss Technical Parameter Frame (.pvs-box) */
+.pvs-box {
+  border: 0.9px solid #1e293b;
+  border-radius: 0;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.pvs-box-head {
+  background: #f1f5f9;
+  border-bottom: 0.8px solid #334155;
+  padding: 2.2px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7.1pt;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.01em;
+}
+
+.pvs-box-head small {
+  font-size: 6.1pt;
+  font-weight: 700;
+  color: #334155;
+}
+
+.pvs-box-content {
+  padding: 3.5px 5.5px;
+}
+
+.pvs-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4.5px;
+}
+
+.pvs-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4.5px;
+}
+
+.pvs-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+/* Dense Swiss Key-Value Engineering Grid */
+.pvs-kv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6.6pt;
+}
+
+.pvs-kv-table tr {
+  border-bottom: 0.5px solid #cbd5e1;
+}
+
+.pvs-kv-table tr:last-child {
+  border-bottom: none;
+}
+
+.pvs-kv-table td {
+  padding: 1.5px 2.5px;
+  vertical-align: baseline;
+}
+
+.pvs-kv-table td.k {
+  color: #334155;
+  width: 52%;
+}
+
+.pvs-kv-table td.v {
+  color: #0f172a;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pvs-kv-table td.v small {
+  font-weight: 500;
+  color: #475569;
+}
+
+/* Loss Factors 3-Column Subgrid on Page 1 */
+.pvs-loss-params-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+/* Executive Summary Strip */
+.pvs-main-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border: 1px solid #0f172a;
+  background: #f8fafc;
+}
+
+.pvs-main-kpi {
+  padding: 3.5px 5.5px;
+  border-right: 0.7px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.pvs-main-kpi:last-child {
+  border-right: none;
+}
+
+.pvs-main-kpi.primary {
+  background: #eff6ff;
+}
+
+.pvs-main-kpi.highlight {
+  background: #f0fdf4;
+}
+
+.pvs-main-kpi-lbl {
+  font-size: 6pt;
+  color: #334155;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.pvs-main-kpi-val {
+  font-size: 9.2pt;
+  font-weight: 900;
+  color: #0f172a;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pvs-main-kpi-val small {
+  font-size: 6.2pt;
+  font-weight: 700;
+  color: #334155;
+}
+
+.pvs-main-kpi-sub {
+  font-size: 5.8pt;
+  color: #475569;
+  margin-top: 0.5px;
+}
+
+/* Inline SVG Wrappers */
+.pvs-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Swiss Engineering Data Tables */
+.pvs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6.5pt;
+  font-variant-numeric: tabular-nums;
+}
+
+.pvs-table th,
+.pvs-table td {
+  border: 0.65px solid #64748b;
+  padding: 1.8px 3.5px;
+  text-align: right;
+}
+
+.pvs-table th:first-child,
+.pvs-table td:first-child {
+  text-align: left;
+  font-weight: 700;
+}
+
+.pvs-table thead th {
+  background: #e2e8f0;
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 6.2pt;
+  line-height: 1.14;
+  text-align: center;
+  border-bottom: 1px solid #1e293b;
+}
+
+.pvs-table thead th .unit-row {
+  display: block;
+  font-size: 5.5pt;
+  font-weight: 600;
+  color: #475569;
+}
+
+.pvs-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.pvs-table tfoot td {
+  background: #dbeafe;
+  font-weight: 800;
+  color: #0f172a;
+  border-top: 1.2px solid #0f172a;
+}
+
+/* 13-Column Monthly Balance Dense Variant (Page 2) */
+.pvs-table-13col {
+  font-size: 6pt;
+}
+
+.pvs-table-13col th,
+.pvs-table-13col td {
+  padding: 1.8px 2.4px;
+}
+
+/* 25-Row Full Cashflow Compact Variant (Page 6) */
+.pvs-table-25yr {
+  font-size: 5.85pt;
+  line-height: 1.12;
+}
+
+.pvs-table-25yr th,
+.pvs-table-25yr td {
+  padding: 1.25px 3px;
+}
+
+/* Loss Sensitivity Inline Bar (Page 3) */
+.pvs-sens-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  position: relative;
+}
+
+.pvs-sens-bar-fill,
+.pvs-sens-bar {
+  height: 100%;
+  display: block;
+  background: #b91c1c;
+}
+
+.pvs-sens-bar.gain {
+  background: #15803d;
+}
+
+.pvs-sens-bar.loss {
+  background: #b91c1c;
+}
+
+.pvs-sens-cell-hi {
+  background: #dbeafe !important;
+  color: #1e3a8a !important;
+  font-weight: 800 !important;
+}
+
+/* Status Pills (0px sharp technical tags) */
+.pvs-status {
+  display: inline-block;
+  padding: 0.5px 4px;
+  border-radius: 0;
+  font-size: 5.9pt;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.pvs-status.pass {
+  background: #dcfce7;
+  color: #166534;
+  border: 0.6px solid #15803d;
+}
+
+.pvs-status.warn {
+  background: #fef3c7;
+  color: #92400e;
+  border: 0.6px solid #d97706;
+}
+
+.pvs-status.fail {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 0.6px solid #dc2626;
+}
+
+.pvs-status.unverified {
+  background: #f1f5f9;
+  color: #475569;
+  border: 0.6px solid #64748b;
+}
+
+/* Page 5 6-Item National Code Verification Grid */
+.pvs-code-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.pvs-verif-card {
+  border: 0.75px solid #475569;
+  border-left: 2.4px solid #0f172a;
+  border-radius: 0;
+  background: #f8fafc;
+  padding: 3.5px 5.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5px;
+}
+
+.pvs-verif-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 0.5px solid #cbd5e1;
+  padding-bottom: 1.5px;
+}
+
+.pvs-verif-title {
+  font-size: 6.7pt;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.pvs-verif-std {
+  font-size: 5.7pt;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.pvs-verif-metric {
+  font-size: 7.9pt;
+  font-weight: 900;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.pvs-verif-detail {
+  font-size: 6pt;
+  color: #334155;
+  line-height: 1.2;
+}
+
+/* Page 6 Official Guangzhu Engineering Sign-Off & Stamp Block */
+.pvs-signoff-block {
+  border: 1px solid #0f172a;
+  border-radius: 0;
+  background: #f8fafc;
+  padding: 4.5px 7px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.pvs-signoff-logo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border-radius: 0;
+  border: 0.8px solid #64748b;
+  background: #ffffff;
+  padding: 2px;
+}
+
+.pvs-signoff-text strong {
+  display: block;
+  font-size: 7.3pt;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.pvs-signoff-text p {
+  margin: 1px 0 0;
+  font-size: 5.9pt;
+  color: #334155;
+  line-height: 1.22;
+}
+
+.pvs-sign-boxes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 0.75px solid #334155;
+  background: #ffffff;
+  font-size: 5.9pt;
+}
+
+.pvs-sign-cell {
+  padding: 2px 4px;
+  border-right: 0.6px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5px;
+}
+
+.pvs-sign-cell:last-child {
+  border-right: none;
+}
+
+.pvs-sign-cell span {
+  color: #475569;
+  font-weight: 700;
+}
+
+.pvs-sign-cell b {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.pvs-stamp-seal {
+  border: 1.6px double #b91c1c;
+  color: #b91c1c;
+  padding: 2.5px 7px;
+  border-radius: 0;
+  text-align: center;
+  font-weight: 900;
+  font-size: 6.1pt;
+  line-height: 1.18;
+  background: rgba(254, 242, 242, 0.76);
+}
+
+.pvs-stamp-seal.unverified {
+  border: 1.4px solid #475569;
+  color: #334155;
+  background: #f1f5f9;
+}
+
+/* Repeating Bottom Page Footer */
+.pvs-page-footer {
+  border-top: 0.85px solid #334155;
+  padding-top: 2px;
+  margin-top: 2.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 6pt;
+  color: #334155;
+  flex-shrink: 0;
+}
+
+.pvs-page-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pvs-page-footer-left img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+}
+
+/* Exact Print Pagination Rules */
+@media print {
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    width: 210mm !important;
+  }
+
+  .noprint,
+  .pvs-action-bar {
+    display: none !important;
+  }
+
+  .pvs-report-container {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .pvs-page {
+    width: 210mm !important;
+    height: 296.6mm !important;
+    min-height: 296.6mm !important;
+    max-height: 296.6mm !important;
+    margin: 0 !important;
+    padding: 6.2mm 8.5mm 5.4mm !important;
+    border: none !important;
+    box-shadow: none !important;
+    break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    overflow: hidden !important;
+  }
+
+  .pvs-page:last-of-type {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}

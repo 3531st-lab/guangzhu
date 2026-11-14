@@ -77,7 +77,7 @@ def check_equipment(value):
         if key in value and value[key] not in load_catalog(file, include_extended=True):
             raise ValueError('设备型号不在目录中')
     brand = value.get('inverter_brand')
-    if brand and (brand not in ('Sungrow', 'Huawei', 'Ginlong', 'GoodWe') or value.get('inverter_id') and
+    if brand and (brand not in ('Sungrow', 'Huawei', 'Ginlong', 'GoodWe', 'Growatt') or value.get('inverter_id') and
                   load_catalog('inverters.csv', include_extended=True)[value['inverter_id']]['manufacturer'] != brand):
         raise ValueError('逆变器品牌与型号不匹配')
 

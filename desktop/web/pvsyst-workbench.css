@@ -1,4 +1,4 @@
-/* PVsyst 7.x Professional Simulation & Live Official Weather Workbench Styles */
+/* Guangzhu 8760h Precision Simulation & Live Official Weather Workbench Styles */
 
 .pvsyst-workbench {
   display: flex;
@@ -561,3 +561,202 @@
 .pvsyst-btn.primary:hover {
   filter: brightness(1.06);
 }
+
+.pvsyst-btn-v2 {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.22);
+  padding: 6px 13px;
+}
+
+.pvsyst-btn-v2:hover {
+  background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+  border-color: #60a5fa;
+  color: #ffffff;
+}
+
+.pvsyst-btn-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: #ffffff;
+  padding: 1px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pvsyst-btn-pdf {
+  border-color: rgba(29, 78, 216, 0.35);
+  color: var(--run, #1d4ed8);
+  background: var(--run-soft, #eff6ff);
+}
+
+.pvsyst-btn-pdf:hover {
+  border-color: #1d4ed8;
+  background: #dbeafe;
+}
+
+/* In-App 6-Page Guangzhu Pro Report Preview Modal & Export Toast */
+.gz-pro-report-modal {
+  width: min(1160px, 95vw);
+  height: min(92vh, 980px);
+  max-width: 96vw;
+  max-height: 94vh;
+  margin: auto;
+  padding: 0;
+  border: 1.5px solid #0f172a;
+  border-radius: 0;
+  background: #dde3ea;
+  color: #0f172a;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.45);
+  overflow: hidden;
+}
+
+.gz-pro-report-modal[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.gz-pro-report-modal::backdrop {
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(2px);
+}
+
+.gz-pro-report-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 9px 14px;
+  background: #0f172a;
+  color: #f8fafc;
+  border-bottom: 2px solid #c87743;
+  flex-shrink: 0;
+}
+
+.gz-pro-report-modal-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.gz-pro-report-modal-brand img {
+  width: 26px;
+  height: 26px;
+  background: #ffffff;
+  padding: 2px;
+  border: 1px solid #475569;
+  object-fit: contain;
+}
+
+.gz-pro-report-modal-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.gz-pro-report-modal-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.gz-pro-report-modal-jumps {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.gz-pro-report-jump-btn {
+  padding: 4px 8px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gz-pro-report-jump-btn:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+.gz-pro-report-modal-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gz-pro-report-act-btn {
+  padding: 5px 11px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #f8fafc;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gz-pro-report-act-btn:hover {
+  background: #334155;
+}
+
+.gz-pro-report-act-btn.primary {
+  background: #c87743;
+  border-color: #df8d57;
+  color: #ffffff;
+}
+
+.gz-pro-report-act-btn.primary:hover {
+  background: #b56532;
+}
+
+.gz-pro-report-iframe {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: #dde3ea;
+}
+
+.gz-pro-report-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 10px 14px;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-left: 4px solid #16a34a;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.gz-pro-report-toast img {
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.gz-pro-report-toast-btn {
+  padding: 4px 9px;
+  border: 1px solid #60a5fa;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+

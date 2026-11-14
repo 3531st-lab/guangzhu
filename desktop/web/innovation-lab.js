@@ -1,5 +1,31 @@
-import { getLang, localizeDomSubtree } from './i18n.js';
+import { getLang, localizeDomSubtree, toPureEnText } from './i18n.js';
 import { computeFinancialDcf25Yr } from './pro-engineering-core.js';
+
+function finiteLabNum(v, fb = 0) {
+  if (v === null || v === undefined || typeof v === 'boolean' || typeof v === 'object') return fb;
+  if (typeof v === 'string' && v.trim() === '') return fb;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fb;
+}
+
+function finiteLabOrNull(v) {
+  if (v === null || v === undefined || typeof v === 'boolean' || typeof v === 'object') return null;
+  if (typeof v === 'string' && v.trim() === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function escLabHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function scrubLabBrandText(s) {
+  return String(s ?? '').replace(/pvsyst/gi, '光筑专业仿真');
+}
 
 /**
  * 光筑 · 方案比选、光储精算与工程对标中心 (InnovationLabView)
@@ -247,11 +273,13 @@ export const TAIZHOU_BENCHMARK_CASES = [
 }));
 
 export class InnovationLabView {
-  constructor({ onNotice, satmapView, onJumpToSatmap, onOpenCaseInSatmap } = {}) {
+  constructor(opts = {}) {
+    const { onNotice, satmapView, onJumpToSatmap, onOpenCaseInSatmap, fetchImpl } = opts || {};
     this.onNotice = onNotice || (() => {});
     this.satmapView = satmapView || null;
     this.onJumpToSatmap = onJumpToSatmap || null;
     this.onOpenCaseInSatmap = onOpenCaseInSatmap || null;
+    this.fetchImpl = fetchImpl || (typeof fetch === 'function' ? fetch.bind(globalThis) : null);
     this.host = null;
     this.activeTab = 'pareto'; // 'pareto' | 'bess-carbon' | 'benchmark'
     this.state = new Proxy(this, {
@@ -264,10 +292,29 @@ export class InnovationLabView {
       },
     });
 
+    // Cross-module Satellite / 3D Scheme Sync State
+    const initDcKw = finiteLabOrNull(opts?.dcKw ?? opts?.dc_kw);
+    this.syncedScheme = opts?.syncedScheme || (initDcKw !== null
+      ? {
+          dcKw: Math.max(0, initDcKw),
+          moduleCount: Math.max(0, Math.round(finiteLabOrNull(opts?.moduleCount ?? opts?.module_count) ?? (initDcKw > 0 ? (initDcKw * 1000) / 580 : 0))),
+          annualKwh: Math.max(0, finiteLabOrNull(opts?.annualKwh ?? opts?.annualPvKwh ?? opts?.annual_kwh) ?? (initDcKw > 0 ? initDcKw * 1120 : 0)),
+          prPct: initDcKw > 0 ? 82.8 : 0,
+          specificYieldH: initDcKw > 0 ? 1120 : 0,
+        }
+      : null);
+    this.projects3dList = [];
+    this.selectedProjectId = '';
+    this.projectsLoaded = false;
+    this.generationProfileMode = 'south_fixed'; // 'south_fixed' | 'east_west'
+    this.loadProfileMode = 'industrial_day'; // 'industrial_day' | 'commercial_afternoon' | 'continuous_24h'
+    this.addedLoadKgM2 = initDcKw === 0 ? 0 : 18.4;
+    this.maxRoofLoadKgM2 = 150.0;
+
     // 1. Multi-objective Pareto Optimization State
     this.shadowCutoffPct = 6.5;
-    this.tiltDeg = 18;
-    this.dcAcRatio = 1.16;
+    this.tiltDeg = finiteLabNum(opts?.tiltDeg ?? opts?.tilt_deg, 18);
+    this.dcAcRatio = Math.max(0.1, finiteLabNum(opts?.dcAcRatio ?? opts?.dc_ac_ratio, 1.16));
     this.cableMaterial = 'cu';
     this.selectedParetoIdx = 2; // P3 Balanced Optimum
 
@@ -285,6 +332,7 @@ export class InnovationLabView {
 
     // 3. Benchmark Case Selection
     this.selectedCaseId = 'TZ-01';
+    this.lastExportedReport = null;
   }
 
   notice(msg) {
@@ -292,14 +340,437 @@ export class InnovationLabView {
   }
 
   /**
-   * Read linked project context from SatMapView so `#lab` and `#satmap` are 100% synchronized.
+   * Read latest Satellite Design snapshot from `localStorage.getItem('gz.satmap.latestScheme')` safely,
+   * isolating per-project entries in `schemes_by_project` so Project A's cache never leaks into Project B.
+   */
+  readLatestSatmapStorage(projectIdHint = '') {
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage) {
+        const raw = localStorage.getItem('gz.satmap.latestScheme');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            const hint = String(projectIdHint || '').trim();
+            const byProj = parsed.schemes_by_project && typeof parsed.schemes_by_project === 'object'
+              ? parsed.schemes_by_project
+              : null;
+            if (hint) {
+              if (byProj && byProj[hint] && typeof byProj[hint] === 'object') {
+                return byProj[hint];
+              }
+              const rootPid = String(parsed.project_id ?? parsed.projectId ?? '').trim();
+              if (rootPid === hint) return parsed;
+              return null;
+            }
+            if (byProj) {
+              const activeKey = String(parsed.active_project_id || '').trim();
+              if (activeKey && byProj[activeKey] && typeof byProj[activeKey] === 'object') {
+                return byProj[activeKey];
+              }
+              if (byProj.__unsaved__ && typeof byProj.__unsaved__ === 'object') {
+                return byProj.__unsaved__;
+              }
+            }
+            return parsed;
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /**
+   * Fetch 3D projects list from `/api/projects/local-list` (with graceful fallback to `/api/projects`).
+   */
+  async fetchProjectsList({ renderAfter = true } = {}) {
+    if (!this.fetchImpl) return this.projects3dList;
+    let items = [];
+    const endpoints = ['/api/projects/local-list', '/api/projects', '/api/satmap/3d-catalog'];
+    for (const url of endpoints) {
+      try {
+        const res = await this.fetchImpl(url, { headers: { Accept: 'application/json' } });
+        if (!res || !res.ok) continue;
+        const payload = await res.json();
+        const rawList = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.projects)
+            ? payload.projects
+            : [];
+        items = rawList
+          .filter((p) => p && (p.id || p.project_id))
+          .map((p) => ({
+            id: String(p.id || p.project_id),
+            name: String(p.name || p.project_name || p.id || '三维光伏工程'),
+            dcKw: finiteLabNum(p.dc_kw ?? p.dcKw ?? p.metrics?.dc_kw, 0),
+            annualKwh: finiteLabNum(p.annual_kwh ?? p.annualKwh ?? p.metrics?.annual_kwh, 0),
+            prPct: finiteLabNum(p.pr_pct ?? p.prPct ?? p.metrics?.pr_pct, 82.4),
+            version: p.latest_version ?? p.version ?? 1,
+            roofType: String(p.roof_type || p.roofType || 'flat'),
+            paybackYears: p.payback_years ?? null,
+          }));
+        break;
+      } catch (_) {
+        // Ignore network error in offline/test mode and try fallback endpoint
+      }
+    }
+    this.projects3dList = items;
+    this.projectsLoaded = true;
+    if (!this.selectedProjectId && items.length > 0) {
+      this.selectedProjectId = items[0].id;
+    }
+    if (renderAfter && this.host) {
+      this.render();
+    }
+    return items;
+  }
+
+  /**
+   * One-click import from active Satellite Design (`localStorage.getItem('gz.satmap.latestScheme')` + live `satmapView`).
+   */
+  syncFromSatmapLatest(projectIdHint = '') {
+    const hint = String(projectIdHint || '').trim();
+    const stored = this.readLatestSatmapStorage(hint);
+    const sv = this.satmapView;
+    const svPid = String(sv?.linked3dContext?.projectId || '').trim();
+    const svMatchesHint = !hint || svPid === hint;
+    const hasSv = Boolean(sv && svMatchesHint && (sv.hasLaidOut || finiteLabNum(sv.summary?.dcKw, 0) > 0));
+    if (!stored && !hasSv) {
+      const isEn = getLang() === 'en';
+      this.notice(
+        isEn
+          ? 'No active Satellite scheme found in storage; synced default reference roof parameters.'
+          : '暂未检测到已保存的卫星排布快照，已同步当前默认工程基准参数。'
+      );
+    }
+    const dcKw = Math.max(
+      0,
+      finiteLabOrNull(stored?.dc_kw) ??
+        finiteLabOrNull(stored?.dcKw) ??
+        finiteLabOrNull(stored?.summary?.dcKw) ??
+        (hasSv ? finiteLabNum(sv.summary?.dcKw, 0) : 558.6)
+    );
+    const bounds = sv && svMatchesHint && typeof sv.getRoofBoundsM === 'function' ? sv.getRoofBoundsM(true) : null;
+    const roofAreaM2 = Math.round(
+      Math.max(
+        0,
+        finiteLabOrNull(stored?.roof_area_m2) ??
+          finiteLabOrNull(stored?.roofAreaM2) ??
+          (bounds?.areaM2 > 1 ? bounds.areaM2 : (dcKw > 0 ? Math.max(800, dcKw * 9.2) : 0))
+      )
+    );
+    const annualKwh = dcKw > 0
+      ? Math.max(
+          0,
+          finiteLabOrNull(stored?.annual_kwh) ??
+            finiteLabOrNull(stored?.annualKwh) ??
+            finiteLabOrNull(stored?.summary?.annualKwh) ??
+            (hasSv && finiteLabOrNull(sv.pvsystData?.summary?.e_grid_kwh) != null
+              ? sv.pvsystData.summary.e_grid_kwh
+              : dcKw * 1125)
+        )
+      : 0;
+    const rawMode = String(
+      stored?.orientation_mode ?? stored?.orientationMode ?? (hasSv ? sv?.orientationMode : null) ?? 'south_fixed'
+    ).toLowerCase();
+    const orientationMode = rawMode === 'east_west' ? 'east_west' : 'south_fixed';
+    const roofType = String(stored?.roof_type ?? stored?.roofType ?? (hasSv ? sv?.roofType : null) ?? 'flat');
+    const addedLoadKgM2 = dcKw > 0
+      ? Math.max(
+          0,
+          finiteLabOrNull(stored?.added_load_kg_m2) ??
+            finiteLabOrNull(stored?.addedLoadKgM2) ??
+            finiteLabOrNull(stored?.load_kg_m2) ??
+            (roofType === 'flat' ? (orientationMode === 'east_west' ? 19.6 : 24.2) : 14.2)
+        )
+      : Math.max(
+          0,
+          finiteLabOrNull(stored?.added_load_kg_m2) ??
+            finiteLabOrNull(stored?.addedLoadKgM2) ??
+            finiteLabOrNull(stored?.load_kg_m2) ??
+            0
+        );
+    const maxRoofLoadKgM2 = Math.max(
+      1,
+      finiteLabOrNull(stored?.max_roof_load_kg_m2) ??
+        finiteLabOrNull(stored?.maxRoofLoadKgM2) ??
+        (roofType === 'flat' ? 150.0 : 35.0)
+    );
+    const tariffSelf = Math.max(
+      0,
+      finiteLabOrNull(stored?.tariff_self_rmb) ??
+        finiteLabOrNull(stored?.tariffRmb) ??
+        (hasSv ? finiteLabOrNull(sv?.tariffRmb) : null) ??
+        this.peakTariffRmb
+    );
+    const tariffFeedIn = Math.max(
+      0,
+      finiteLabOrNull(stored?.feed_in_tariff_rmb) ??
+        finiteLabOrNull(stored?.feedInTariffRmb) ??
+        (hasSv ? finiteLabOrNull(sv?.feedInTariffRmb) : null) ??
+        this.feedInTariffRmb
+    );
+    const discountRatePct = Math.max(
+      0,
+      finiteLabOrNull(stored?.discount_rate_pct) ??
+        finiteLabOrNull(stored?.discountRatePct) ??
+        (hasSv ? finiteLabOrNull(sv?.discountRatePct) : null) ??
+        6.0
+    );
+    const tiltVal = finiteLabNum(
+      stored?.tilt_deg ?? stored?.tiltDeg ?? (hasSv ? sv?.tiltDeg : null),
+      orientationMode === 'east_west' ? 10 : 18
+    );
+    const prVal = finiteLabOrNull(stored?.pr_pct) ??
+      finiteLabOrNull(stored?.prPct) ??
+      (hasSv ? finiteLabOrNull(sv?.pvsystData?.summary?.pr_pct) : null) ??
+      82.8;
+    const prPct = dcKw > 0 ? Number(prVal.toFixed(2)) : 0;
+    const rawModCount = finiteLabOrNull(stored?.module_count) ??
+      finiteLabOrNull(stored?.moduleCount) ??
+      (hasSv ? finiteLabOrNull(sv?.summary?.moduleCount) : null);
+    const moduleCount = dcKw > 0
+      ? Math.max(0, Math.round(rawModCount ?? (dcKw * 1000) / 580))
+      : 0;
+    const projectName = String(
+      stored?.project_name ?? stored?.projectName ?? (hasSv ? sv?.projectName : null) ?? '卫星排布同步光伏工程'
+    );
+    const address = String(
+      stored?.address ?? stored?.site?.address ?? (hasSv ? sv?.address : null) ?? '江苏省泰州市海陵区祥泰路数智仓储中心'
+    );
+    const lat = finiteLabNum(stored?.lat ?? stored?.site?.lat ?? (hasSv ? sv?.lat : null), 32.4852);
+    const lon = finiteLabNum(stored?.lon ?? stored?.site?.lon ?? (hasSv ? sv?.lon : null), 119.8634);
+
+    this.syncedScheme = {
+      source: 'satmap',
+      projectId: stored?.project_id || stored?.projectId || (hasSv ? svPid || null : null),
+      projectName,
+      address,
+      lat,
+      lon,
+      dcKw: Number(dcKw.toFixed(2)),
+      roofAreaM2,
+      annualKwh: Math.round(annualKwh),
+      specificYieldH: dcKw > 0 ? Math.round(annualKwh / dcKw) : 0,
+      prPct,
+      moduleCount,
+      orientationMode,
+      tiltDeg: tiltVal,
+      addedLoadKgM2: Number(addedLoadKgM2.toFixed(1)),
+      maxRoofLoadKgM2: Number(maxRoofLoadKgM2.toFixed(1)),
+      tariffSelfRmb: Number(tariffSelf.toFixed(3)),
+      tariffFeedInRmb: Number(tariffFeedIn.toFixed(3)),
+      discountRatePct: Number(discountRatePct.toFixed(2)),
+    };
+
+    this.generationProfileMode = orientationMode;
+    this.addedLoadKgM2 = this.syncedScheme.addedLoadKgM2;
+    this.maxRoofLoadKgM2 = this.syncedScheme.maxRoofLoadKgM2;
+    this.tiltDeg = Math.max(15, Math.min(22, Math.round(tiltVal) || 18));
+    if (Number.isFinite(tariffSelf) && tariffSelf > 0.2) {
+      this.peakTariffRmb = Number(Math.max(0.55, tariffSelf * 1.18).toFixed(2));
+      this.flatTariffRmb = Number(Math.max(0.40, tariffSelf * 0.82).toFixed(2));
+    }
+    if (Number.isFinite(tariffFeedIn) && tariffFeedIn > 0.1) {
+      this.feedInTariffRmb = Number(tariffFeedIn.toFixed(3));
+    }
+    // East-West dual-tilt widens morning/afternoon shoulders so leaner BESS ratio achieves high self-use
+    this.bessRatioPct = orientationMode === 'east_west' ? 15 : 20;
+
+    const isEn = getLang() === 'en';
+    this.notice(
+      isEn
+        ? `Imported Satellite scheme (${this.syncedScheme.dcKw} kWp, ${orientationMode === 'east_west' ? 'East-West Butterfly' : 'South Fixed'}, Load ${this.addedLoadKgM2}/${this.maxRoofLoadKgM2} kg/m²) into PV+BESS & Sensitivity!`
+        : `已一键同步卫星方案「${projectName}」（装机 ${this.syncedScheme.dcKw} 千瓦 · ${orientationMode === 'east_west' ? '东西向双坡蝴蝶阵' : '正南固定倾角'} · 屋面静荷载 ${this.addedLoadKgM2}/${this.maxRoofLoadKgM2} 千克/平方米）至光储选型与敏感性分析！`
+    );
+    this.render();
+    return this.syncedScheme;
+  }
+
+  /**
+   * One-click import from a 3D Project (`/api/projects/local-list` | `/api/projects` + `/api/projects/{id}/result`).
+   */
+  async importFrom3dProject(projectId = this.selectedProjectId) {
+    if (!this.projectsLoaded || this.projects3dList.length === 0) {
+      await this.fetchProjectsList({ renderAfter: false });
+    }
+    const targetId = projectId || this.selectedProjectId || this.projects3dList[0]?.id || '';
+    if (!targetId) {
+      const isEn = getLang() === 'en';
+      this.notice(
+        isEn
+          ? 'No saved 3D project available yet; synced active Satellite scheme instead.'
+          : '当前暂无已保存的三维工程记录，已为您同步卫星排布方案数据。'
+      );
+      return this.syncFromSatmapLatest();
+    }
+    this.selectedProjectId = targetId;
+    const summaryItem = this.projects3dList.find((p) => p.id === targetId) || {
+      id: targetId,
+      name: targetId,
+      dcKw: 480.0,
+      annualKwh: 537600,
+      prPct: 82.5,
+      version: 1,
+      roofType: 'flat',
+    };
+
+    let detail = null;
+    if (this.fetchImpl) {
+      try {
+        const res = await this.fetchImpl(`/api/projects/${encodeURIComponent(targetId)}/result`, {
+          headers: { Accept: 'application/json' },
+        });
+        if (res && res.ok) {
+          detail = await res.json();
+        }
+      } catch (_) {}
+    }
+
+    const dcKw = Math.max(
+      0,
+      finiteLabOrNull(detail?.metrics?.dc_kw) ??
+        finiteLabOrNull(detail?.summary?.dc_kw) ??
+        finiteLabOrNull(summaryItem.dcKw) ??
+        480.0
+    );
+    const annualKwh = dcKw > 0
+      ? Math.max(
+          0,
+          finiteLabOrNull(detail?.metrics?.annual_kwh) ??
+            finiteLabOrNull(detail?.economics?.annual_kwh) ??
+            finiteLabOrNull(detail?.pvsyst?.summary?.e_grid_kwh) ??
+            finiteLabOrNull(summaryItem.annualKwh) ??
+            dcKw * 1120
+        )
+      : 0;
+    const roofAreaM2 = Math.round(
+      Math.max(
+        0,
+        finiteLabOrNull(detail?.roof?.area_m2) ??
+          finiteLabOrNull(detail?.project?.roof_area_m2) ??
+          (dcKw > 0 ? Math.max(850, dcKw * 9.0) : 0)
+      )
+    );
+    const algoStr = String(
+      detail?.layout?.orientation_mode ?? detail?.project?.layout_algo ?? ''
+    ).toLowerCase();
+    const orientationMode = algoStr.includes('ew') || algoStr === 'east_west' ? 'east_west' : 'south_fixed';
+    const roofType = String(detail?.roof?.type ?? summaryItem.roofType ?? 'flat');
+    const addedLoadKgM2 = dcKw > 0
+      ? Math.max(
+          0,
+          finiteLabOrNull(detail?.structure?.added_load_kg_m2) ??
+            (roofType === 'flat' ? (orientationMode === 'east_west' ? 19.4 : 23.8) : 14.0)
+        )
+      : Math.max(0, finiteLabOrNull(detail?.structure?.added_load_kg_m2) ?? 0);
+    const maxRoofLoadKgM2 = Math.max(
+      1,
+      finiteLabOrNull(detail?.structure?.max_load_kg_m2) ??
+        finiteLabOrNull(detail?.roof?.max_load_kg_m2) ??
+        (roofType === 'flat' ? 150.0 : 35.0)
+    );
+    const tariffSelf = Math.max(
+      0,
+      finiteLabOrNull(detail?.economics?.price_self_cny_kwh) ??
+        finiteLabOrNull(detail?.project?.price_self_cny_kwh) ??
+        0.85
+    );
+    const tariffFeedIn = Math.max(
+      0,
+      finiteLabOrNull(detail?.economics?.price_grid_cny_kwh) ?? this.feedInTariffRmb
+    );
+    const prVal = finiteLabOrNull(detail?.pvsyst?.summary?.pr_pct) ??
+      finiteLabOrNull(detail?.metrics?.pr_pct) ??
+      finiteLabOrNull(summaryItem.prPct) ??
+      82.6;
+    const tiltVal = finiteLabNum(detail?.layout?.tilt_deg, orientationMode === 'east_west' ? 10 : 18);
+    const projName = String(detail?.project?.name ?? summaryItem.name ?? targetId);
+    const detailModCount = finiteLabOrNull(detail?.metrics?.module_count ?? detail?.summary?.module_count);
+
+    this.syncedScheme = {
+      source: '3d-project',
+      projectId: targetId,
+      version: detail?.version ?? summaryItem.version ?? 1,
+      projectName: projName,
+      address: String(detail?.project?.site?.city || '三维工程导入厂区'),
+      lat: finiteLabNum(detail?.project?.site?.lat, 32.4852),
+      lon: finiteLabNum(detail?.project?.site?.lon, 119.8634),
+      dcKw: Number(dcKw.toFixed(2)),
+      roofAreaM2,
+      annualKwh: Math.round(annualKwh),
+      specificYieldH: dcKw > 0 ? Math.round(annualKwh / dcKw) : 0,
+      prPct: dcKw > 0 ? Number(prVal.toFixed(2)) : 0,
+      moduleCount: dcKw > 0 ? Math.max(0, Math.round(detailModCount ?? (dcKw * 1000) / 580)) : 0,
+      orientationMode,
+      tiltDeg: tiltVal,
+      addedLoadKgM2: Number(addedLoadKgM2.toFixed(1)),
+      maxRoofLoadKgM2: Number(maxRoofLoadKgM2.toFixed(1)),
+      tariffSelfRmb: Number(tariffSelf.toFixed(3)),
+      tariffFeedInRmb: Number(tariffFeedIn.toFixed(3)),
+      discountRatePct: 6.0,
+    };
+
+    this.generationProfileMode = orientationMode;
+    this.addedLoadKgM2 = this.syncedScheme.addedLoadKgM2;
+    this.maxRoofLoadKgM2 = this.syncedScheme.maxRoofLoadKgM2;
+    this.tiltDeg = Math.max(15, Math.min(22, Math.round(tiltVal) || 18));
+    if (Number.isFinite(tariffSelf) && tariffSelf > 0.2) {
+      this.peakTariffRmb = Number(Math.max(0.55, tariffSelf * 1.18).toFixed(2));
+      this.flatTariffRmb = Number(Math.max(0.40, tariffSelf * 0.82).toFixed(2));
+    }
+    if (Number.isFinite(tariffFeedIn) && tariffFeedIn > 0.1) {
+      this.feedInTariffRmb = Number(tariffFeedIn.toFixed(3));
+    }
+    this.bessRatioPct = orientationMode === 'east_west' ? 15 : 20;
+
+    const isEn = getLang() === 'en';
+    this.notice(
+      isEn
+        ? `Imported 3D Project [${toPureEnText(projName)}] (${this.syncedScheme.dcKw} kWp, PR ${this.syncedScheme.prPct}%, Load ${this.addedLoadKgM2}/${this.maxRoofLoadKgM2} kg/m²)!`
+        : `已从三维工程导入「${projName}」（装机 ${this.syncedScheme.dcKw} 千瓦 · 系统效率 ${this.syncedScheme.prPct}% · 静荷载 ${this.addedLoadKgM2}/${this.maxRoofLoadKgM2} 千克/平方米）！`
+    );
+    this.render();
+    return this.syncedScheme;
+  }
+
+  /**
+   * Read linked project context from synced scheme or SatMapView so `#lab`, `#satmap`, and 3D projects stay 100% synchronized.
    */
   getLinkedProjectInfo() {
+    if (this.syncedScheme) {
+      const sCap = Math.max(0, finiteLabNum(this.syncedScheme.dcKw ?? this.syncedScheme.dc_kw, 0));
+      const sArea = Math.max(
+        0,
+        Math.round(
+          finiteLabOrNull(this.syncedScheme.roofAreaM2 ?? this.syncedScheme.roof_area_m2)
+            ?? (sCap > 0 ? sCap * 9.2 : 0)
+        )
+      );
+      return {
+        hasActiveRoof: true,
+        roofAreaM2: sArea,
+        baseCapKwp: sCap,
+        projectName: String(this.syncedScheme.projectName || this.syncedScheme.project_name || '当前工商业分布式光伏工程'),
+        address: String(this.syncedScheme.address || '江苏省泰州市海陵区祥泰路数智仓储中心'),
+        currentTilt: finiteLabNum(this.syncedScheme.tiltDeg ?? this.syncedScheme.tilt_deg, this.tiltDeg),
+        moduleCount: Math.max(0, Math.round(finiteLabNum(this.syncedScheme.moduleCount ?? this.syncedScheme.module_count, sCap > 0 ? (sCap * 1000) / 580 : 0))),
+        orientationMode: this.generationProfileMode,
+        addedLoadKgM2: this.addedLoadKgM2,
+        maxRoofLoadKgM2: this.maxRoofLoadKgM2,
+        source: this.syncedScheme.source || 'synced',
+        projectId: this.syncedScheme.projectId ?? this.syncedScheme.project_id ?? null,
+      };
+    }
     const sv = this.satmapView;
-    const hasActiveRoof = Boolean(sv && sv.modules && sv.modules.length > 0 && sv.summary?.dcKw > 0);
+    const hasLaidOutZero = Boolean(sv && sv.hasLaidOut && Array.isArray(sv.modules) && sv.modules.length === 0);
+    const hasActiveRoof = Boolean(
+      sv && ((sv.modules && sv.modules.length > 0 && finiteLabNum(sv.summary?.dcKw, 0) > 0) || hasLaidOutZero)
+    );
     const bounds = sv && typeof sv.getRoofBoundsM === 'function' ? sv.getRoofBoundsM(true) : null;
-    const roofAreaM2 = hasActiveRoof && bounds?.areaM2 > 100 ? Math.round(bounds.areaM2) : 5200;
-    const baseCapKwp = hasActiveRoof ? Number(sv.summary.dcKw) : 558.6;
+    const roofAreaM2 = hasActiveRoof
+      ? (bounds?.areaM2 > 1 ? Math.round(bounds.areaM2) : 0)
+      : 5200;
+    const baseCapKwp = hasActiveRoof ? finiteLabNum(sv.summary?.dcKw, 0) : 558.6;
     const projectName = (sv && sv.projectName) || '当前工商业分布式光伏工程';
     const address = (sv && sv.address) || '江苏省泰州市海陵区祥泰路数智仓储中心';
     const currentTilt = sv ? (sv.roofType === 'flat' ? (sv.tiltDeg || 18) : (sv.roofSlopeDeg || 6)) : this.tiltDeg;
@@ -310,7 +781,12 @@ export class InnovationLabView {
       projectName,
       address,
       currentTilt,
-      moduleCount: hasActiveRoof ? sv.summary.moduleCount : 980,
+      moduleCount: hasActiveRoof ? finiteLabNum(sv.summary?.moduleCount, 0) : 980,
+      orientationMode: this.generationProfileMode,
+      addedLoadKgM2: hasLaidOutZero ? 0 : this.addedLoadKgM2,
+      maxRoofLoadKgM2: this.maxRoofLoadKgM2,
+      source: hasActiveRoof ? 'satmap-live' : 'default',
+      projectId: sv?.linked3dContext?.projectId || null,
     };
   }
 
@@ -399,6 +875,95 @@ export class InnovationLabView {
       },
     ];
 
+    if ((this.syncedScheme && this.syncedScheme.dcKw <= 0) || (linked.hasActiveRoof && linked.baseCapKwp <= 0)) {
+      const cableLossPct = this.cableMaterial === 'al' ? 1.84 : 1.18;
+      return schemes.map((s) => ({
+        ...s,
+        dcAc: 0,
+        moduleCount: 0,
+        capKwp: 0,
+        prPct: 0,
+        specificYieldH: 0,
+        fullHours: 0,
+        annualMwh: 0,
+        cableLossPct,
+        totalCapexWan: 0,
+        annualRevWan: 0,
+        paybackYr: null,
+        dynamicPaybackYr: null,
+        irrPct: null,
+        npv25Wan: 0,
+        lcoeRmbPerKwh: null,
+      }));
+    }
+
+    if (this.syncedScheme) {
+      const targetCap = Math.max(0, finiteLabNum(this.syncedScheme.dcKw, 0));
+      const p3Base = schemes[2];
+      const p3Denom = Math.max(
+        0.58,
+        5200 *
+          Math.max(0.46, Math.min(0.86, 1.02 / Math.pow(p3Base.pitchM, 0.56))) *
+          0.228 *
+          (1 - Math.max(0.01, (16 - p3Base.shadowCutoff) * 0.0085))
+      );
+      const p3Scale = targetCap / p3Denom;
+      const ewFactor = this.generationProfileMode === 'east_west' ? 0.965 : 1.0;
+      const syncedTariffSelf = finiteLabOrNull(this.syncedScheme.tariffSelfRmb) ?? 0.88;
+      const syncedTariffFeed = finiteLabOrNull(this.syncedScheme.tariffFeedInRmb) ?? 0.39;
+      const syncedDiscPct = finiteLabOrNull(this.syncedScheme.discountRatePct) ?? finiteLabOrNull(sv?.discountRatePct) ?? 6.0;
+      const lm = this.computeLoadMatchingProfileOnly(targetCap);
+      return schemes.map((s, idx) => {
+        const packingFactor = Math.max(0.46, Math.min(0.86, 1.02 / Math.pow(s.pitchM, 0.56)));
+        const cullRatio = Math.max(0.01, (16 - s.shadowCutoff) * 0.0085);
+        const ewDensityBoost = this.generationProfileMode === 'east_west' && idx <= 2 ? 1.08 : 1.0;
+        const rawCapKwp = 5200 * packingFactor * 0.228 * (1 - cullRatio) * p3Scale * ewDensityBoost;
+        const moduleCount = targetCap > 0 ? Math.max(1, Math.round((rawCapKwp * 1000) / 580)) : 0;
+        const capKwp = idx === 2 && this.generationProfileMode !== 'east_west'
+          ? Number(targetCap.toFixed(2))
+          : Number(((moduleCount * 580) / 1000).toFixed(2));
+        const dcAc = s.targetDcAc;
+        const tiltGain = 1 + 0.0052 * s.tilt - 0.00011 * Math.pow(s.tilt - 23, 2);
+        const shadeLossPct = Math.max(0.4, s.shadowCutoff * (this.generationProfileMode === 'east_west' ? 0.22 : 0.34));
+        const clippingLossPct = Math.max(0.05, (dcAc - 1.08) * (this.generationProfileMode === 'east_west' ? 1.45 : 2.6));
+        const cableLossPct = this.cableMaterial === 'al' ? 1.84 : 1.18;
+        const prPct = Number(
+          Math.min(86.8, Math.max(75.5, 84.8 - shadeLossPct - clippingLossPct - (cableLossPct - 1.18) * 0.5)).toFixed(2)
+        );
+        const baseSpec = finiteLabNum(this.syncedScheme.specificYieldH, 0) > 0 ? this.syncedScheme.specificYieldH : 1120;
+        const specificYieldH = Math.round((baseSpec / 1.06) * tiltGain * ewFactor * (prPct / 82.5));
+        const annualMwh = Number(((capKwp * specificYieldH) / 1000).toFixed(1));
+        const unitCapex = Number((3.28 - (dcAc - 1.1) * 0.18 - (this.cableMaterial === 'al' ? 0.07 : 0)).toFixed(3));
+        const dcf = computeFinancialDcf25Yr({
+          dcKw: capKwp,
+          annualKwhYear1: annualMwh * 1000,
+          capexPerW: unitCapex,
+          selfConsumptionRatio: Number((lm.directSelfUsePct / 100).toFixed(4)),
+          tariffSelfRmb: syncedTariffSelf,
+          tariffFeedInRmb: syncedTariffFeed,
+          discountRatePct: syncedDiscPct,
+        });
+        return {
+          ...s,
+          dcAc,
+          moduleCount,
+          capKwp,
+          prPct,
+          specificYieldH,
+          fullHours: specificYieldH,
+          annualMwh,
+          cableLossPct,
+          totalCapexWan: Number(dcf.pvCapexWan.toFixed(1)),
+          annualRevWan: dcf.year1RevenueWan,
+          paybackYr: dcf.staticPaybackYears,
+          dynamicPaybackYr: dcf.dynamicPaybackYears,
+          irrPct: dcf.irrPct != null ? Number(dcf.irrPct.toFixed(1)) : null,
+          npv25Wan: Number(dcf.npv25Wan.toFixed(1)),
+          lcoeRmbPerKwh: dcf.lcoeRmbPerKwh,
+        };
+      });
+    }
+
     return schemes.map((s) => {
       let moduleCount;
       let capKwp;
@@ -418,8 +983,30 @@ export class InnovationLabView {
         const packingFactor = Math.max(0.46, Math.min(0.86, 1.02 / Math.pow(s.pitchM, 0.56)));
         const cullRatio = Math.max(0.01, (16 - s.shadowCutoff) * 0.0085);
         const rawCapKwp = 5200 * packingFactor * 0.228 * (1 - cullRatio) * areaScale;
-        moduleCount = Math.max(36, Math.round((rawCapKwp * 1000) / 580));
+        moduleCount = Math.max(1, Math.round((rawCapKwp * 1000) / 580));
         capKwp = Number(((moduleCount * 580) / 1000).toFixed(2));
+      }
+
+      if (capKwp <= 0 || moduleCount <= 0) {
+        const cableLossPct = this.cableMaterial === 'al' ? 1.84 : 1.18;
+        return {
+          ...s,
+          dcAc: 0,
+          moduleCount: 0,
+          capKwp: 0,
+          prPct: 0,
+          specificYieldH: 0,
+          fullHours: 0,
+          annualMwh: 0,
+          cableLossPct,
+          totalCapexWan: 0,
+          annualRevWan: 0,
+          paybackYr: null,
+          dynamicPaybackYr: null,
+          irrPct: null,
+          npv25Wan: 0,
+          lcoeRmbPerKwh: null,
+        };
       }
 
       const tiltGain = 1 + 0.0052 * s.tilt - 0.00011 * Math.pow(s.tilt - 23, 2);
@@ -433,15 +1020,15 @@ export class InnovationLabView {
       const annualMwh = Number(((capKwp * specificYieldH) / 1000).toFixed(1));
 
       const unitCapex = Number((3.28 - (dcAc - 1.1) * 0.18 - (this.cableMaterial === 'al' ? 0.07 : 0)).toFixed(3));
-      const selfRatio = sv?.selfConsumptionRatio != null ? Number(sv.selfConsumptionRatio) : 0.82;
+      const selfRatio = finiteLabOrNull(sv?.selfConsumptionRatio) ?? 0.82;
       const dcf = computeFinancialDcf25Yr({
         dcKw: capKwp,
         annualKwhYear1: annualMwh * 1000,
         capexPerW: unitCapex,
         selfConsumptionRatio: selfRatio,
-        tariffSelfRmb: sv?.tariffRmb != null ? Number(sv.tariffRmb) : 0.88,
-        tariffFeedInRmb: sv?.feedInTariffRmb != null ? Number(sv.feedInTariffRmb) : 0.39,
-        discountRatePct: sv?.discountRatePct != null ? Number(sv.discountRatePct) : 6.0,
+        tariffSelfRmb: finiteLabOrNull(sv?.tariffRmb) ?? 0.88,
+        tariffFeedInRmb: finiteLabOrNull(sv?.feedInTariffRmb) ?? 0.39,
+        discountRatePct: finiteLabOrNull(sv?.discountRatePct) ?? 6.0,
       });
 
       return {
@@ -473,19 +1060,24 @@ export class InnovationLabView {
   computeBessAndCarbon() {
     const portfolio = this.computeParetoPortfolio();
     const active = portfolio[this.selectedParetoIdx] || portfolio[2];
-    const pvKwp = active.capKwp;
-    const annualKwh = active.annualMwh * 1000;
+    const pvKwp = Math.max(0, finiteLabNum(active.capKwp, 0));
+    const annualKwh = Math.max(0, finiteLabNum(active.annualMwh, 0) * 1000);
 
-    const bessPowerKw = Math.round((pvKwp * this.bessRatioPct) / 100);
-    const bessCapKwh = Math.round(bessPowerKw * this.bessDurationH);
+    const bessPowerKw = pvKwp > 0 ? Math.round((pvKwp * this.bessRatioPct) / 100) : 0;
+    const bessCapKwh = bessPowerKw > 0 ? Math.round(bessPowerKw * this.bessDurationH) : 0;
     const roundTripEff = 0.895;
 
     const dailyArbitrageKwh = bessCapKwh * 0.9 * 1.85 * roundTripEff;
     const spreadRmb = Math.max(0.25, this.peakTariffRmb - this.valleyTariffRmb * 0.65 - this.feedInTariffRmb * 0.35);
     const annualBessArbitrageWan = Number(((dailyArbitrageKwh * 330 * spreadRmb) / 10000).toFixed(2));
     const demandChargeSavingWan = Number(((bessPowerKw * 38 * 12) / 10000).toFixed(2));
-    const selfUseBeforePct = 76.4;
-    const selfUseAfterPct = Number(Math.min(99.2, selfUseBeforePct + this.bessRatioPct * 0.72).toFixed(1));
+    const lmProfile = (this.syncedScheme || this.generationProfileMode === 'east_west' || pvKwp <= 0)
+      ? this.computeLoadMatchingProfileOnly(pvKwp)
+      : null;
+    const selfUseBeforePct = pvKwp <= 0 ? 0 : (lmProfile ? lmProfile.directSelfUsePct : 76.4);
+    const selfUseAfterPct = pvKwp <= 0
+      ? 0
+      : Number(Math.min(99.2, selfUseBeforePct + this.bessRatioPct * 0.72).toFixed(1));
 
     const gridFactorTonPerMwh = 0.5703;
     const annualCo2Ton = Number(((annualKwh / 1000) * gridFactorTonPerMwh).toFixed(1));
@@ -527,7 +1119,559 @@ export class InnovationLabView {
       cbamAvoidedTon,
       cbamSavingWan,
       totalExtraGainWan,
+      orientationMode: this.generationProfileMode,
     };
+  }
+
+  /**
+   * 24-Hour Generation Profile (East-West Butterfly vs South Fixed) × C&I Load-Matching Simulation.
+   */
+  computeLoadMatchingProfileOnly(pvKwp = 558.6) {
+    const cap = finiteLabNum(pvKwp, 0);
+    if (cap <= 0) {
+      const hourly24 = Array.from({ length: 24 }, (_, h) => ({
+        hour: h,
+        pvKw: 0,
+        loadKw: 0,
+        surplusKw: 0,
+      }));
+      return {
+        orientationMode: this.generationProfileMode,
+        loadProfileMode: this.loadProfileMode,
+        directSelfUsePct: 0,
+        altSelfUsePct: 0,
+        ewShoulderDeltaPct: 0,
+        recommendedBessKw: 0,
+        recommendedBessKwh: 0,
+        roofLoadSafe: this.addedLoadKgM2 <= this.maxRoofLoadKgM2,
+        addedLoadKgM2: this.addedLoadKgM2,
+        maxRoofLoadKgM2: this.maxRoofLoadKgM2,
+        hourly24,
+      };
+    }
+    // Normalized 24h PV generation curves (sum = 1.0): East-West has broader morning (07-10h) & afternoon (14-18h) shoulders
+    const southShape = [
+      0, 0, 0, 0, 0, 0,
+      0.008, 0.032, 0.072, 0.118, 0.156, 0.182,
+      0.186, 0.148, 0.062, 0.026, 0.008, 0.002,
+      0, 0, 0, 0, 0, 0,
+    ];
+    const ewShape = [
+      0, 0, 0, 0, 0, 0.004,
+      0.026, 0.062, 0.098, 0.122, 0.136, 0.142,
+      0.140, 0.124, 0.082, 0.044, 0.016, 0.004,
+      0, 0, 0, 0, 0, 0,
+    ];
+    const loadShapes = {
+      industrial_day: [
+        0.32, 0.30, 0.30, 0.30, 0.32, 0.42,
+        0.75, 1.25, 1.72, 1.85, 1.88, 1.55,
+        1.35, 1.82, 1.88, 1.85, 1.75, 1.38,
+        0.92, 0.72, 0.58, 0.48, 0.38, 0.33,
+      ],
+      commercial_afternoon: [
+        0.22, 0.20, 0.18, 0.18, 0.18, 0.22,
+        0.30, 0.42, 0.62, 0.88, 1.05, 1.18,
+        1.32, 1.68, 2.05, 2.28, 2.38, 2.25,
+        1.98, 1.65, 1.28, 0.82, 0.42, 0.26,
+      ],
+      continuous_24h: [
+        0.94, 0.92, 0.92, 0.92, 0.93, 0.95,
+        0.98, 1.02, 1.06, 1.08, 1.08, 1.05,
+        1.03, 1.07, 1.08, 1.08, 1.06, 1.04,
+        1.01, 0.99, 0.98, 0.97, 0.96, 0.95,
+      ],
+    };
+    const pvCurve = this.generationProfileMode === 'east_west' ? ewShape : southShape;
+    const altCurve = this.generationProfileMode === 'east_west' ? southShape : ewShape;
+    const loadCurve = loadShapes[this.loadProfileMode] || loadShapes.industrial_day;
+    const dailyPvKwh = Math.max(0.1, cap * 3.12);
+    const meanLoadKw = Math.max(0.5, cap * 0.34);
+
+    let genSum = 0;
+    let matchedSum = 0;
+    let altMatchedSum = 0;
+    const hourly24 = [];
+    for (let h = 0; h < 24; h++) {
+      const pvKw = dailyPvKwh * pvCurve[h];
+      const altPvKw = dailyPvKwh * altCurve[h];
+      const loadKw = meanLoadKw * loadCurve[h];
+      genSum += pvKw;
+      matchedSum += Math.min(pvKw, loadKw);
+      altMatchedSum += Math.min(altPvKw, loadKw);
+      hourly24.push({
+        hour: h,
+        pvKw: Number(pvKw.toFixed(1)),
+        loadKw: Number(loadKw.toFixed(1)),
+        surplusKw: Number(Math.max(0, pvKw - loadKw).toFixed(1)),
+      });
+    }
+    const directSelfUsePct = Number(Math.min(97.5, Math.max(52.0, (matchedSum / Math.max(1e-6, genSum)) * 100)).toFixed(1));
+    const altSelfUsePct = Number(Math.min(97.5, Math.max(52.0, (altMatchedSum / Math.max(1e-6, genSum)) * 100)).toFixed(1));
+    const peakSurplusKw = Math.max(...hourly24.map((x) => x.surplusKw), 0);
+    const totalSurplusKwh = hourly24.reduce((a, x) => a + x.surplusKw, 0);
+    const recommendedBessKw = Math.max(1, Math.round(peakSurplusKw * 0.65));
+    const recommendedBessKwh = Math.max(2, Math.round(totalSurplusKwh * 0.85));
+    const roofLoadSafe = this.addedLoadKgM2 <= this.maxRoofLoadKgM2;
+
+    return {
+      orientationMode: this.generationProfileMode,
+      loadProfileMode: this.loadProfileMode,
+      directSelfUsePct,
+      altSelfUsePct,
+      ewShoulderDeltaPct: Number(
+        (this.generationProfileMode === 'east_west' ? directSelfUsePct - altSelfUsePct : altSelfUsePct - directSelfUsePct).toFixed(1)
+      ),
+      recommendedBessKw,
+      recommendedBessKwh,
+      roofLoadSafe,
+      addedLoadKgM2: this.addedLoadKgM2,
+      maxRoofLoadKgM2: this.maxRoofLoadKgM2,
+      hourly24,
+    };
+  }
+
+  /**
+   * Compute full Load-Matching + 3×3 CAPEX × Tariff Financial Sensitivity Matrix.
+   */
+  computeLoadMatchingAndSensitivity() {
+    const portfolio = this.computeParetoPortfolio();
+    const active = portfolio[this.selectedParetoIdx] || portfolio[2];
+    const lm = this.computeLoadMatchingProfileOnly(active.capKwp);
+    const baseCapexPerW = Number(
+      (3.28 - ((finiteLabNum(active.dcAc, 1.1) || 1.1) - 1.1) * 0.18 - (this.cableMaterial === 'al' ? 0.07 : 0)).toFixed(3)
+    );
+    const baseSelfTariff = Number(
+      (finiteLabOrNull(this.syncedScheme?.tariffSelfRmb) ?? (this.peakTariffRmb * 0.55 + this.flatTariffRmb * 0.45)).toFixed(3)
+    );
+    const discRatePct = finiteLabOrNull(this.syncedScheme?.discountRatePct) ?? 6.0;
+    const capexFactors = [
+      { key: 'low', deltaPct: -8, factor: 0.92 },
+      { key: 'base', deltaPct: 0, factor: 1.0 },
+      { key: 'high', deltaPct: 8, factor: 1.08 },
+    ];
+    const tariffFactors = [
+      { key: 'low', deltaPct: -10, factor: 0.90 },
+      { key: 'base', deltaPct: 0, factor: 1.0 },
+      { key: 'high', deltaPct: 10, factor: 1.10 },
+    ];
+    const sensitivityGrid = capexFactors.map((cf) => ({
+      capexDeltaPct: cf.deltaPct,
+      capexPerW: Number((baseCapexPerW * cf.factor).toFixed(2)),
+      cells: tariffFactors.map((tf) => {
+        const tVal = Number((baseSelfTariff * tf.factor).toFixed(3));
+        const dcf = computeFinancialDcf25Yr({
+          dcKw: active.capKwp,
+          annualKwhYear1: active.annualMwh * 1000,
+          capexPerW: baseCapexPerW * cf.factor,
+          selfConsumptionRatio: Number((lm.directSelfUsePct / 100).toFixed(4)),
+          tariffSelfRmb: tVal,
+          tariffFeedInRmb: this.feedInTariffRmb,
+          discountRatePct: discRatePct,
+        });
+        return {
+          tariffDeltaPct: tf.deltaPct,
+          tariffRmb: tVal,
+          irrPct: dcf.irrPct != null ? Number(dcf.irrPct.toFixed(1)) : null,
+          paybackYr: dcf.staticPaybackYears,
+          npv25Wan: Number(dcf.npv25Wan.toFixed(1)),
+        };
+      }),
+    }));
+
+    return {
+      ...lm,
+      baseCapexPerW,
+      baseSelfTariff,
+      sensitivityGrid,
+    };
+  }
+
+  triggerAttachmentDownload(downloadUrl, filename = '光筑专业报告.pdf') {
+    if (!downloadUrl || typeof document === 'undefined' || !document.body) return false;
+    try {
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = filename || '光筑专业报告.pdf';
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        try { a.remove(); } catch (_) {}
+      }, 250);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  buildOfflineFallbackReportHtml(linked, active, bc, lms) {
+    const modeLabel = this.generationProfileMode === 'east_west'
+      ? '东西向双坡蝴蝶阵 (-90°/+90°)'
+      : '正南固定倾角 (180°)';
+    const projNameSafe = escLabHtml(scrubLabBrandText(linked?.projectName || '未命名工程'));
+    const addrSafe = escLabHtml(scrubLabBrandText(linked?.address || '未配置项目地址'));
+    const capKwp = finiteLabNum(active?.capKwp, 0);
+    const modCount = Math.max(0, Math.round(finiteLabNum(active?.moduleCount, 0)));
+    const prPct = capKwp > 0 ? finiteLabNum(active?.prPct, 0) : 0;
+    const annualMwh = capKwp > 0 ? finiteLabNum(active?.annualMwh, 0) : 0;
+    const specYieldH = capKwp > 0 ? finiteLabNum(active?.specificYieldH, 0) : 0;
+    const bessPowerKw = finiteLabNum(bc?.bessPowerKw, 0);
+    const bessCapKwh = finiteLabNum(bc?.bessCapKwh, 0);
+    const selfBefore = finiteLabNum(bc?.selfUseBeforePct, 0);
+    const selfAfter = finiteLabNum(bc?.selfUseAfterPct, 0);
+    const irrVal = finiteLabOrNull(active?.irrPct);
+    const pbVal = finiteLabOrNull(active?.paybackYr);
+    const lcoeVal = finiteLabOrNull(active?.lcoeRmbPerKwh);
+    const npvVal = finiteLabOrNull(active?.npv25Wan);
+    const naLabel = 'N/A（未核验/不适用）';
+    const irrDisplay = irrVal != null ? `${Number(irrVal).toFixed(1)}%` : naLabel;
+    const pbDisplay = pbVal != null ? `${Number(pbVal).toFixed(2)} 年` : naLabel;
+    const lcoeDisplay = lcoeVal != null ? `${Number(lcoeVal).toFixed(3)} 元/kWh` : naLabel;
+    const npvDisplay = npvVal != null ? `${Number(npvVal).toFixed(1)} 万元` : naLabel;
+    const loadStatusText = capKwp <= 0
+      ? 'N/A（当前未排布组件，0 kWp）'
+      : `${this.addedLoadKgM2} / ${this.maxRoofLoadKgM2} kg/m²（${lms?.roofLoadSafe ? '前端初算未超限 · 待结构复核' : '⚠ 超出上限 · 须结构加固复核'}）`;
+    const offlineBannerText = 'OFFLINE UNVERIFIED PREVIEW · 后端仿真服务离线，以下仅为前端简版未核验预览（非正式交付计算书）';
+    const offlineSubText = '前端离线简版未核验预览（非正式交付计算书 · 请连接后端专业引擎生成正式签章报告）';
+    const offlineBadgeText = 'OFFLINE UNVERIFIED PREVIEW · 离线未核验简版';
+    const rawHtml = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>光筑离线简版预览 — ${projNameSafe}</title>
+      <style>
+        body{font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;margin:0;padding:24px;background:#f8fafc;color:#0f172a}
+        .gz-sheet{position:relative;overflow:hidden;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:24px;max-width:860px;margin:0 auto 18px;box-shadow:0 4px 14px rgba(15,23,42,0.06)}
+        .gz-watermark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:rotate(-28deg);font-size:40px;font-weight:800;letter-spacing:5px;color:rgba(180,83,9,0.075);user-select:none}
+        .gz-offline-banner{background:#fef3c7;border:2px solid #d97706;color:#92400e;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;font-weight:700;line-height:1.5}
+        header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:2px solid #1e3a8a;padding-bottom:12px;margin-bottom:16px;flex-wrap:wrap}
+        .brand{display:flex;align-items:center;gap:12px}
+        table{width:100%;border-collapse:collapse;margin-top:12px}
+        th,td{border:1px solid #cbd5e1;padding:8px 10px;text-align:left;font-size:13px}
+        th{background:#f1f5f9;font-weight:700;color:#1e293b}
+      </style></head><body>
+      <section class="gz-sheet" id="page-1" data-offline-unverified-preview="1">
+        <div class="gz-watermark">OFFLINE PREVIEW</div>
+        <div class="gz-offline-banner" role="alert">⚠ ${offlineBannerText}</div>
+        <header>
+          <div class="brand">
+            <img src="/assets/guangzhu-128.png" alt="光筑" width="42" height="42" style="border-radius:8px">
+            <div>
+              <h2 style="margin:0;font-size:20px;color:#0f172a">光筑专业报告</h2>
+              <small style="color:#475569">${offlineSubText} · ${projNameSafe} · ${escLabHtml(modeLabel)}</small>
+            </div>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:#92400e;background:#fef3c7;border:1px solid #f59e0b;padding:4px 10px;border-radius:999px">${offlineBadgeText}</span>
+        </header>
+        <table>
+          <tr><th>${'工程名称'}</th><td>${projNameSafe}</td><th>${'项目地址'}</th><td>${addrSafe}</td></tr>
+          <tr><th>${'直流装机容量 (kWp)'}</th><td>${capKwp} kWp（${modCount} 块）</td><th>${'系统综合效率 PR (%)'}</th><td>${capKwp > 0 ? `${prPct}%` : naLabel}</td></tr>
+          <tr><th>${'首年并网电量 (MWh)'}</th><td>${annualMwh} MWh</td><th>${'等效满发小时 (h)'}</th><td>${capKwp > 0 ? `${specYieldH} h` : naLabel}</td></tr>
+          <tr><th>${'光储协同配置'}</th><td>${bessPowerKw} kW / ${bessCapKwh} kWh（消纳率 ${selfBefore}% → ${selfAfter}%）</td><th>${'屋面静荷载初算'}</th><td>${escLabHtml(loadStatusText)}</td></tr>
+          <tr><th>${'全投资内部收益率 IRR'}</th><td>${escLabHtml(irrDisplay)}</td><th>${'静态回收期 / 度电成本 / 25年NPV'}</th><td>${escLabHtml(pbDisplay)} / ${escLabHtml(lcoeDisplay)} / ${escLabHtml(npvDisplay)}</td></tr>
+        </table>
+      </section></body></html>`;
+    return scrubLabBrandText(rawHtml);
+  }
+
+  openProReportPreviewModal({ html = '', htmlUrl = '', downloadUrl = '', filename = '光筑专业报告.pdf', title = '' } = {}) {
+    if (
+      typeof document === 'undefined' ||
+      !document.body ||
+      typeof document.getElementById !== 'function' ||
+      typeof document.createElement !== 'function' ||
+      typeof document.body.appendChild !== 'function'
+    ) {
+      return { ok: true, modalOpened: false, html, htmlUrl, downloadUrl };
+    }
+    const isEn = getLang() === 'en';
+    let dlg = document.getElementById('gz-lab-pro-report-modal');
+    if (!dlg) {
+      dlg = document.createElement('dialog');
+      dlg.id = 'gz-lab-pro-report-modal';
+      dlg.setAttribute('data-gz-pro-report-modal', '1');
+      dlg.style.cssText = 'width:min(1120px,95vw);height:min(88vh,920px);padding:0;border:1px solid rgba(148,163,184,0.45);border-radius:12px;box-shadow:0 24px 60px rgba(15,23,42,0.35);background:#0f172a;color:#f8fafc;overflow:hidden';
+      document.body.appendChild(dlg);
+    }
+    const safeTitle = title || (isEn ? 'Guangzhu Professional Report' : '光筑专业报告');
+    const dlLinkHtml = downloadUrl
+      ? `<a class="btn sm" href="${downloadUrl}" download="${filename || '光筑专业报告.pdf'}" rel="noopener" style="text-decoration:none;background:#1e293b;color:#e2e8f0;border:1px solid rgba(148,163,184,0.4)">${isEn ? 'Direct Download (.pdf)' : '直接下载 (.pdf)'}</a>`
+      : '';
+    dlg.innerHTML = `
+      <div style="display:flex;flex-direction:column;height:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;background:#0f172a;border-bottom:1px solid rgba(148,163,184,0.25);flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px">
+            <img src="/assets/guangzhu-128.png" alt="" width="24" height="24" style="border-radius:5px">
+            <div>
+              <strong style="font-size:14px;color:#f8fafc">${safeTitle}</strong>
+              <small style="display:block;font-size:11px;color:#94a3b8">${isEn ? '6-Page Swiss Engineering Simulation Report · Guangzhu Watermark' : '6页工程精细化仿真计算书 · 含光筑防伪水印'}</small>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${[1, 2, 3, 4, 5, 6].map((p) => `<button type="button" class="btn sm" data-pro-page-jump="${p}" style="padding:2px 8px;font-size:11.5px;background:#1e293b;color:#e2e8f0;border:1px solid rgba(148,163,184,0.35)">P${p}</button>`).join('')}
+            <button type="button" class="btn sm primary" data-pro-modal-export="1" style="font-weight:700">
+              ${isEn ? '⬇ Export & Open PDF Report' : '⬇ 导出并打开 PDF 报告'}
+            </button>
+            ${dlLinkHtml}
+            <button type="button" class="btn sm" data-pro-modal-close="1" style="background:#334155;color:#f8fafc">
+              ${isEn ? '✕ Close' : '✕ 关闭'}
+            </button>
+          </div>
+        </div>
+        <iframe data-pro-modal-iframe="1" title="${safeTitle}" style="flex:1;width:100%;border:0;background:#e2e8f0"></iframe>
+      </div>
+    `;
+    const iframe = dlg.querySelector('[data-pro-modal-iframe]');
+    if (iframe) {
+      if (html) {
+        iframe.srcdoc = html;
+      } else if (htmlUrl) {
+        iframe.src = htmlUrl;
+      }
+    }
+    dlg.querySelectorAll('[data-pro-page-jump]').forEach((btn) => {
+      btn.onclick = () => {
+        const p = Number(btn.getAttribute('data-pro-page-jump') || 1);
+        try {
+          const doc = iframe?.contentDocument;
+          const target = doc?.querySelector?.(`[data-report-page="${p}"], #page-${p}, .pvsyst-page:nth-of-type(${p}), .gz-report-page:nth-of-type(${p})`);
+          if (target && typeof target.scrollIntoView === 'function') {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else if (iframe?.contentWindow) {
+            iframe.contentWindow.scrollTo({ top: Math.max(0, (p - 1) * 1080), behavior: 'smooth' });
+          }
+        } catch (_) {}
+      };
+    });
+    const exportBtn = dlg.querySelector('[data-pro-modal-export]');
+    if (exportBtn) {
+      exportBtn.onclick = () => {
+        this.exportGuangzhuProReport({ previewOnly: false, openNative: true });
+      };
+    }
+    const closeBtn = dlg.querySelector('[data-pro-modal-close]');
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        try { dlg.close?.(); } catch (_) {}
+        dlg.removeAttribute('open');
+      };
+    }
+    try {
+      if (typeof dlg.showModal === 'function') {
+        if (!dlg.open) dlg.showModal();
+      } else {
+        dlg.setAttribute('open', '');
+      }
+    } catch (_) {
+      dlg.setAttribute('open', '');
+    }
+    return { ok: true, modalOpened: true, dialog: dlg, html, htmlUrl, downloadUrl };
+  }
+
+  /**
+   * Export or preview 《光筑专业报告》 PDF via `POST /api/guangzhu/pro-report/export-pdf`
+   * (`open_native: true` + `<a download>` attachment link + in-app `<dialog>` preview modal — zero `window.open` popups!).
+   */
+  async exportGuangzhuProReport({ previewOnly = false, openNative = true } = {}) {
+    const linked = this.getLinkedProjectInfo();
+    const portfolio = this.computeParetoPortfolio();
+    const active = portfolio[this.selectedParetoIdx] || portfolio[2];
+    const bc = this.computeBessAndCarbon();
+    const lms = this.computeLoadMatchingAndSensitivity();
+    const shouldOpenNative = Boolean(openNative && !previewOnly);
+    const dcKwVal = Math.max(0, finiteLabNum(active.capKwp, 0));
+    const dcAcRatioVal = dcKwVal > 0 ? Math.max(0.1, finiteLabNum(active.dcAc, 1.0) || 1.0) : 0;
+    const acKwVal = dcKwVal > 0 ? Number((dcKwVal / dcAcRatioVal).toFixed(2)) : 0;
+    const payload = {
+      open_native: shouldOpenNative,
+      project_id: linked.projectId || undefined,
+      version: this.syncedScheme?.version || 1,
+      project_name: linked.projectName,
+      variant_name: `${active.id} (${this.generationProfileMode === 'east_west' ? 'East-West Butterfly' : 'South Fixed'})`,
+      branding: {
+        app_name: '光筑 Guangzhu',
+        report_title: '光筑专业报告',
+        watermark_text: '光筑 · GUANGZHU',
+        icon_url: '/assets/guangzhu-128.png',
+        icon_hd_url: '/assets/guangzhu-512.png',
+      },
+      site: {
+        name: linked.projectName,
+        address: linked.address,
+        lat: this.syncedScheme?.lat ?? this.satmapView?.lat ?? 32.4852,
+        lon: this.syncedScheme?.lon ?? this.satmapView?.lon ?? 119.8634,
+      },
+      system: {
+        dc_kw: dcKwVal,
+        ac_kw: acKwVal,
+        dc_ac_ratio: dcAcRatioVal,
+        module_count: active.moduleCount,
+        tilt_deg: active.tilt,
+        azimuth_deg: this.generationProfileMode === 'east_west' ? 90 : 180,
+        orientation_mode: this.generationProfileMode,
+      },
+      orientation_mode: this.generationProfileMode,
+      tilt_deg: active.tilt,
+      azimuth_deg: this.generationProfileMode === 'east_west' ? 90 : 180,
+      dc_kw: dcKwVal,
+      ac_kw: acKwVal,
+      dc_ac_ratio: dcAcRatioVal,
+      module_count: active.moduleCount,
+      annual_kwh: Math.round(active.annualMwh * 1000),
+      specific_yield_kwh_kwp: active.specificYieldH,
+      pr_pct: active.prPct,
+      bess: {
+        power_kw: bc.bessPowerKw,
+        capacity_kwh: bc.bessCapKwh,
+        self_use_before_pct: bc.selfUseBeforePct,
+        self_use_after_pct: bc.selfUseAfterPct,
+      },
+      multifactor: {
+        orientation_mode: this.generationProfileMode,
+        added_load_kg_m2: this.addedLoadKgM2,
+        max_roof_load_kg_m2: this.maxRoofLoadKgM2,
+        roof_load_safe: dcKwVal > 0 ? lms.roofLoadSafe : null,
+      },
+      financial: {
+        capex_wan: active.totalCapexWan,
+        annual_rev_wan: active.annualRevWan,
+        payback_yr: active.paybackYr,
+        payback_years: active.paybackYr,
+        dynamic_payback_years: active.dynamicPaybackYr ?? null,
+        irr_pct: active.irrPct,
+        npv25_wan: active.npv25Wan,
+        npv_wan: active.npv25Wan,
+        lcoe_rmb_kwh: active.lcoeRmbPerKwh,
+      },
+      offline: true,
+    };
+
+    let exportMeta = null;
+    let reportHtml = '';
+    if (this.fetchImpl) {
+      const pdfEndpoints = [
+        '/api/guangzhu/pro-report/export-pdf',
+        '/api/pvsyst/professional-report/export-pdf',
+      ];
+      for (const ep of pdfEndpoints) {
+        try {
+          const res = await this.fetchImpl(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (res && res.ok) {
+            const j = await res.json();
+            if (j && (j.ok || j.download_url || j.html_url || j.html)) {
+              exportMeta = j;
+              reportHtml = j.html || j.report_html || '';
+              break;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (!exportMeta || (previewOnly && !reportHtml && !exportMeta.html_url)) {
+        const htmlEndpoints = [
+          '/api/guangzhu/professional-report',
+          '/api/pvsyst/professional-report',
+        ];
+        for (const ep of htmlEndpoints) {
+          try {
+            const res = await this.fetchImpl(ep, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'text/html, application/json' },
+              body: JSON.stringify(payload),
+            });
+            if (res && res.ok) {
+              const ct = String(res.headers?.get?.('content-type') || '');
+              if (ct.includes('application/json')) {
+                const j = await res.json();
+                reportHtml = j?.html || j?.report_html || reportHtml;
+              } else {
+                reportHtml = (await res.text()) || reportHtml;
+              }
+              if (reportHtml) break;
+            }
+          } catch (_) {}
+        }
+      }
+    }
+
+    if (!reportHtml && !exportMeta?.html_url) {
+      reportHtml = this.buildOfflineFallbackReportHtml(linked, active, bc, lms);
+    }
+    if (reportHtml) {
+      reportHtml = scrubLabBrandText(reportHtml);
+    }
+
+    const filename = exportMeta?.filename || `光筑专业报告_${linked.projectName}_v${payload.version}.pdf`;
+    const downloadUrl = exportMeta?.download_url || '';
+    const htmlUrl = exportMeta?.html_url || '';
+    const savedDisplay = exportMeta?.saved_display || `Downloads/${filename}`;
+    const openedNatively = Boolean(exportMeta?.opened_natively);
+
+    this.lastExportedReport = {
+      filename,
+      savedDisplay,
+      downloadUrl,
+      htmlUrl,
+      openedNatively,
+      pages: exportMeta?.pages || 6,
+    };
+
+    const isEn = getLang() === 'en';
+    const modalTitle = isEn
+      ? `Guangzhu Professional Report — ${toPureEnText(linked.projectName)}`
+      : `光筑专业报告 — ${linked.projectName}`;
+
+    if (previewOnly) {
+      const modalRes = this.openProReportPreviewModal({
+        html: reportHtml,
+        htmlUrl,
+        downloadUrl,
+        filename,
+        title: modalTitle,
+      });
+      this.notice(
+        isEn
+          ? `Opened Guangzhu Professional Report preview for [${toPureEnText(linked.projectName)}] (${active.capKwp} kWp).`
+          : `已打开「${linked.projectName}」《光筑专业报告》在线预览（装机 ${active.capKwp} 千瓦 · 含光筑水印）！`
+      );
+      return { ok: true, preview: true, html: reportHtml, htmlUrl, downloadUrl, filename, modal: modalRes, payload };
+    }
+
+    let downloadedInBrowser = false;
+    if (downloadUrl && !openedNatively) {
+      downloadedInBrowser = this.triggerAttachmentDownload(downloadUrl, filename);
+    }
+    if (!openedNatively && !downloadedInBrowser) {
+      this.openProReportPreviewModal({
+        html: reportHtml,
+        htmlUrl,
+        downloadUrl,
+        filename,
+        title: modalTitle,
+      });
+    }
+
+    this.notice(
+      isEn
+        ? `Exported Guangzhu Professional Report (PDF) for [${toPureEnText(linked.projectName)}] (${savedDisplay})!`
+        : `已导出《光筑专业报告》PDF（${savedDisplay} · 装机 ${active.capKwp} 千瓦 · 含光筑水印）${openedNatively ? '并已在系统阅读器中打开！' : '！'}`
+    );
+    return {
+      ok: true,
+      filename,
+      saved_display: savedDisplay,
+      download_url: downloadUrl,
+      html_url: htmlUrl,
+      opened_natively: openedNatively,
+      html: reportHtml,
+      payload,
+    };
+  }
+
+  async exportPvsystV2Report(opts = {}) {
+    return this.exportGuangzhuProReport(opts);
   }
 
   /**
@@ -687,10 +1831,16 @@ export class InnovationLabView {
     this.host = host;
     if (!host.querySelector('[data-lab-tab]')) {
       this.render(host);
+      if (!this.projectsLoaded) {
+        this.fetchProjectsList({ renderAfter: true });
+      }
       return;
     }
     localizeDomSubtree(host);
     this.bind(host);
+    if (!this.projectsLoaded) {
+      this.fetchProjectsList({ renderAfter: true });
+    }
   }
 
   render(host = this.host) {
@@ -704,6 +1854,23 @@ export class InnovationLabView {
   html() {
     const isEn = getLang() === 'en';
     const linked = this.getLinkedProjectInfo();
+    const displayProjectName = isEn ? toPureEnText(linked.projectName) : linked.projectName;
+    const activeTariffSelf = Number(
+      (finiteLabOrNull(this.syncedScheme?.tariffSelfRmb) ?? (this.peakTariffRmb * 0.55 + this.flatTariffRmb * 0.45)).toFixed(2)
+    );
+    const isEw = this.generationProfileMode === 'east_west';
+    const roofSafe = this.addedLoadKgM2 <= this.maxRoofLoadKgM2;
+    const projectOptionsHtml = this.projects3dList.length > 0
+      ? this.projects3dList
+          .map((p) => {
+            const label = isEn
+              ? `${toPureEnText(p.name)} (${p.dcKw} kWp)`
+              : `${p.name}（${p.dcKw}千瓦）`;
+            return `<option value="${p.id}" ${p.id === this.selectedProjectId ? 'selected' : ''}>${label}</option>`;
+          })
+          .join('')
+      : `<option value="">${isEn ? 'No saved 3D project detected; linked to active Satellite Layout context' : '尚未检测到已保存三维工程，默认同步卫星排布上下文'}</option>`;
+
     return `
       <div class="satmap-shell" style="padding:16px 22px;overflow-y:auto;max-height:calc(100vh - 64px)">
         <div class="satmap-header">
@@ -715,8 +1882,8 @@ export class InnovationLabView {
             </h2>
             <p class="satmap-sub" style="margin:2px 0 0">
               ${isEn
-                ? 'Real-time linked with Satellite Layout Workbench: compare 5 tilt/capacity schemes, size BESS + green assets, and apply with one click'
-                : `与「卫星排布」实时双向联动 · 当前关联工程：${linked.projectName}（屋面约 ${linked.roofAreaM2} 平方米 · 基准装机 ${linked.baseCapKwp} 千瓦）`}
+                ? `Real-time linked with Satellite & 3D Workbench · Active: ${displayProjectName} (${linked.roofAreaM2} m² · ${linked.baseCapKwp} kWp)`
+                : `与「卫星排布」及三维工程实时双向联动 · 当前关联工程：${displayProjectName}（屋面约 ${linked.roofAreaM2} 平方米 · 基准装机 ${linked.baseCapKwp} 千瓦）`}
             </p>
           </div>
           <div class="satmap-steps">
@@ -728,6 +1895,47 @@ export class InnovationLabView {
             </button>
             <button type="button" class="satmap-step-btn ${this.activeTab === 'benchmark' ? 'active' : ''}" data-lab-tab="benchmark">
               ${isEn ? '3. Metered & Public Benchmarks' : '3. 电表盲测与泰州公开项目对标'}
+            </button>
+          </div>
+        </div>
+
+        <div class="satmap-card" data-lab-sync-bar="1" style="padding:12px 16px;margin-bottom:12px;border-left:4px solid #0ea5e9;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:rgba(14,165,233,0.05)">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px">
+            <strong style="color:#0284c7;font-size:13px">${isEn ? 'Sync Active Satellite / 3D Scheme Data' : '同步当前卫星/三维方案数据'}</strong>
+            <button type="button" class="btn sm primary" data-lab-action="sync-satmap-latest">
+              ${isEn ? 'Sync Latest Satellite Scheme' : '一键同步卫星最新方案'}
+            </button>
+            <select class="satmap-input" data-lab-project-select="1" style="min-width:210px;max-width:280px;height:30px;padding:2px 8px;font-size:12px">
+              ${projectOptionsHtml}
+            </select>
+            <button type="button" class="btn sm" data-lab-action="import-3d-project">
+              ${isEn ? 'Import Selected 3D Project' : '导入选中三维工程'}
+            </button>
+            <button type="button" class="btn sm" data-lab-action="refresh-3d-projects">
+              ${isEn ? 'Refresh 3D Project List' : '刷新三维工程列表'}
+            </button>
+            <div style="display:inline-flex;gap:4px;align-items:center;padding-left:6px;border-left:1px solid rgba(148,163,184,0.3)">
+              <button type="button" class="btn sm ${!isEw ? 'primary' : ''}" data-lab-profile="south_fixed">
+                ${isEn ? 'South Fixed Tilt' : '正南固定倾角'}
+              </button>
+              <button type="button" class="btn sm ${isEw ? 'primary' : ''}" data-lab-profile="east_west">
+                ${isEn ? 'East-West Butterfly Array' : '东西向双坡蝴蝶阵'}
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px">
+            <span class="satmap-tag" style="background:${roofSafe ? 'rgba(16,185,129,0.14)' : 'rgba(217,119,6,0.16)'};color:${roofSafe ? '#059669' : '#d97706'};font-weight:600">
+              ${isEn
+                ? `Load ${this.addedLoadKgM2}/${this.maxRoofLoadKgM2} kg/m² · Tariff ¥${activeTariffSelf}/kWh`
+                : `静荷载 ${this.addedLoadKgM2}/${this.maxRoofLoadKgM2} 千克/平方米 · 电价 ${activeTariffSelf} 元/度`}
+            </span>
+            <button type="button" class="btn sm primary" data-lab-action="export-pro-report" data-preserve-zh="1" style="display:inline-flex;align-items:center;gap:6px;font-weight:700">
+              <img src="/assets/guangzhu-128.png" alt="" width="16" height="16" style="border-radius:3px;vertical-align:middle">
+              <span>${isEn ? 'Export Guangzhu Professional Report (PDF)' : '导出光筑专业报告 (PDF)'}</span>
+            </button>
+            <button type="button" class="btn sm" data-lab-action="preview-pro-report">
+              ${isEn ? 'Preview Guangzhu Professional Report' : '预览光筑专业报告'}
             </button>
           </div>
         </div>
@@ -768,6 +1976,14 @@ export class InnovationLabView {
   renderParetoTab(isEn) {
     const portfolio = this.computeParetoPortfolio();
     const active = portfolio[this.selectedParetoIdx] || portfolio[2];
+    const fmtPb = (v) =>
+      v != null && Number.isFinite(Number(v)) ? `${v}${isEn ? ' yr' : ' 年'}` : (isEn ? 'N/A' : '无法回本');
+    const fmtPbPoint = (v) =>
+      v != null && Number.isFinite(Number(v)) ? (isEn ? `${v}yr` : `${v}年回本`) : (isEn ? 'N/A' : '无法回本');
+    const fmtPbBanner = (v) =>
+      v != null && Number.isFinite(Number(v)) ? (isEn ? `Payback ${v} yr` : `${v} 年回本`) : (isEn ? 'Payback N/A' : '无法回本');
+    const fmtIrr = (v) =>
+      v != null && Number.isFinite(Number(v)) ? `${v}%` : (isEn ? 'N/A' : '不适用');
 
     const W = 560;
     const H = 250;
@@ -856,7 +2072,7 @@ export class InnovationLabView {
             </div>
             <div class="satmap-kpi-card" style="padding:10px">
               <span>${isEn ? 'Payback / IRR' : '静态回本年限 / 收益率'}</span>
-              <strong style="font-size:16px;color:#2563eb">${active.paybackYr}${isEn ? ' yr' : ' 年'} / ${active.irrPct}%</strong>
+              <strong style="font-size:16px;color:#2563eb">${fmtPb(active.paybackYr)} / ${fmtIrr(active.irrPct)}</strong>
               <small style="display:block;opacity:0.75;font-size:11px">${isEn ? `25-Yr Net ¥${(active.npv25Wan / 100).toFixed(2)}M` : `25年净赚 ${active.npv25Wan} 万元`}</small>
             </div>
           </div>
@@ -895,8 +2111,8 @@ export class InnovationLabView {
               const isSel = idx === this.selectedParetoIdx;
               const off = labelOffsets[idx] || { dx: 10, dy: -6, anchor: 'start' };
               const labelText = isEn
-                ? `${p.id} ${p.nameEn.split(' ')[0]} (${p.capKwp}kWp · ${p.specificYieldH}h · ${p.paybackYr}yr)`
-                : `${p.codeZh}（${p.capKwp}千瓦 · ${p.specificYieldH}小时 · ${p.paybackYr}年回本）`;
+                ? `${p.id} ${p.nameEn.split(' ')[0]} (${p.capKwp}kWp · ${p.specificYieldH}h · ${fmtPbPoint(p.paybackYr)})`
+                : `${p.codeZh}（${p.capKwp}千瓦 · ${p.specificYieldH}小时 · ${fmtPbPoint(p.paybackYr)}）`;
               return `
                 <g style="cursor:pointer" data-lab-pareto-idx="${idx}">
                   ${isSel ? `<circle cx="${p.cx}" cy="${p.cy}" r="13" fill="rgba(37,99,235,0.18)"/>` : ''}
@@ -920,8 +2136,8 @@ export class InnovationLabView {
           </h3>
           <span style="font-size:12px;color:#059669;font-weight:600">
             ${isEn
-              ? `Active Selection: ${active.id} (${active.capKwp} kWp, Payback ${active.paybackYr} yr)`
-              : `当前已选：${active.codeZh} — ${active.nameZh}（总投资 ${active.totalCapexWan} 万元，年收入 ${active.annualRevWan} 万元，${active.paybackYr} 年回本）`}
+              ? `Active Selection: ${active.id} (${active.capKwp} kWp, ${fmtPbBanner(active.paybackYr)})`
+              : `当前已选：${active.codeZh} — ${active.nameZh}（总投资 ${active.totalCapexWan} 万元，年收入 ${active.annualRevWan} 万元，${fmtPbBanner(active.paybackYr)}）`}
           </span>
         </div>
         <table class="satmap-table">
@@ -955,7 +2171,7 @@ export class InnovationLabView {
                 <td>${p.annualMwh} ${isEn ? 'MWh' : '兆瓦时'}<br><small style="opacity:0.75">${p.specificYieldH} ${isEn ? 'h' : '小时'}</small></td>
                 <td>${isEn ? `¥${(p.totalCapexWan / 100).toFixed(2)}M` : `${p.totalCapexWan} 万元`}<br><small style="color:#059669">${isEn ? `Rev ¥${(p.annualRevWan * 10).toFixed(1)}k` : `年收 ${p.annualRevWan} 万元`}</small></td>
                 <td>${p.prPct}%</td>
-                <td><strong style="color:#2563eb">${p.paybackYr} ${isEn ? 'yr' : '年'} / ${p.irrPct}%</strong></td>
+                <td><strong style="color:#2563eb">${fmtPb(p.paybackYr)} / ${fmtIrr(p.irrPct)}</strong></td>
                 <td>
                   <button type="button" class="btn sm ${idx === this.selectedParetoIdx ? 'primary' : ''}" data-lab-apply-idx="${idx}">
                     ${isEn ? 'Apply & Sync' : '采用并同步至排布'}
@@ -971,7 +2187,19 @@ export class InnovationLabView {
 
   renderBessCarbonTab(isEn) {
     const bc = this.computeBessAndCarbon();
+    const lms = this.computeLoadMatchingAndSensitivity();
     const useGec = this.domesticEnvMode !== 'ccer';
+    const isEw = lms.orientationMode === 'east_west';
+    const maxCurveKw = Math.max(
+      10,
+      ...lms.hourly24.map((h) => Math.max(h.pvKw, h.loadKw))
+    );
+    const svgW = 460;
+    const svgH = 152;
+    const toX24 = (hr) => Number((34 + (hr / 23) * (svgW - 50)).toFixed(1));
+    const toY24 = (kw) => Number((svgH - 24 - (kw / maxCurveKw) * (svgH - 40)).toFixed(1));
+    const pvPts = lms.hourly24.map((h) => `${toX24(h.hour)},${toY24(h.pvKw)}`).join(' ');
+    const loadPts = lms.hourly24.map((h) => `${toX24(h.hour)},${toY24(h.loadKw)}`).join(' ');
     return `
       <div style="display:grid;grid-template-columns:380px 1fr;gap:16px">
         <div class="satmap-card" style="padding:16px">
@@ -1093,6 +2321,124 @@ export class InnovationLabView {
                 <td>${isEn ? `Export share ${this.cbamExportSharePct}% · Avoided ${bc.cbamAvoidedTon} tCO₂ × €${this.cbamPriceEurPerTon}/t` : `出口占比 ${this.cbamExportSharePct}% · 情景折算 ${bc.cbamAvoidedTon} 吨二氧化碳 × ${this.cbamPriceEurPerTon} 欧元/吨`}</td>
                 <td><strong style="color:#d97706">${bc.cbamSavingWan} ${isEn ? '(Scenario)' : '（独立情景）'}</strong></td>
               </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="satmap-card" data-lab-synergy-panel="1" style="padding:16px;margin-top:16px;display:grid;grid-template-columns:1.12fr 1fr;gap:18px">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <h3 style="margin:0;font-size:15px">
+              ${isEn ? 'East-West vs. South 24h Load-Matching Simulation' : '东西双坡与正南曲线负荷匹配仿真'}
+            </h3>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <button type="button" class="btn sm ${this.loadProfileMode === 'industrial_day' ? 'primary' : ''}" data-lab-load-mode="industrial_day">
+                ${isEn ? 'Two-Shift Industrial Load' : '双班工业日间负荷'}
+              </button>
+              <button type="button" class="btn sm ${this.loadProfileMode === 'commercial_afternoon' ? 'primary' : ''}" data-lab-load-mode="commercial_afternoon">
+                ${isEn ? 'Commercial Afternoon Peak Load' : '商业午后高峰负荷'}
+              </button>
+              <button type="button" class="btn sm ${this.loadProfileMode === 'continuous_24h' ? 'primary' : ''}" data-lab-load-mode="continuous_24h">
+                ${isEn ? 'Continuous 24h Baseload' : '连续二十四小时恒定负荷'}
+              </button>
+            </div>
+          </div>
+
+          <svg viewBox="0 0 ${svgW} ${svgH}" style="width:100%;height:148px;display:block;border-radius:8px;border:1px solid rgba(148,163,184,0.25);margin-bottom:10px">
+            <line x1="34" y1="${svgH - 24}" x2="${svgW - 16}" y2="${svgH - 24}" stroke="currentColor" stroke-opacity="0.28" stroke-width="1"/>
+            <line x1="34" y1="16" x2="34" y2="${svgH - 24}" stroke="currentColor" stroke-opacity="0.28" stroke-width="1"/>
+            <polyline fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="4 3" points="${loadPts}"/>
+            <polyline fill="none" stroke="${isEw ? '#059669' : '#2563eb'}" stroke-width="2.5" points="${pvPts}"/>
+            <text x="${svgW / 2}" y="${svgH - 6}" text-anchor="middle" fill="currentColor" opacity="0.72" font-size="10.5">
+              ${isEn
+                ? `24h Diurnal Curve — Solid: ${isEw ? 'East-West Butterfly PV' : 'South Fixed PV'} · Dashed: Plant Load`
+                : `二十四小时出力与负荷曲线 — 实线：${isEw ? '东西向双坡光伏' : '正南固定光伏'} · 虚线：厂区负荷`}
+            </text>
+          </svg>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px">
+            <div class="satmap-kpi-card" style="padding:9px">
+              <span>${isEn ? 'Direct PV Self-Use' : '光伏直供自用率'}</span>
+              <strong style="font-size:15px;color:#059669">${lms.directSelfUsePct}%</strong>
+              <small style="display:block;opacity:0.78">
+                ${isEn
+                  ? `E-W Shoulder Delta ${lms.ewShoulderDeltaPct >= 0 ? '+' : ''}${lms.ewShoulderDeltaPct}%`
+                  : `东西双坡早晚增益 ${lms.ewShoulderDeltaPct >= 0 ? '+' : ''}${lms.ewShoulderDeltaPct}%`}
+              </small>
+            </div>
+            <div class="satmap-kpi-card" style="padding:9px">
+              <span>${isEn ? 'Recommended BESS' : '负荷匹配推荐配储'}</span>
+              <strong style="font-size:15px;color:#2563eb">${lms.recommendedBessKw}${isEn ? 'kW' : '千瓦'}/${lms.recommendedBessKwh}${isEn ? 'kWh' : '千瓦时'}</strong>
+              <small style="display:block;opacity:0.78">
+                ${isEn ? 'Absorbs midday PV surplus' : '精准平抑午间余电波峰'}
+              </small>
+            </div>
+            <div class="satmap-kpi-card" style="padding:9px">
+              <span>${isEn ? 'Roof Dead-Load Check' : '同步屋面静荷载校核'}</span>
+              <strong style="font-size:15px;color:${lms.roofLoadSafe ? '#059669' : '#d97706'}">${lms.addedLoadKgM2}/${lms.maxRoofLoadKgM2}</strong>
+              <small style="display:block;opacity:0.78">
+                ${isEn
+                  ? `${lms.roofLoadSafe ? 'Safe' : 'Reinforce'} (kg/m²)`
+                  : `${lms.roofLoadSafe ? '荷载安全合规' : '超限需加固'}（千克/平方米）`}
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <h3 style="margin:0;font-size:15px">
+              ${isEn ? 'CAPEX × Tariff 3×3 Financial Sensitivity Matrix' : '造价与电价双因子财务敏感性矩阵'}
+            </h3>
+            <span style="font-size:12px;opacity:0.78">
+              ${isEn
+                ? `Base ¥${lms.baseCapexPerW}/W · Tariff ¥${lms.baseSelfTariff}/kWh`
+                : `基准造价 ${lms.baseCapexPerW} 元/瓦 · 综合电价 ${lms.baseSelfTariff} 元/度`}
+            </span>
+          </div>
+
+          <table class="satmap-table" data-lab-sensitivity-table="1">
+            <thead>
+              <tr>
+                <th>${isEn ? 'EPC CAPEX \\ Self-Use Tariff' : '单瓦造价 \\ 自用电价'}</th>
+                <th>${isEn ? 'Tariff -10%' : '电价下浮 10%'}</th>
+                <th>${isEn ? 'Base Tariff' : '基准电价'}</th>
+                <th>${isEn ? 'Tariff +10%' : '电价上浮 10%'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${lms.sensitivityGrid
+                .map((row) => {
+                  const rowLabel = row.capexDeltaPct === 0
+                    ? (isEn ? `Base (¥${row.capexPerW}/W)` : `基准造价（${row.capexPerW}元/瓦）`)
+                    : row.capexDeltaPct < 0
+                      ? (isEn ? `CAPEX ${row.capexDeltaPct}% (¥${row.capexPerW}/W)` : `造价下浮8%（${row.capexPerW}元/瓦）`)
+                      : (isEn ? `CAPEX +${row.capexDeltaPct}% (¥${row.capexPerW}/W)` : `造价上浮8%（${row.capexPerW}元/瓦）`);
+                  return `
+                    <tr>
+                      <td><strong>${rowLabel}</strong></td>
+                      ${row.cells
+                        .map((cell) => {
+                          const isCenter = row.capexDeltaPct === 0 && cell.tariffDeltaPct === 0;
+                          const pbText = cell.paybackYr != null
+                            ? `${cell.paybackYr}${isEn ? 'yr' : '年'}`
+                            : (isEn ? '>25yr' : '超25年');
+                          const hasCellIrr = cell.irrPct != null && Number.isFinite(Number(cell.irrPct));
+                          const irrText = hasCellIrr ? `${cell.irrPct}%` : (isEn ? 'N/A' : '不适用');
+                          const irrColor = hasCellIrr && cell.irrPct >= 12 ? '#059669' : '#2563eb';
+                          return `
+                            <td style="${isCenter ? 'background:rgba(37,99,235,0.12);font-weight:700' : ''}">
+                              <div style="color:${irrColor};font-weight:700">${irrText}</div>
+                              <small style="opacity:0.78">${isEn ? `Payback ${pbText}` : `回本 ${pbText}`}</small>
+                            </td>
+                          `;
+                        })
+                        .join('')}
+                    </tr>
+                  `;
+                })
+                .join('')}
             </tbody>
           </table>
         </div>
@@ -1260,6 +2606,58 @@ export class InnovationLabView {
     root.querySelectorAll('[data-lab-action="apply-bess-to-satmap"]').forEach((btn) => {
       btn.onclick = () => {
         this.applyBessToSatmap({ jump: false });
+      };
+    });
+
+    root.querySelectorAll('[data-lab-action="sync-satmap-latest"]').forEach((btn) => {
+      btn.onclick = () => {
+        this.syncFromSatmapLatest();
+      };
+    });
+
+    root.querySelectorAll('[data-lab-project-select]').forEach((sel) => {
+      sel.onchange = () => {
+        this.selectedProjectId = sel.value || '';
+      };
+    });
+
+    root.querySelectorAll('[data-lab-action="import-3d-project"]').forEach((btn) => {
+      btn.onclick = () => {
+        const sel = root.querySelector('[data-lab-project-select]');
+        const pid = sel ? sel.value : this.selectedProjectId;
+        this.importFrom3dProject(pid);
+      };
+    });
+
+    root.querySelectorAll('[data-lab-action="refresh-3d-projects"]').forEach((btn) => {
+      btn.onclick = () => {
+        this.fetchProjectsList({ renderAfter: true });
+      };
+    });
+
+    root.querySelectorAll('[data-lab-action="export-pro-report"], [data-lab-action="export-pvsyst-v2"]').forEach((btn) => {
+      btn.onclick = () => {
+        this.exportGuangzhuProReport({ previewOnly: false, openNative: true });
+      };
+    });
+
+    root.querySelectorAll('[data-lab-action="preview-pro-report"]').forEach((btn) => {
+      btn.onclick = () => {
+        this.exportGuangzhuProReport({ previewOnly: true, openNative: false });
+      };
+    });
+
+    root.querySelectorAll('[data-lab-profile]').forEach((btn) => {
+      btn.onclick = () => {
+        this.generationProfileMode = btn.dataset.labProfile || 'south_fixed';
+        this.render();
+      };
+    });
+
+    root.querySelectorAll('[data-lab-load-mode]').forEach((btn) => {
+      btn.onclick = () => {
+        this.loadProfileMode = btn.dataset.labLoadMode || 'industrial_day';
+        this.render();
       };
     });
 

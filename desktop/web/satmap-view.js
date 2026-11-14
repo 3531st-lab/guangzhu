@@ -16,6 +16,8 @@ import {
   renderPvsystWorkbench,
   renderLiveWeatherPanel,
   computeClientFallbackPvsyst,
+  openPvsystStandardReport,
+  downloadPvsystProfessionalReportPdf,
 } from './pvsyst-workbench.js';
 import {
   enrichModuleSpec,
@@ -39,6 +41,36 @@ import {
   computeAnnual3DShadingSummary,
   mountSatmap3DTwin,
 } from './pro-3d-twin-engine.js';
+import {
+  L as satL,
+  ALBEDO_PRESETS,
+  POLLUTION_LEVELS,
+  LOAD_PROFILES,
+  createDefaultLinkageState,
+  createDefaultMultiFactorState,
+  computeColdVocAndStringSafety,
+  computeMultiFactorStructuralCheck,
+  evaluateModuleShadingLossPct,
+  fetch3DCatalog,
+  importFrom3DItem,
+  syncSatmapTo3D,
+  navigateTo3DTarget,
+  persistLatestSatmapScheme,
+  runClientMultiFactorOptimization,
+  requestMultiFactorOptimization,
+  applyMultiFactorSchemeToView,
+  restoreMultiFactorPreview,
+  renderLinkageTopStrip,
+  renderImport3DModal,
+  renderMultiFactorStudioPanel,
+  renderProReportPreviewModal,
+  openHtmlInPreviewModal,
+  exportPvsystProfessionalReportV2,
+  previewGuangzhuProReport,
+  computeClientEngineeringHealthCheck,
+  runEngineeringHealthCheck,
+  exportSatmapDeliveryBundle,
+} from './satmap-3d-linkage.js';
 
 export const SAT_MODULE_CATALOG = [
   {
@@ -48,10 +80,16 @@ export const SAT_MODULE_CATALOG = [
     stc_w: 580,
     length_m: 2.278,
     width_m: 1.134,
+    weight_kg: 31.8,
     vmp_v: 42.3,
     imp_a: 13.71,
     voc_v: 51.0,
     isc_a: 14.47,
+    beta_voc_pct_c: -0.25,
+    gamma_pmax_pct_c: -0.29,
+    alpha_isc_pct_c: 0.045,
+    noct_c: 45,
+    max_system_v: 1500,
     bifaciality: 0.80,
   },
   {
@@ -61,10 +99,16 @@ export const SAT_MODULE_CATALOG = [
     stc_w: 605,
     length_m: 2.382,
     width_m: 1.134,
+    weight_kg: 33.7,
     vmp_v: 40.5,
     imp_a: 14.94,
     voc_v: 48.7,
-    isc_a: 15.86,
+    isc_a: 15.83,
+    beta_voc_pct_c: -0.24,
+    gamma_pmax_pct_c: -0.29,
+    alpha_isc_pct_c: 0.04,
+    noct_c: 43,
+    max_system_v: 1500,
     bifaciality: 0.80,
   },
   {
@@ -74,10 +118,16 @@ export const SAT_MODULE_CATALOG = [
     stc_w: 580,
     length_m: 2.278,
     width_m: 1.134,
+    weight_kg: 32.6,
     vmp_v: 43.2,
     imp_a: 13.43,
     voc_v: 51.8,
     isc_a: 14.25,
+    beta_voc_pct_c: -0.26,
+    gamma_pmax_pct_c: -0.29,
+    alpha_isc_pct_c: 0.045,
+    noct_c: 45,
+    max_system_v: 1500,
     bifaciality: 0.75,
   },
   {
@@ -87,10 +137,16 @@ export const SAT_MODULE_CATALOG = [
     stc_w: 620,
     length_m: 2.382,
     width_m: 1.134,
+    weight_kg: 33.5,
     vmp_v: 41.2,
     imp_a: 15.05,
     voc_v: 49.5,
     isc_a: 15.92,
+    beta_voc_pct_c: -0.25,
+    gamma_pmax_pct_c: -0.29,
+    alpha_isc_pct_c: 0.045,
+    noct_c: 45,
+    max_system_v: 1500,
     bifaciality: 0.80,
   },
 ].map(enrichModuleSpec);
@@ -105,22 +161,34 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 2,
     max_mppt_current_a: 30,
     max_short_current_a: 40,
+    max_isc_per_mppt_a: 40,
     mppt_v_min: 200,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: 550,
+    mppt_full_load_v_max: 850,
+    max_eff_pct: 98.7,
+    euro_eff_pct: 98.5,
+    weight_kg: 87,
   },
   {
     id: 'sungrow-sg50cx-p2',
     model: 'SG50CX-P2',
     brand: '阳光电源',
     rated_ac_kw: 50,
-    mppt_count: 5,
+    mppt_count: 4,
     strings_per_mppt: 2,
     max_mppt_current_a: 30,
     max_short_current_a: 40,
-    mppt_v_min: 200,
+    max_isc_per_mppt_a: 40,
+    mppt_v_min: 160,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: 500,
+    mppt_full_load_v_max: 800,
+    max_eff_pct: 98.5,
+    euro_eff_pct: 98.3,
+    weight_kg: 41,
   },
   {
     id: 'sungrow-sg36cx-p2',
@@ -131,9 +199,15 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 2,
     max_mppt_current_a: 30,
     max_short_current_a: 40,
+    max_isc_per_mppt_a: 40,
     mppt_v_min: 200,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: 500,
+    mppt_full_load_v_max: 800,
+    max_eff_pct: 98.5,
+    euro_eff_pct: 98.3,
+    weight_kg: 40,
   },
   {
     id: 'sungrow-sg125cx-p2',
@@ -144,9 +218,15 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 2,
     max_mppt_current_a: 30,
     max_short_current_a: 40,
+    max_isc_per_mppt_a: 40,
     mppt_v_min: 180,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: 550,
+    mppt_full_load_v_max: 850,
+    max_eff_pct: 98.5,
+    euro_eff_pct: 98.3,
+    weight_kg: 93,
   },
   {
     id: 'huawei-sun2000-100ktl-m2',
@@ -157,9 +237,15 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 2,
     max_mppt_current_a: 30,
     max_short_current_a: 40,
+    max_isc_per_mppt_a: 40,
     mppt_v_min: 200,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: null,
+    mppt_full_load_v_max: null,
+    max_eff_pct: 98.6,
+    euro_eff_pct: 98.4,
+    weight_kg: 93,
   },
   {
     id: 'goodwe-gw100k-ht',
@@ -170,9 +256,15 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 2,
     max_mppt_current_a: 30,
     max_short_current_a: 45,
+    max_isc_per_mppt_a: 45,
     mppt_v_min: 180,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: 500,
+    mppt_full_load_v_max: 850,
+    max_eff_pct: 98.6,
+    euro_eff_pct: 98.4,
+    weight_kg: 93.5,
   },
   {
     id: 'growatt-max-100ktl3-x',
@@ -183,9 +275,15 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 2,
     max_mppt_current_a: 32,
     max_short_current_a: 45,
+    max_isc_per_mppt_a: 45,
     mppt_v_min: 180,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: 500,
+    mppt_full_load_v_max: 850,
+    max_eff_pct: 98.8,
+    euro_eff_pct: 98.4,
+    weight_kg: 84,
   },
   {
     id: 'ginlong-s5-gc110k',
@@ -196,9 +294,15 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 2,
     max_mppt_current_a: 32,
     max_short_current_a: 40,
+    max_isc_per_mppt_a: 40,
     mppt_v_min: 180,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: 520,
+    mppt_full_load_v_max: 850,
+    max_eff_pct: 98.7,
+    euro_eff_pct: 98.4,
+    weight_kg: 84,
   },
   {
     id: 'sungrow-sg150cx-cn',
@@ -209,9 +313,15 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 3,
     max_mppt_current_a: 45,
     max_short_current_a: 60,
+    max_isc_per_mppt_a: 60,
     mppt_v_min: 200,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: 500,
+    mppt_full_load_v_max: 850,
+    max_eff_pct: 98.8,
+    euro_eff_pct: 98.5,
+    weight_kg: 87,
   },
   {
     id: 'huawei-sun2000-20ktl-m3',
@@ -222,9 +332,15 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 2,
     max_mppt_current_a: 27,
     max_short_current_a: 39,
+    max_isc_per_mppt_a: 39,
     mppt_v_min: 160,
     mppt_v_max: 1000,
     max_dc_v: 1100,
+    mppt_full_load_v_min: 480,
+    mppt_full_load_v_max: 800,
+    max_eff_pct: 98.6,
+    euro_eff_pct: 98.3,
+    weight_kg: 21,
   },
   {
     id: 'goodwe-gw8k-dt',
@@ -235,9 +351,15 @@ export const SAT_INVERTER_CATALOG = [
     strings_per_mppt: 1,
     max_mppt_current_a: 16,
     max_short_current_a: 21,
+    max_isc_per_mppt_a: 21,
     mppt_v_min: 160,
     mppt_v_max: 850,
     max_dc_v: 1000,
+    mppt_full_load_v_min: 380,
+    mppt_full_load_v_max: 850,
+    max_eff_pct: 98.2,
+    euro_eff_pct: 97.6,
+    weight_kg: 15,
   },
 ].map(enrichInverterSpec);
 
@@ -708,7 +830,7 @@ export class SatMapView {
     } else if (arg1 && typeof arg1 === 'object') {
       if (typeof arg1.api === 'function') this.api = arg1.api;
       if (typeof arg1.notice === 'function') this.notice = arg1.notice;
-      this.appState = arg1.state || arg1;
+      this.appState = arg1.state || arg1.appState || arg1;
     }
 
     this.step = 1; // 1: 卫星排布, 2: 电气设计, 3: PVsyst与实时气象, 4: 实景效果图, 5: 图纸生成工具
@@ -931,6 +1053,10 @@ export class SatMapView {
     this.cadZoomPct = 100;
     this.cadLightTheme = false;
     this.removedModules = [];
+    this.prunedShadedModules = [];
+    this.orientationMode = 'south_fixed'; // 'south_fixed' | 'east_west' | 'flush_pitched' | 'elevated_canopy'
+    this.linkage3d = createDefaultLinkageState();
+    this.mfState = createDefaultMultiFactorState();
     this.hoveredModule = null;
     this.hoverScreenPos = null;
     this.effectCompareMode = false;
@@ -952,6 +1078,8 @@ export class SatMapView {
       moduleCount: 0,
       southCount: 0,
       northCount: 0,
+      eastCount: 0,
+      westCount: 0,
       dcKw: 0,
       acKw: 0,
       dcAcRatio: 0,
@@ -1140,6 +1268,7 @@ export class SatMapView {
     this.roofOutlineM = [];
     this.obstacles = [];
     this.modules = [];
+    this.prunedShadedModules = [];
     this.strings = [];
     this.mpptRows = [];
     this.inverterPointsM = [];
@@ -1156,6 +1285,8 @@ export class SatMapView {
       moduleCount: 0,
       southCount: 0,
       northCount: 0,
+      eastCount: 0,
+      westCount: 0,
       dcKw: 0,
       acKw: 0,
       dcAcRatio: 0,
@@ -1810,16 +1941,37 @@ export class SatMapView {
     this.hasRoof = true;
     this.hasLaidOut = true;
 
+    const mf = this.mfState || (this.mfState = createDefaultMultiFactorState());
+    const mode = this.orientationMode || mf.orientationMode || 'south_fixed';
+
     const frame = this.getRoofUVFrame(true);
     const mod = this.getSelectedModule();
     const modW = this.orientation === 'portrait' ? mod.width_m : mod.length_m;
     const modH = this.orientation === 'portrait' ? mod.length_m : mod.width_m;
-    const setback = Math.max(0.1, Number(this.edgeSetbackM) || 0.5);
+    let setback = Math.max(0.1, Number(this.edgeSetbackM) || 0.5);
+    if (Number(mf.basicWindW0KnM2) >= 0.65) {
+      const stWind = computeMultiFactorStructuralCheck({
+        roofType: this.roofType,
+        orientationMode: mode,
+        rackRows: mf.rackRows,
+        tiltDeg: this.roofType === 'flat' ? this.tiltDeg : this.roofSlopeDeg,
+        buildingHeightM: this.buildingHeightM,
+        edgeSetbackM: setback,
+        moduleSpec: mod,
+        mfParams: mf,
+      });
+      setback = Math.max(setback, stWind.min_required_setback_m);
+    }
     const obsPad = Math.max(0.05, Number(this.obstacleSetbackM) || 0.3);
     const colGap = Math.max(0.01, Number(this.colSpacingM) || 0.02);
     let rowGap = this.roofType === 'flat'
       ? Math.max(0.45, Number(this.rowSpacingM) || 1.2)
       : Math.max(0.15, Number(this.rowSpacingM) || 0.5);
+    if (mode === 'flush_pitched') {
+      rowGap = Math.max(0.18, Math.min(rowGap, 0.45));
+    } else if (mode === 'elevated_canopy') {
+      rowGap = Math.max(0.25, Math.min(rowGap, 0.65));
+    }
 
     // If user drew a very large region while zoomed out, automatically adapt step density without moving roof vertices!
     const estCols = Math.max(1, Math.floor(frame.widthUV / (modW + colGap)));
@@ -1829,15 +1981,19 @@ export class SatMapView {
       rowGap = Number((rowGap * scaleStep).toFixed(2));
     }
 
-    const groupRows = Math.max(1, Math.round(Number(this.arrayGroupRows) || 2));
+    const groupRows = mf.rackRows === '1P' ? 1 : Math.max(1, Math.round(Number(this.arrayGroupRows) || 2));
     const groupCols = Math.max(1, Math.round(Number(this.arrayGroupCols) || 9));
     const walkwayM = Math.max(0, Number(this.walkwayWidthM) ?? 0.35);
+    const fireLaneHalf = Number(mf.fireLaneWidthM) > 0.05 ? Number(mf.fireLaneWidthM) * 0.5 : 0;
+    const maintIntervalM = Number(mf.maintWalkwayIntervalM) || 18;
+    const clearanceLimitM = Math.max(0.5, (Number(mf.canopyClearanceM) || 2.8) - 0.3);
 
     const uStart = frame.uMin + setback;
     const uEnd = frame.uMax - setback;
     const vStart = frame.vMin + setback;
     const vEnd = frame.vMax - setback;
     const midV = frame.centerV;
+    const midU = frame.centerU;
     const ridgeGap = this.roofType === 'double_slope' ? 0.65 : 0;
     const targetLimit = this.targetCapacityKw > 0
       ? Math.max(1, Math.floor((this.targetCapacityKw * 1000) / mod.stc_w))
@@ -1854,12 +2010,32 @@ export class SatMapView {
         v = midV + ridgeGap;
         continue;
       }
+      // Optional main fire-fighting cross lane
+      if (fireLaneHalf > 0 && v < midV + fireLaneHalf && v + modH > midV - fireLaneHalf) {
+        v = midV + fireLaneHalf;
+        continue;
+      }
       const cv = v + modH / 2;
-      const slope = this.roofType === 'double_slope' ? (cv < midV ? 'north' : 'south') : 'south';
+      const isEastWing = rowIdx % 2 === 0;
+      const slope = mode === 'east_west'
+        ? (isEastWing ? 'east' : 'west')
+        : (this.roofType === 'double_slope' ? (cv < midV ? 'north' : 'south') : 'south');
+      const modAzimuthDeg = mode === 'east_west'
+        ? (isEastWing ? 90 : 270)
+        : (slope === 'north' ? 0 : (Number(this.azimuthDeg) || 180));
+      const modTiltDeg = mode === 'east_west'
+        ? Math.max(6, Math.min(15, Number(this.tiltDeg) || 10))
+        : mode === 'flush_pitched'
+          ? Math.max(2, Number(this.roofSlopeDeg) || 6)
+          : (this.roofType === 'flat' ? (Number(this.tiltDeg) || 15) : (Number(this.roofSlopeDeg) || 6));
       let colIdx = 0;
 
       for (let u = uStart; u + modW <= uEnd + 1e-6;) {
         if (placed.length >= maxModsLimit) break;
+        if (fireLaneHalf > 0 && u < midU + fireLaneHalf && u + modW > midU - fireLaneHalf) {
+          u = midU + fireLaneHalf;
+          continue;
+        }
 
         const cornersUV = [
           [u, v],
@@ -1884,9 +2060,13 @@ export class SatMapView {
           edgeMidpointsM.every((pt) => pointInPolygon(pt, this.roofOutlineM));
 
         if (insideRoof) {
-          const hitsObstacle = this.obstacles.some((obs) =>
-            quadIntersectsPolygon(cornersM, obs.polygon, obsPad)
-          );
+          const hitsObstacle = this.obstacles.some((obs) => {
+            if (mode === 'elevated_canopy') {
+              const obsH = Number(obs.heightM ?? obs.height_m ?? (obs.kind === 'penthouse' || obs.kind === 'chimney' ? 3.2 : obs.kind === 'hvac' ? 2.1 : 0.35));
+              if (obsH <= clearanceLimitM) return false;
+            }
+            return quadIntersectsPolygon(cornersM, obs.polygon, obsPad);
+          });
           if (!hitsObstacle) {
             const normCorners = cornersUV.map(([uu, vv]) => [
               (uu - frame.uMin) / Math.max(1, frame.widthUV),
@@ -1897,6 +2077,9 @@ export class SatMapView {
               row: rowIdx,
               col: colIdx,
               slope,
+              tilt_deg: modTiltDeg,
+              azimuth_deg: modAzimuthDeg,
+              ewWing: mode === 'east_west' ? (isEastWing ? 'E' : 'W') : null,
               u,
               v,
               cu,
@@ -1924,25 +2107,70 @@ export class SatMapView {
       }
 
       rowIdx++;
-      const addRowWalkway = this.roofType !== 'flat' && groupRows > 1 && rowIdx > 0 && rowIdx % groupRows === 0 ? walkwayM : 0;
-      v += modH + rowGap + addRowWalkway;
+      if (mode === 'east_west') {
+        // East-West butterfly pair: compact 0.12m ridge apex gap between East (even->odd) and O&M aisle between pairs (odd->even)
+        const stepGap = rowIdx % 2 === 1 ? 0.12 : Math.max(0.55, rowGap);
+        v += modH + stepGap;
+      } else {
+        const periodicAisle = maintIntervalM < 16 && rowIdx > 0 && Math.round(rowIdx * (modH + rowGap)) % Math.max(4, Math.round(maintIntervalM)) < (modH + rowGap)
+          ? 0.45
+          : 0;
+        const addRowWalkway = this.roofType !== 'flat' && groupRows > 1 && rowIdx > 0 && rowIdx % groupRows === 0 ? walkwayM : 0;
+        v += modH + rowGap + addRowWalkway + periodicAisle;
+      }
     }
 
-    this.modules = placed;
+    // Optional Poison-Module Shadow Pruning (auto-removes modules whose annual/winter shading exceeds threshold)
+    const pruned = [];
+    let finalModules = placed;
+    if (mf.autoPruneShaded && placed.length > 0) {
+      const boundsM = this.getRoofBoundsM(true);
+      const parapetM = Math.max(0, (Number(this.parapetHeightMm) || 300) / 1000);
+      const maxLossPct = Math.max(2, Number(mf.maxModuleShadingLossPct) || 12);
+      finalModules = [];
+      for (const pm of placed) {
+        const lossPct = evaluateModuleShadingLossPct(pm, {
+          roofBoundsM: boundsM,
+          parapetHeightM: parapetM,
+          obstacles: this.obstacles,
+          lat: this.lat,
+          mountOrientation: this.orientation || 'portrait',
+          orientationMode: mode,
+          canopyClearanceM: mf.canopyClearanceM,
+        });
+        pm.shadeLossPct = lossPct;
+        pm.shadingLossPct = lossPct;
+        if (lossPct > maxLossPct) {
+          pruned.push(pm);
+        } else {
+          finalModules.push(pm);
+        }
+      }
+      finalModules.forEach((m, idx) => {
+        m.id = `M-${String(idx + 1).padStart(3, '0')}`;
+      });
+    }
+
+    this.modules = finalModules;
+    this.prunedShadedModules = pruned;
     this.removedModules = [];
     this.computeElectricalAllocation();
     this.refreshPvsystData({ fetchBackend: false });
     this.evaluateWeatherAndAngles();
+    persistLatestSatmapScheme(this);
 
     if (!quiet) {
-      const slopeMsg = this.roofType === 'double_slope'
-        ? `（南坡 ${this.summary.southCount} 块 / 北坡 ${this.summary.northCount} 块）`
-        : '（整面连续排布）';
+      const slopeMsg = mode === 'east_west'
+        ? `（东翼 ${this.summary.eastCount} 块 / 西翼 ${this.summary.westCount} 块）`
+        : this.roofType === 'double_slope'
+          ? `（南坡 ${this.summary.southCount} 块 / 北坡 ${this.summary.northCount} 块）`
+          : '（整面连续排布）';
+      const pruneMsg = pruned.length > 0 ? `，智能剔除阴影低效位点 ${pruned.length} 块` : '';
       this.notice(
-        `一键铺设完成：共排布 ${placed.length} 块 ${mod.model} 组件，总装机 ${this.summary.dcKw.toFixed(2)} kWp${slopeMsg}，自动避让 ${this.obstacles.length} 处禁布区。`
+        `一键铺设完成：共排布 ${finalModules.length} 块 ${mod.model} 组件，总装机 ${this.summary.dcKw.toFixed(2)} kWp${slopeMsg}，自动避让 ${this.obstacles.length} 处禁布区${pruneMsg}。`
       );
     }
-    return placed;
+    return finalModules;
   }
 
   /**
@@ -1957,26 +2185,53 @@ export class SatMapView {
   computeElectricalAllocation() {
     const mod = this.getSelectedModule();
     const inv = this.getSelectedInverter();
-    const perStr = Math.max(8, Math.min(24, Number(this.modulesPerString) || 18));
+    const hasExplicitPerStr = Boolean(this.modulesPerString && Number(this.modulesPerString) > 0);
+    const initSizing = computeStringSizingAndCables({
+      module: mod,
+      inverter: inv,
+      modulesPerString: hasExplicitPerStr ? Number(this.modulesPerString) : null,
+      lat: this.lat,
+      lon: this.lon,
+      customTminC: this.mfState?.extremeTempMinC,
+      dcSectionMm2: this.dcCableSectionMm2,
+      acMaterial: this.acCableMaterial,
+    });
+    let perStr = hasExplicitPerStr
+      ? Math.max(4, Math.min(28, Math.round(Number(this.modulesPerString))))
+      : Math.max(1, initSizing.nMax || 18);
+    if (this.mfState) {
+      const vocSafety = computeColdVocAndStringSafety(mod, inv, this.mfState, perStr);
+      if (perStr > vocSafety.max_series_safe) {
+        perStr = Math.max(4, vocSafety.max_series_safe);
+        this.modulesPerString = perStr;
+      }
+    }
     const totalMods = this.modules.length;
     if (totalMods === 0) {
       this.strings = [];
       this.mpptRows = [];
       this.inverterPointsM = [];
+      this.electricalSizing = null;
       this.summary = {
         moduleCount: 0,
         southCount: 0,
         northCount: 0,
+        eastCount: 0,
+        westCount: 0,
         dcKw: 0,
         acKw: 0,
         dcAcRatio: 0,
         inverterCount: 0,
         stringCount: 0,
         annualKwh: 0,
-        specificYield: this.weatherEval?.weatherOptimalYield || 1186,
-        prPct: 84.2,
+        specificYield: this.hasLaidOut ? 0 : (this.weatherEval?.weatherOptimalYield || 1186),
+        prPct: this.hasLaidOut ? 0 : 84.2,
         capexWan: 0,
-        paybackYears: 0,
+        paybackYears: null,
+        dynamicPaybackYears: null,
+        irrPct: null,
+        npv25Wan: 0,
+        lcoeRmb: null,
       };
       return;
     }
@@ -1984,7 +2239,10 @@ export class SatMapView {
     const frame = this.getRoofUVFrame(true);
     const modW = this.modules[0]?.w || 1.134;
     const modH = this.modules[0]?.h || 2.278;
-    const maxNeighborDist = Math.hypot(modW * 2.4, modH * 2.2);
+    const isEW = (this.orientationMode || this.mfState?.orientationMode) === 'east_west';
+    const maxNeighborDist = isEW
+      ? Math.hypot(modW * 2.8, modH * 3.1)
+      : Math.hypot(modW * 2.4, modH * 2.2);
 
     // 1. Build Interior Module Adjacency Graph:
     //    - `adj` enforces same-slope isolation (`mi.slope === mj.slope`) per GB 50797-2012 §6.4.2
@@ -2000,7 +2258,7 @@ export class SatMapView {
         if (Math.abs((mi.row ?? 0) - (mj.row ?? 0)) > 2) continue;
         const du = Math.abs((mi.cu ?? mi.cx) - (mj.cu ?? mj.cx));
         const dv = Math.abs((mi.cv ?? mi.cy) - (mj.cv ?? mj.cy));
-        if (du > modW * 3.2 || dv > modH * 3.0) continue;
+        if (du > modW * 3.2 || dv > modH * (isEW ? 3.4 : 3.0)) continue;
         const dist = Math.hypot(du, dv);
         if (dist <= maxNeighborDist * 1.15 && segmentStaysInsideRoof([mi.cx, mi.cy], [mj.cx, mj.cy], this.roofOutlineM, this.obstacles)) {
           const weight = mi.row === mj.row ? dist * 0.85 : dist * 1.15;
@@ -2227,91 +2485,49 @@ export class SatMapView {
       m.inverterIndex = 0;
     }
 
-    // Partition orderedModules strictly by slope ('south' then 'north') so ZERO strings or MPPTs mix orientations!
-    const orderedSouth = orderedModules.filter((m) => (m.slope || 'south') !== 'north');
+    // Partition orderedModules strictly by orientation slope ('south', 'north', 'east', 'west') so ZERO strings or MPPTs mix orientations!
+    const orderedSouth = orderedModules.filter((m) => (m.slope || 'south') === 'south');
     const orderedNorth = orderedModules.filter((m) => m.slope === 'north');
+    const orderedEast = orderedModules.filter((m) => m.slope === 'east');
+    const orderedWest = orderedModules.filter((m) => m.slope === 'west');
 
     const rawStringDefs = [];
     const sliceSlopeGroup = (slopeMods, slopeKey) => {
       const n = slopeMods.length;
       if (n === 0) return [];
-      const nFull = Math.floor(n / perStr);
-      const remCount = n % perStr;
-      if (nFull === 0) {
-        if (n >= nMinSafe) {
-          rawStringDefs.push({ slope: slopeKey, slice: slopeMods.slice(0) });
-          return [];
-        }
-        return slopeMods.slice(0);
+      let size = hasExplicitPerStr ? perStr : Math.max(1, nMaxSafe);
+      let count = Math.ceil(n / size);
+      let shortCount = count * size - n;
+      const shortest = hasExplicitPerStr ? size - 1 : Math.floor(n / Math.max(1, count));
+      if (!hasExplicitPerStr && shortest >= nMinSafe) {
+        size = Math.ceil(n / count);
+        shortCount = count * size - n;
       }
-      if (remCount === 0) {
-        for (let k = 0; k < nFull; k++) {
-          rawStringDefs.push({
-            slope: slopeKey,
-            slice: slopeMods.slice(k * perStr, (k + 1) * perStr),
-          });
-        }
-        return [];
+      let lengths = [];
+      if (shortest < nMinSafe || shortCount > count) {
+        const fullCount = Math.floor(n / size);
+        lengths = Array.from({ length: fullCount }, () => size);
+      } else {
+        lengths = [
+          ...Array.from({ length: count - shortCount }, () => size),
+          ...Array.from({ length: shortCount }, () => size - 1),
+        ];
       }
-      if (remCount >= nMinSafe) {
-        for (let k = 0; k < nFull; k++) {
-          rawStringDefs.push({
-            slope: slopeKey,
-            slice: slopeMods.slice(k * perStr, (k + 1) * perStr),
-          });
-        }
+      let cursor = 0;
+      for (const len of lengths) {
         rawStringDefs.push({
           slope: slopeKey,
-          slice: slopeMods.slice(nFull * perStr),
+          slice: slopeMods.slice(cursor, cursor + len),
         });
-        return [];
+        cursor += len;
       }
-      // 0 < remCount < nMinSafe: rebalance last full string + remainder into 2 valid strings when possible
-      const tailPool = perStr + remCount;
-      const splitA = Math.ceil(tailPool / 2);
-      const splitB = Math.floor(tailPool / 2);
-      if (splitB >= nMinSafe && splitA <= nMaxSafe) {
-        for (let k = 0; k < nFull - 1; k++) {
-          rawStringDefs.push({
-            slope: slopeKey,
-            slice: slopeMods.slice(k * perStr, (k + 1) * perStr),
-          });
-        }
-        const tailStart = (nFull - 1) * perStr;
-        rawStringDefs.push({
-          slope: slopeKey,
-          slice: slopeMods.slice(tailStart, tailStart + splitA),
-        });
-        rawStringDefs.push({
-          slope: slopeKey,
-          slice: slopeMods.slice(tailStart + splitA),
-        });
-        return [];
-      }
-      if (tailPool <= nMaxSafe) {
-        for (let k = 0; k < nFull - 1; k++) {
-          rawStringDefs.push({
-            slope: slopeKey,
-            slice: slopeMods.slice(k * perStr, (k + 1) * perStr),
-          });
-        }
-        rawStringDefs.push({
-          slope: slopeKey,
-          slice: slopeMods.slice((nFull - 1) * perStr),
-        });
-        return [];
-      }
-      for (let k = 0; k < nFull; k++) {
-        rawStringDefs.push({
-          slope: slopeKey,
-          slice: slopeMods.slice(k * perStr, (k + 1) * perStr),
-        });
-      }
-      return slopeMods.slice(nFull * perStr);
+      return slopeMods.slice(cursor);
     };
 
     let southRem = sliceSlopeGroup(orderedSouth, 'south');
     let northRem = sliceSlopeGroup(orderedNorth, 'north');
+    let eastRem = sliceSlopeGroup(orderedEast, 'east');
+    let westRem = sliceSlopeGroup(orderedWest, 'west');
 
     // Diagnostic short-string fallback when the ENTIRE roof has < nMinSafe modules (e.g. 4 modules):
     // expose the actual short string in MPPT table so per-string under-voltage check flags it explicitly
@@ -2324,37 +2540,119 @@ export class SatMapView {
         rawStringDefs.push({ slope: 'north', slice: northRem.slice(0), diagnosticUnderMin: true });
         northRem = [];
       }
-    }
-
-    const strPerMppt = Math.max(1, inv.strings_per_mppt || 2);
-    // Group strings by (slope, slice.length) so parallel strings on the same MPPT channel NEVER mismatch voltage!
-    const scheduledDefs = [];
-    let nextGlobalMppt = 0;
-    for (const slopeKey of ['south', 'north']) {
-      const slopeDefs = rawStringDefs.filter((d) => d.slope === slopeKey);
-      const byLen = new Map();
-      for (const d of slopeDefs) {
-        const lenKey = d.slice.length;
-        if (!byLen.has(lenKey)) byLen.set(lenKey, []);
-        byLen.get(lenKey).push(d);
+      if (eastRem.length > 0) {
+        rawStringDefs.push({ slope: 'east', slice: eastRem.slice(0), diagnosticUnderMin: true });
+        eastRem = [];
       }
-      for (const group of byLen.values()) {
-        group.forEach((def, idx) => {
-          const globalMppt = nextGlobalMppt + Math.floor(idx / strPerMppt);
-          scheduledDefs.push({ ...def, globalMppt, subIdx: (idx % strPerMppt) + 1 });
-        });
-        nextGlobalMppt += Math.ceil(group.length / strPerMppt);
+      if (westRem.length > 0) {
+        rawStringDefs.push({ slope: 'west', slice: westRem.slice(0), diagnosticUnderMin: true });
+        westRem = [];
       }
     }
 
-    const totalMpptsUsed = Math.max(1, nextGlobalMppt);
+    // Align MPPT channel & multi-inverter unit allocation with backend electrical.py:
+    // - DC_AC_MAX = 1.35 per inverter unit
+    // - Per-MPPT string count cap & hot short-circuit current cap
+    // - Same-orientation & same-length strings share MPPT channels without mixing
+    const DC_AC_MAX = 1.35;
+    const shortHotA = Math.max(0.1, baseSizing.iscSingleHot || (mod.isc_a * 1.02));
+    const maxShortPerMppt = inv.max_isc_per_mppt_a ?? inv.max_short_current_a ?? 40;
+    const allowedPerMppt = Math.max(
+      1,
+      Math.min(inv.strings_per_mppt || 2, Math.floor(maxShortPerMppt / shortHotA))
+    );
+    const mpptPerInv = Math.max(1, inv.mppt_count || 1);
     const wiredModulesCount = rawStringDefs.reduce((acc, d) => acc + d.slice.length, 0);
     const dcKw = (wiredModulesCount * mod.stc_w) / 1000;
-    const invByMppt = Math.max(1, Math.ceil(totalMpptsUsed / Math.max(1, inv.mppt_count)));
-    const invByDcAc = this.targetDcAcRatio > 0 && dcKw > 0
+
+    const orderedDefs = [];
+    for (const slopeKey of ['south', 'north', 'east', 'west']) {
+      for (const d of rawStringDefs) {
+        if (d.slope === slopeKey) orderedDefs.push(d);
+      }
+    }
+
+    const compareRank = (a, b) => {
+      for (let idx = 0; idx < a.length; idx++) {
+        if (a[idx] !== b[idx]) return a[idx] - b[idx];
+      }
+      return 0;
+    };
+
+    const tryAllocateUnits = (units) => {
+      if (units <= 0 || orderedDefs.length === 0) return [];
+      const groups = new Map();
+      const usedMods = new Int32Array(units + 1);
+      const shareMods = wiredModulesCount / units;
+      const remaining = new Map();
+      for (const d of orderedDefs) {
+        const tok = `${d.slope}:${d.slice.length}`;
+        remaining.set(tok, (remaining.get(tok) || 0) + 1);
+      }
+      const totalMpptChannels = units * mpptPerInv;
+      const out = [];
+      for (let i = 0; i < orderedDefs.length; i++) {
+        const d = orderedDefs[i];
+        const len = d.slice.length;
+        const tok = `${d.slope}:${len}`;
+        remaining.set(tok, (remaining.get(tok) || 1) - 1);
+        let reserved = 0;
+        for (const [kTok, kCnt] of remaining.entries()) {
+          if (kTok !== tok && kCnt > 0) reserved += Math.ceil(kCnt / allowedPerMppt);
+        }
+        const emptyMppts = totalMpptChannels - groups.size;
+        let best = null;
+        for (let unit = 1; unit <= units; unit++) {
+          for (let mppt = 1; mppt <= mpptPerInv; mppt++) {
+            const gKey = `${unit}:${mppt}`;
+            const g = groups.get(gKey);
+            const attached = g ? g.count : 0;
+            if (attached < allowedPerMppt && (!g || g.token === tok)) {
+              const overload = ((usedMods[unit] + len) * mod.stc_w) / 1000 > DC_AC_MAX * inv.rated_ac_kw + 1e-6 ? 1 : 0;
+              const resFail = (emptyMppts - (attached === 0 ? 1 : 0)) < reserved ? 1 : 0;
+              const overShare = (usedMods[unit] + len / 2) > shareMods ? 1 : 0;
+              const rank = [overload, resFail, overShare, unit, attached, mppt];
+              if (!best || compareRank(rank, best.rank) < 0) {
+                best = { unit, mppt, subIdx: attached + 1, rank, gKey };
+              }
+            }
+          }
+        }
+        if (!best) return null;
+        groups.set(best.gKey, { token: tok, count: best.subIdx });
+        usedMods[best.unit] += len;
+        out.push({
+          ...d,
+          invIdx: best.unit - 1,
+          mpptIdx: best.mppt - 1,
+          globalMppt: (best.unit - 1) * mpptPerInv + (best.mppt - 1),
+          subIdx: best.subIdx,
+        });
+      }
+      for (let unit = 1; unit <= units; unit++) {
+        if ((usedMods[unit] * mod.stc_w) / 1000 > DC_AC_MAX * inv.rated_ac_kw + 1e-6) {
+          return null;
+        }
+      }
+      return out;
+    };
+
+    const invByDcAcMax = dcKw > 0 ? Math.max(1, Math.ceil(dcKw / Math.max(0.1, DC_AC_MAX * inv.rated_ac_kw))) : 0;
+    const invByTarget = (this.inverterSelectionMode !== 'manual' && this.targetDcAcRatio > 0 && dcKw > 0)
       ? Math.max(1, Math.round(dcKw / Math.max(1, inv.rated_ac_kw * this.targetDcAcRatio)))
-      : 1;
-    const invCount = dcKw > 0 ? Math.max(invByMppt, invByDcAc) : 0;
+      : 0;
+    let invCount = dcKw > 0 ? Math.max(1, invByDcAcMax, invByTarget) : 0;
+    let scheduledDefs = [];
+    if (orderedDefs.length > 0) {
+      while (true) {
+        const attempt = tryAllocateUnits(invCount);
+        if (attempt !== null || invCount >= orderedDefs.length) {
+          scheduledDefs = attempt || [];
+          break;
+        }
+        invCount += 1;
+      }
+    }
     const totalAcKw = invCount * inv.rated_ac_kw;
     const dcAcRatio = totalAcKw > 0 ? dcKw / totalAcKw : 0;
 
@@ -2363,15 +2661,19 @@ export class SatMapView {
 
     for (let sIdx = 0; sIdx < scheduledDefs.length; sIdx++) {
       const def = scheduledDefs[sIdx];
-      const invIdx = Math.floor(def.globalMppt / inv.mppt_count);
-      const mpptIdx = def.globalMppt % inv.mppt_count;
+      const invIdx = def.invIdx ?? Math.floor(def.globalMppt / mpptPerInv);
+      const mpptIdx = def.mpptIdx ?? (def.globalMppt % mpptPerInv);
       const color = MPPT_PALETTE[def.globalMppt % MPPT_PALETTE.length];
       const strId = `INV${invIdx + 1}-MPPT${mpptIdx + 1}-S${def.subIdx}`;
       const slice = def.slice;
       const slopeTag = def.slope;
-      const slopeLabel = this.roofType === 'double_slope'
-        ? (slopeTag === 'north' ? '北坡 0°' : '南坡 180°')
-        : (this.roofType === 'flat' ? `支架 ${this.tiltDeg}°` : '单坡屋面');
+      const slopeLabel = slopeTag === 'east'
+        ? '东向 90°'
+        : slopeTag === 'west'
+          ? '西向 270°'
+          : this.roofType === 'double_slope'
+            ? (slopeTag === 'north' ? '北坡 0°' : '南坡 180°')
+            : (this.roofType === 'flat' ? `支架 ${this.tiltDeg}°` : '单坡屋面');
 
       for (const m of slice) {
         m.stringId = strId;
@@ -2469,14 +2771,7 @@ export class SatMapView {
     }
 
     // Unwired remainder modules (< nMinSafe) are explicitly flagged as unwired and NEVER disguised with string IDs/colors
-    for (const m of southRem) {
-      m.unwired = true;
-      m.stringId = null;
-      m.mpptIndex = 0;
-      m.inverterIndex = 0;
-      m.color = '#94a3b8';
-    }
-    for (const m of northRem) {
+    for (const m of [...southRem, ...northRem, ...eastRem, ...westRem]) {
       m.unwired = true;
       m.stringId = null;
       m.mpptIndex = 0;
@@ -2625,7 +2920,7 @@ export class SatMapView {
           ? `${strCount}/${invTotalStrings} (${Math.round((strCount / invTotalStrings) * 100)}%)`
           : '0%';
         const workCurrA = Number((strCount * mod.imp_a).toFixed(2));
-        const shortCurrA = Number((strCount * mod.isc_a).toFixed(2));
+        const shortCurrA = Number((strCount * shortHotA).toFixed(2));
         const vmpV = Number((modCount * mod.vmp_v).toFixed(1));
         const rowVocColdV = Number((modCount * baseSizing.vocSingleCold).toFixed(1));
         const rowVmpColdV = Number((modCount * baseSizing.vmpSingleCold).toFixed(1));
@@ -2634,7 +2929,7 @@ export class SatMapView {
         const vocOk = rowVocColdV <= baseSizing.maxAllowedSysV;
         const mpptLowOk = rowVmpHotV >= inv.mppt_v_min && vmpV >= inv.mppt_v_min;
         const mpptHighOk = rowVmpColdV <= inv.mppt_v_max && vmpV <= inv.mppt_v_max;
-        const currOk = workCurrA <= inv.max_mppt_current_a && shortCurrA <= inv.max_short_current_a;
+        const currOk = workCurrA <= inv.max_mppt_current_a && shortCurrA <= maxShortPerMppt;
         const statusOk = strCount === 0 || (vocOk && mpptLowOk && mpptHighOk && currOk && !lengthMismatch);
         const rowStatus = strCount === 0
           ? '备用'
@@ -2668,9 +2963,11 @@ export class SatMapView {
       }
     }
 
+    const wiredEastCount = strings.filter((s) => s.slope === 'east').reduce((acc, s) => acc + s.moduleCount, 0);
+    const wiredWestCount = strings.filter((s) => s.slope === 'west').reduce((acc, s) => acc + s.moduleCount, 0);
     const wiredSouthCount = strings.filter((s) => s.slope !== 'north').reduce((acc, s) => acc + s.moduleCount, 0);
     const wiredNorthCount = strings.filter((s) => s.slope === 'north').reduce((acc, s) => acc + s.moduleCount, 0);
-    const unwiredCount = southRem.length + northRem.length;
+    const unwiredCount = southRem.length + northRem.length + eastRem.length + westRem.length;
     const specYield = Number(this.summary?.specificYield) || 1186;
     const annualKwh = Math.round(dcKw * specYield);
 
@@ -2683,6 +2980,8 @@ export class SatMapView {
       unwiredCount,
       southCount: wiredSouthCount,
       northCount: wiredNorthCount,
+      eastCount: wiredEastCount,
+      westCount: wiredWestCount,
       dcKw: Number(dcKw.toFixed(2)),
       acKw: Number(totalAcKw.toFixed(1)),
       dcAcRatio: Number(dcAcRatio.toFixed(2)),
@@ -2867,9 +3166,35 @@ export class SatMapView {
       this.compute3DShadingReport();
     }
     const mod = this.getSelectedModule();
-    const activeTilt = this.roofType === 'flat' ? this.tiltDeg : this.roofSlopeDeg;
+    const mode = this.orientationMode || this.mfState?.orientationMode || 'south_fixed';
+    const activeTilt = mode === 'east_west'
+      ? Math.max(6, Math.min(15, Number(this.tiltDeg) || 10))
+      : mode === 'flush_pitched'
+        ? Math.max(2, Number(this.roofSlopeDeg) || 6)
+        : (this.roofType === 'flat' ? this.tiltDeg : this.roofSlopeDeg);
     let subArrays = undefined;
     if (
+      hasModules &&
+      mode === 'east_west' &&
+      (this.summary.eastCount > 0 || this.summary.westCount > 0)
+    ) {
+      const eastKw = Number((((this.summary.eastCount || Math.floor(this.summary.moduleCount / 2)) * mod.stc_w) / 1000).toFixed(2));
+      const westKw = Number((((this.summary.westCount || Math.ceil(this.summary.moduleCount / 2)) * mod.stc_w) / 1000).toFixed(2));
+      subArrays = [
+        {
+          name: '东翼子阵 (90°)',
+          dc_kw: Math.max(0.5, eastKw),
+          tilt_deg: activeTilt,
+          azimuth_deg: 90,
+        },
+        {
+          name: '西翼子阵 (270°)',
+          dc_kw: Math.max(0.5, westKw),
+          tilt_deg: activeTilt,
+          azimuth_deg: 270,
+        },
+      ];
+    } else if (
       hasModules &&
       this.roofType === 'double_slope' &&
       this.summary.southCount > 0 &&
@@ -2893,18 +3218,41 @@ export class SatMapView {
 
     const epoch = (this._pvsystEpoch = (this._pvsystEpoch || 0) + 1);
     const reqHadModules = Boolean(hasModules);
+    const useZeroLaidOut = Boolean(this.hasLaidOut && !hasModules);
     const reqOutlineSig = JSON.stringify(this.roofOutlineM || []);
     const reqPayload = {
       lat: this.lat,
       lon: this.lon,
-      dc_kw: hasModules ? this.summary.dcKw : 280,
-      ac_kw: hasModules ? this.summary.acKw : 220,
+      dc_kw: hasModules ? this.summary.dcKw : (useZeroLaidOut ? 0 : 280),
+      ac_kw: hasModules ? this.summary.acKw : (useZeroLaidOut ? 0 : 220),
       tilt_deg: activeTilt,
-      azimuth_deg: this.azimuthDeg,
+      azimuth_deg: mode === 'east_west' ? 90 : this.azimuthDeg,
+      orientation_mode: mode,
+      albedo: Number(this.mfState?.albedo ?? 0.28),
       dc_ohmic_pct: this.electricalSizing?.avgDcDropPct || 1.2,
       ...(subArrays ? { sub_arrays: subArrays } : {}),
       ...this.pvsystParams,
     };
+    this.pvsystLastPayload = reqPayload;
+    if (useZeroLaidOut) {
+      this.pvsystData = {
+        summary: {
+          dc_kw: 0,
+          ac_kw: 0,
+          e_grid_kwh: 0,
+          specific_yield_kwh_kwp: 0,
+          pr_pct: 0,
+        },
+        monthly: [],
+        loss_tree: [],
+      };
+      this.summary.annualKwh = 0;
+      this.summary.specificYield = 0;
+      this.summary.prPct = 0;
+      this.recomputeEngineeringAnalyses();
+      this.evaluateWeatherAndAngles();
+      return;
+    }
     try {
       this.pvsystData = computeClientFallbackPvsyst(
         reqPayload,
@@ -2923,7 +3271,7 @@ export class SatMapView {
     }
     this.evaluateWeatherAndAngles();
 
-    if (fetchBackend && typeof this.api === 'function') {
+    if (fetchBackend && typeof this.api === 'function' && reqPayload.dc_kw > 0) {
       Promise.resolve()
         .then(() => this.api('pvsyst/simulate', reqPayload))
         .then((res) => {
@@ -2960,12 +3308,19 @@ export class SatMapView {
 
   html() {
     const s = this.summary;
+    const stepDoneMap = {
+      1: Boolean(this.hasRoof && this.hasLaidOut),
+      2: Boolean(this.electricalConfirmed && s.stringCount > 0),
+      3: Boolean(this.pvsystData?.summary),
+      4: Boolean(this.dstQuad && this.dstQuad.length === 4),
+      5: Boolean(this.linkage3d?.lastExportedReport || this.linkage3d?.deliveryBundle?.lastResult),
+    };
     const steps = [
-      [1, '卫星排布'],
-      [2, '电气配串'],
-      [3, '8760h 仿真'],
-      [4, '实景透视'],
-      [5, '施工图纸'],
+      [1, satL('选址与圈屋顶', 'Site & Roof')],
+      [2, satL('电气配串', 'Stringing')],
+      [3, satL('8760h 仿真', '8760h Sim')],
+      [4, satL('实景透视', 'Photo Sim')],
+      [5, satL('图纸与光筑报告', 'CAD & Pro Report')],
     ];
 
     const autopilotBanner = this.autopilotState
@@ -2976,11 +3331,11 @@ export class SatMapView {
         </div>`
       : '';
 
-    const kpiStrip = `<div class="satmap-kpi-strip${this.step !== 1 ? ' is-compact' : ''}">
+    const kpiStrip = `<div class="satmap-kpi-strip is-compact">
       <div class="satmap-kpi-card">
         <span>组件排布数量</span>
         <strong>${valueMarkup(s.moduleCount, '块')} <small>块</small></strong>
-        <small>南坡 ${s.southCount} 块 / 北坡 ${s.northCount} 块</small>
+        <small>${this.orientationMode === 'east_west' && (s.eastCount > 0 || s.westCount > 0) ? esc(satL(`东翼 ${s.eastCount} 块 / 西翼 ${s.westCount} 块`, `East ${s.eastCount} / West ${s.westCount}`)) : `南坡 ${s.southCount} 块 / 北坡 ${s.northCount} 块`}</small>
       </div>
       <div class="satmap-kpi-card">
         <span>直流装机容量</span>
@@ -3026,12 +3381,20 @@ export class SatMapView {
           </div>
         </div>
         <div class="satmap-steps" role="tablist" aria-label="卫星设计工作流步骤">
-          ${steps.map(([num, label]) => `
-            <button type="button" class="satmap-step-btn ${this.step === num ? 'active' : 'done'}" data-sat-step="${num}">
-              <span class="satmap-step-num">${num}</span>
-              <span>${esc(label)}</span>
+          ${steps.map(([num, label]) => {
+            const isDone = Boolean(stepDoneMap[num]);
+            return `
+              <button type="button" class="satmap-step-btn ${this.step === num ? 'active' : isDone ? 'done is-completed' : ''}" data-sat-step="${num}">
+                <span class="satmap-step-num">${isDone && this.step !== num ? '✓' : num}</span>
+                <span>${esc(label)}</span>
+              </button>
+            `;
+          }).join('')}
+          ${this.step < 5 ? `
+            <button type="button" class="satmap-step-next-cta" data-sat-action="next-step">
+              ${esc(satL('下一步 →', 'Next →'))}
             </button>
-          `).join('')}
+          ` : ''}
         </div>
         <div class="satmap-top-actions">
           <button type="button" class="sat-btn" onclick="location.hash='#lab'" title="前往方案比选与储能碳资产测算中心">方案与光储比选</button>
@@ -3047,6 +3410,7 @@ export class SatMapView {
         </div>
       </div>
 
+      ${renderLinkageTopStrip(this)}
       ${autopilotBanner}
       ${kpiStrip}
       ${bodyHtml}
@@ -3118,7 +3482,7 @@ export class SatMapView {
     const curEdgeMm = Math.round((bounds.widthM || this.scaleReferenceM || 76) * 1000);
 
     return `
-      <!-- 1. 地图拾取经纬度 · 全国任意省市区/企业搜索 · 坐标与图源收纳弹窗 -->
+      <!-- 1. 单行紧凑选址定位 · 坐标图源 · AI 智能设计收纳栏 -->
       <div class="satmap-searchbar">
         <div class="satmap-search-item">
           <span>省市区</span>
@@ -3134,7 +3498,7 @@ export class SatMapView {
             <option value="陕西省西安市经济技术开发区草滩园区|34.378500|108.891200" ${this.regionQuickPick.startsWith('陕西省西安市') ? 'selected' : ''}>陕西省 / 西安市 / 经开区</option>
           </select>
         </div>
-        <div class="satmap-search-item" style="flex:1;min-width:240px">
+        <div class="satmap-search-item" style="flex:1;min-width:220px">
           <span>位置搜索</span>
           <input type="text" class="addr-input" data-sat-field="searchQuery" value="${esc(this.searchQuery || this.address)}" placeholder="输入全国任意企业名称、工厂、工业园或地址搜索定位">
           <button type="button" class="sat-btn primary" data-sat-action="search-location">搜索位置</button>
@@ -3165,6 +3529,29 @@ export class SatMapView {
             </label>
           </div>
         </details>
+        <details class="sat-popover satmap-ai-popover">
+          <summary class="sat-btn sat-btn-ai-pop">✨ ${esc(satL('智能一键设计 ▾', 'AI Auto-Design ▾'))}</summary>
+          <div class="sat-popover-panel sat-popover-ai">
+            <div class="satmap-ai-bar">
+              <span style="font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap">AI 设计要求：</span>
+              <input type="text" data-sat-field="aiRequirement" value="${esc(this.aiRequirement)}"
+                placeholder="输入设计要求，例如：按当地实时气象最优倾角设计，目标装机 250kW，双坡屋面预留 0.8m 退距，自动避让采光带并完成 MPPT 配串">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap">
+                <span>倾角寻优策略</span>
+                <select data-sat-field="angleStrategy" style="padding:5px 8px;border:1px solid var(--line-2,#cbd5e1);border-radius:4px;font-size:12px">
+                  <option value="weather_yield" ${this.angleStrategy === 'weather_yield' ? 'selected' : ''}>按气象单瓦最优倾角 (${wxEval.weatherOptimalTiltDeg}°)</option>
+                  <option value="roof_total" ${this.angleStrategy === 'roof_total' ? 'selected' : ''}>按屋面总发电量最优倾角 (${wxEval.roofOptimalTiltDeg}°)</option>
+                  <option value="roof_flush" ${this.angleStrategy === 'roof_flush' ? 'selected' : ''}>顺彩钢瓦屋面坡度平铺 (${this.roofSlopeDeg}°)</option>
+                  <option value="custom" ${this.angleStrategy === 'custom' ? 'selected' : ''}>保持当前手动设定角度 (${activeTilt}°)</option>
+                </select>
+              </label>
+              <div style="display:flex;gap:6px;justify-content:flex-end;width:100%">
+                <button type="button" class="sat-btn" data-sat-action="ai-detect-roof">载入标准厂房样板</button>
+                <button type="button" class="sat-btn primary" data-sat-action="ai-autopilot">AI 按要求一键设计</button>
+              </div>
+            </div>
+          </div>
+        </details>
         <button type="button" class="sat-btn" data-sat-action="toggle-fullscreen">${this.isFullscreen ? '退出全屏' : '全屏地图'}</button>
       </div>
 
@@ -3181,27 +3568,10 @@ export class SatMapView {
         </div>
       ` : ''}
 
-      <!-- 2. 嵌入式 AI 设计要求与一键设计栏 + 顶部建模动作栏 -->
-      <div class="satmap-ai-bar">
-        <span style="font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap">AI 设计要求：</span>
-        <input type="text" data-sat-field="aiRequirement" value="${esc(this.aiRequirement)}"
-          placeholder="输入设计要求，例如：按当地实时气象最优倾角设计，目标装机 250kW，双坡屋面预留 0.8m 退距，自动避让采光带并完成 MPPT 配串">
-        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap">
-          <span>倾角寻优策略</span>
-          <select data-sat-field="angleStrategy" style="padding:5px 8px;border:1px solid var(--line-2,#cbd5e1);border-radius:4px;font-size:12px">
-            <option value="weather_yield" ${this.angleStrategy === 'weather_yield' ? 'selected' : ''}>按气象单瓦最优倾角 (${wxEval.weatherOptimalTiltDeg}°)</option>
-            <option value="roof_total" ${this.angleStrategy === 'roof_total' ? 'selected' : ''}>按屋面总发电量最优倾角 (${wxEval.roofOptimalTiltDeg}°)</option>
-            <option value="roof_flush" ${this.angleStrategy === 'roof_flush' ? 'selected' : ''}>顺彩钢瓦屋面坡度平铺 (${this.roofSlopeDeg}°)</option>
-            <option value="custom" ${this.angleStrategy === 'custom' ? 'selected' : ''}>保持当前手动设定角度 (${activeTilt}°)</option>
-          </select>
-        </label>
-        <button type="button" class="sat-btn" data-sat-action="ai-detect-roof">载入标准厂房样板</button>
-        <button type="button" class="sat-btn primary" data-sat-action="ai-autopilot">AI 按要求一键设计</button>
-      </div>
-
-      <!-- 顶部建模工具栏 -->
+      <!-- 顶部建模工具栏 (按选址底图 / 圈画屋面 / 排布与寻优分组) -->
       <div class="satmap-v1-modelbar" role="toolbar" aria-label="屋面建模与工具栏">
         <div class="satmap-v1-modelbar-group">
+          <span class="satmap-v1-group-tag">${esc(satL('① 选址底图', '1. Site'))}</span>
           <button type="button" class="satmap-v1-tool-chip" data-sat-action="open-loc-picker" title="打开地图拾取经纬度弹窗">地图选址</button>
           <button type="button" class="satmap-v1-tool-chip" data-sat-action="clear-roof" title="清空当前选区并重新选址绘制">重新绘制</button>
           <label class="satmap-v1-tool-chip" style="cursor:pointer" title="上传无人机航拍俯视图或CAD转图片">
@@ -3210,6 +3580,7 @@ export class SatMapView {
           </label>
         </div>
         <div class="satmap-v1-modelbar-group">
+          <span class="satmap-v1-group-tag">${esc(satL('② 圈画屋面', '2. Roof'))}</span>
           <button type="button" class="satmap-v1-tool-chip ${this.activeTool === 'roof_poly' ? 'active' : ''}" data-sat-tool="roof_poly">绘制 (多点画屋顶)</button>
           <button type="button" class="satmap-v1-tool-chip ${this.activeTool === 'pan' ? 'active' : ''}" data-sat-tool="pan">区域编辑 (微调顶点)</button>
           <button type="button" class="satmap-v1-tool-chip ${this.activeTool === 'roof' ? 'active' : ''}" data-sat-tool="roof">矩形绘制</button>
@@ -3217,17 +3588,27 @@ export class SatMapView {
           <button type="button" class="satmap-v1-tool-chip ${this.activeTool === 'scale' ? 'active' : ''}" data-sat-tool="scale">标定比例尺</button>
           <button type="button" class="satmap-v1-tool-chip ${this.activeTool === 'direction' ? 'active' : ''}" data-sat-tool="direction">确定方向</button>
           <button type="button" class="satmap-v1-tool-chip ${this.roofType === 'double_slope' ? 'active' : ''}" data-sat-roof-type="${this.roofType === 'double_slope' ? 'single_slope' : 'double_slope'}">屋面坡度/分水线</button>
+        </div>
+        <div class="satmap-v1-modelbar-group">
+          <span class="satmap-v1-group-tag">${esc(satL('③ 排布与寻优', '3. Layout'))}</span>
           <button type="button" class="satmap-v1-tool-chip ${this.showShadowPreview ? 'active' : ''}" data-sat-action="toggle-shadow">阴影模拟</button>
+          <button type="button" class="satmap-v1-tool-chip ${this.mfState?.openInStep1 ? 'active' : ''}" data-sat-action="toggle-multifactor-studio">${esc(satL('多维因数寻优', 'Multi-Factor'))}</button>
           <button type="button" class="satmap-v1-tool-chip ${this.is3D ? 'active' : ''}" data-sat-action="jump-3d-sim">全景三维仿真</button>
           <button type="button" class="satmap-v1-tool-chip" data-sat-action="undo-step">撤销</button>
           <button type="button" class="satmap-v1-tool-chip" data-sat-action="redo-step">恢复</button>
-        </div>
-        <div class="satmap-v1-modelbar-group">
           <button type="button" class="satmap-v1-tool-chip" data-sat-action="toggle-fullscreen">${this.isFullscreen ? '退出全屏' : '全屏'}</button>
           <button type="button" class="satmap-v1-tool-chip" data-sat-action="save-to-project">保存</button>
           <button type="button" class="satmap-v1-tool-chip active" data-sat-action="open-elec-flow">下一步 (电气设计) →</button>
         </div>
       </div>
+
+      ${renderMultiFactorStudioPanel(this, { context: 'step1' })}
+
+      ${this.saveReconciliationWarning ? `
+        <div class="sat-recon-alert" role="alert" data-sat-recon-warning="1" style="background:#fef2f2;border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:6px;padding:9px 12px;margin-bottom:8px;font-size:12px;color:#991b1b">
+          <b>${esc(satL('配串校核差异提示：', 'Allocation Reconciliation Notice: '))}</b>${esc(this.saveReconciliationWarning)}
+        </div>
+      ` : ''}
 
       ${this.aiExecutionNote ? `
         <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:8px 12px;font-size:12px;color:#0369a1">
@@ -3361,7 +3742,28 @@ export class SatMapView {
               </div>
             </div>
           ` : `
-            <!-- 左侧 Tab 1: 1. 屋面 (屋面建模、底图比例尺/方向校准与禁布区绘制) -->
+            <!-- 左侧 Tab 1: 1. 屋面 (三步极速排布向导 + 屋面建模、底图比例尺/方向校准与禁布区绘制) -->
+            <div class="satmap-quickstart-card" data-sat-quickstart="1">
+              <div class="satmap-qs-head">
+                <b>🧭 ${esc(satL('三步极速排布向导', '3-Step Quick Layout Guide'))}</b>
+                <small>${esc(satL(this.hasLaidOut ? '已完成排布' : this.hasRoof ? '待铺设组件' : '待圈定屋面', this.hasLaidOut ? 'Laid Out' : this.hasRoof ? 'Ready to Lay' : 'Draw Roof'))}</small>
+              </div>
+              <div class="satmap-qs-steps">
+                <div class="satmap-qs-step ${this.hasRoof ? 'is-done' : 'is-current'}">
+                  <span class="satmap-qs-num">${this.hasRoof ? '✓' : '1'}</span>
+                  <span>${esc(satL('搜索选址或从三维设计同步屋面', 'Locate Site or Import 3D Roof'))}</span>
+                </div>
+                <div class="satmap-qs-step ${this.hasRoof ? (this.hasLaidOut ? 'is-done' : 'is-current') : ''}">
+                  <span class="satmap-qs-num">${this.hasLaidOut ? '✓' : '2'}</span>
+                  <span>${esc(satL('圈画厂房轮廓与避让禁布区', 'Outline Roof & Keepouts'))}</span>
+                </div>
+                <div class="satmap-qs-step ${this.hasLaidOut ? 'is-done' : ''}">
+                  <span class="satmap-qs-num">${this.hasLaidOut ? '✓' : '3'}</span>
+                  <span>${esc(satL('点击一键铺设或开启多维寻优', 'Auto-Layout or Multi-Factor Opt'))}</span>
+                </div>
+              </div>
+            </div>
+
             <div class="satmap-tool-list">
               <button type="button" class="satmap-tool-btn ${this.activeTool === 'pan' ? 'active' : ''}" data-sat-tool="pan">
                 <span>漫游平移卫星图</span>
@@ -3472,6 +3874,7 @@ export class SatMapView {
             <button type="button" class="satmap-float-btn ${this.activeTool === 'obstacle' ? 'active' : ''}" data-sat-tool="obstacle" title="支持依次点击多个角点（或按住拖动）绘制屋面禁布区">2. 绘制禁布区</button>
             <button type="button" class="satmap-float-btn lay-now" id="sat-close-obs-poly-btn" data-sat-action="close-obstacle-poly" style="${(this.activeTool === 'obstacle' || this.activeTool === 'obstacle_poly') && this.drawingObstaclePointsM.length >= 3 ? 'background:#dc2626;border-color:#f87171;' : 'display:none;background:#dc2626;border-color:#f87171;'}">完成禁布区闭合 (${this.drawingObstaclePointsM.length}点)</button>
             <button type="button" class="satmap-float-btn lay-now" data-sat-action="layout-modules">3. 一键铺设</button>
+            <button type="button" class="satmap-float-btn ${this.mfState?.openInStep1 ? 'active' : ''}" data-sat-action="toggle-multifactor-studio" title="${esc(satL('打开十二维工程约束综合寻优窗口', 'Open 12-Factor Engineering Optimizer Modal'))}">🧭 ${esc(satL('多维寻优', 'Multi-Factor'))}</button>
             <button type="button" class="satmap-float-btn lay-now" data-sat-action="jump-3d-sim" title="开启三维数字孪生与光线追踪仿真">全景三维仿真</button>
             <details class="satmap-float-more">
               <summary class="satmap-float-btn">更多工具 ▾</summary>
@@ -4068,7 +4471,7 @@ export class SatMapView {
                   <input type="number" step="50" min="0" max="10000" data-sat-field="bessCapacityKwh" value="${this.bessCapacityKwh}">
                 </label>
                 <div style="font-size:11.5px;color:#0369a1;background:#f0f9ff;padding:6px 8px;border-radius:6px;margin-top:4px">
-                  综合度电结算均价：<b>${weightedTariff} 元/kWh</b> · 度电成本：<b>${this.summary.lcoeRmb || 0.22} 元/kWh</b><br>
+                  综合度电结算均价：<b>${weightedTariff} 元/kWh</b> · 度电成本：<b>${this.summary.lcoeRmb != null ? `${this.summary.lcoeRmb} 元/kWh` : '未核定'}</b><br>
                   储能两充两放年增收：<b>+${bessArbitrageWan} 万元/年</b>
                 </div>
               </div>
@@ -4245,6 +4648,8 @@ export class SatMapView {
       `;
     }
 
+    html += renderImport3DModal(this);
+    html += renderProReportPreviewModal(this);
     return html;
   }
 
@@ -4385,6 +4790,9 @@ export class SatMapView {
               </label>
               <button type="button" class="sat-btn" data-sat-action="export-ond">导出逆变器参数文件</button>
               <button type="button" class="sat-btn" data-sat-action="export-mppt-csv">📥 导出 MPPT 与线缆清册 (.csv)</button>
+              <div data-sat-custom-spec-note="1" style="margin-top:4px;padding:6px 8px;background:#fffbeb;border:1px solid #fde68a;border-radius:5px;font-size:11px;line-height:1.45;color:#92400e">
+                ${esc(satL('自定义参数文件仅用于卫星仿真与专业报告；保存至三维工程库前请选用标准名录设备。', 'Custom spec files apply to satellite simulation and reports only; select a registered catalog model before saving to 3D projects.'))}
+              </div>
             </div>
           </details>
           <button type="button" class="sat-btn primary" data-sat-action="confirm-electrical">确认电气设计并映射屋面组串</button>
@@ -4559,8 +4967,25 @@ export class SatMapView {
     if (!this.shading3dSummary && this.modules && this.modules.length > 0) {
       this.compute3DShadingReport();
     }
+    const step3Bar = `<div class="satmap-step3-actionbar" data-sat-step3-actions>
+      <div>
+        <strong>📊 ${esc(satL('全年逐时物理仿真与多维工程寻优中心', '8760h Physical Simulation & Multi-Factor Studio'))}</strong>
+        <small>${esc(satL('支持十二维工程约束寻优、六维雷达评估与六页《光筑专业报告》一键预览及导出', '12-factor co-optimization, 6-axis radar & 6-page Guangzhu Pro Report preview/export'))}</small>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button type="button" class="sat-btn ${this.mfState?.openInStep3 ? 'primary' : ''}" data-sat-action="toggle-multifactor-studio">
+          🧭 ${esc(satL(this.mfState?.openInStep3 ? '收起多维因数面板' : '展开多维因数面板', this.mfState?.openInStep3 ? 'Hide Multi-Factor Studio' : 'Show Multi-Factor Studio'))}
+        </button>
+        <button type="button" class="sat-btn" data-sat-action="preview-pro-report">
+          👁 ${esc(satL('预览光筑专业报告', 'Preview Guangzhu Report'))}
+        </button>
+        <button type="button" class="sat-btn sat-btn-pvsyst-v2" data-sat-action="export-pvsyst-v2">
+          📄 ${esc(satL('导出光筑专业报告', 'Export Guangzhu Pro Report'))}
+        </button>
+      </div>
+    </div>`;
     try {
-      return renderPvsystWorkbench(this.pvsystData, {
+      const rawWbHtml = renderPvsystWorkbench(this.pvsystData, {
         lat: this.lat,
         lon: this.lon,
         dc_kw: this.summary.dcKw || 280,
@@ -4573,8 +4998,17 @@ export class SatMapView {
         params: this.pvsystParams,
         shading3d: this.shading3dSummary,
       });
+      const wbHtml = String(rawWbHtml || '').replace(/>([^<]+)</g, (full, txt) => {
+        if (!/pvsyst/i.test(txt)) return full;
+        const cleaned = txt
+          .replace(/仿\s*PVsyst\s*标准版/gi, satL('含光筑水印', 'Watermarked'))
+          .replace(/导出\s*PVsyst\s*专业仿真报告\s*\([^)]*\)/gi, satL('导出光筑专业报告', 'Export Guangzhu Pro Report'))
+          .replace(/PVsyst\s*[\d.x]*/gi, satL('光筑专业', 'Guangzhu Pro'));
+        return `>${cleaned}<`;
+      });
+      return `${step3Bar}${renderMultiFactorStudioPanel(this, { context: 'step3' })}${wbHtml}`;
     } catch (err) {
-      return `<div class="satmap-elec-card"><h3>8760h 光电物理仿真工作台</h3><p>${esc(err.message)}</p></div>`;
+      return `${step3Bar}${renderMultiFactorStudioPanel(this, { context: 'step3' })}<div class="satmap-elec-card"><h3>${esc(satL('全年光电物理仿真工作台', '8760h Physical Simulation Workbench'))}</h3><p>${esc(err.message)}</p></div>`;
     }
   }
 
@@ -4869,6 +5303,144 @@ export class SatMapView {
   }
 
   /**
+   * Step 5 Delivery Center (3 Primary Deliverable Cards) + 8-Item Engineering Compliance Health Check
+   */
+  renderStep5DeliveryAndHealthHub() {
+    const isEn = getLang() === 'en';
+    const hc = this.linkage3d?.healthCheck?.result || computeClientEngineeringHealthCheck(this);
+    const lastRep = this.linkage3d?.lastExportedReport || null;
+    const lastBundle = this.linkage3d?.deliveryBundle?.lastResult || null;
+    const bundleBusy = Boolean(this.linkage3d?.deliveryBundle?.exporting);
+    const hcBusy = Boolean(this.linkage3d?.healthCheck?.loading);
+
+    const fileLabelMapZh = {
+      report_pdf: '光筑专业报告',
+      master_dxf: '全套总平面施工图',
+      bom_csv: '设备与主材清册',
+      verification_json: '工程合规校核数据',
+    };
+    const fileLabelMapEn = {
+      report_pdf: 'Guangzhu Pro Report',
+      master_dxf: 'Master CAD Drawing',
+      bom_csv: 'Equipment BOM Schedule',
+      verification_json: 'Compliance Verification',
+    };
+
+    const statusBadgeText = (status) => {
+      if (status === 'pass') return satL('✓ 已通过', '✓ Pass');
+      if (status === 'warn') return satL('⚠ 需关注', '⚠ Warn');
+      return satL('✕ 需优化', '✕ Fix');
+    };
+
+    return `<section class="satmap-delivery-center" data-sat-delivery-center="1">
+      <div class="satmap-delivery-cards">
+        <!-- Card 1: 6-Page Guangzhu Pro Report -->
+        <article class="satmap-delivery-card is-primary-card" data-sat-delivery-card="report">
+          <div class="satmap-dc-head">
+            <span class="satmap-dc-step-tag">①</span>
+            <div>
+              <h4>${esc(satL('导出《光筑专业报告》（六页计算书·含光筑水印）', 'Export Guangzhu Pro Report (6-Page Book · Watermarked)'))}</h4>
+              <p>${esc(satL('涵盖项目总览、十三列月度能量平衡、逐时出力热力图、损耗瀑布、十二维荷载电压校核与二十五年现金流', 'Covers design overview, 13-col monthly balance, 12x24 hourly heatmap, loss waterfall, 12-factor checks & 25-yr cashflow'))}</p>
+            </div>
+          </div>
+          <div class="satmap-dc-actions">
+            <button type="button" class="sat-btn sat-btn-pvsyst-v2" data-sat-action="export-pvsyst-v2">
+              📄 ${esc(satL('立即导出光筑专业报告', 'Export Guangzhu Pro Report'))}
+            </button>
+            <button type="button" class="sat-btn" data-sat-action="preview-pro-report">
+              👁 ${esc(satL('在线六页预览', '6-Page Preview'))}
+            </button>
+          </div>
+          ${lastRep ? `<div class="satmap-dc-receipt is-ok">${esc(satL(lastRep.openedNatively ? '✓ 已生成并调用系统阅读器打开专业计算书' : '✓ 六页光筑专业计算书已生成就绪', lastRep.openedNatively ? '✓ Generated & opened in native viewer' : '✓ 6-page Guangzhu Pro Report ready'))}</div>` : ''}
+        </article>
+
+        <!-- Card 2: Full Construction CAD Blueprints -->
+        <article class="satmap-delivery-card" data-sat-delivery-card="cad">
+          <div class="satmap-dc-head">
+            <span class="satmap-dc-step-tag">②</span>
+            <div>
+              <h4>${esc(satL('全套施工图纸交付（十六张标准蓝图）', 'Full Construction CAD Blueprints (16 Sheets)'))}</h4>
+              <p>${esc(satL('含光伏排布、组串接线、防雷接地、支架配重、电气一次系统、桥架路由、基础大样与设备材料清册', 'Includes module layout, string wiring, grounding, racking ballast, single-line diagram, cable tray & BOM schedule'))}</p>
+            </div>
+          </div>
+          <div class="satmap-dc-actions">
+            <button type="button" class="sat-btn primary" data-sat-action="export-all-dxf">
+              📐 ${esc(satL('导出十六合一施工总图', 'Export 16-Sheet Master DXF'))}
+            </button>
+            <button type="button" class="sat-btn" data-sat-action="export-dxf">
+              ${esc(satL('当前分图导出', 'Current Sheet'))}
+            </button>
+            <button type="button" class="sat-btn" data-sat-action="export-cad-pdf">
+              ${esc(satL('预览十六张蓝图集', 'Preview 16 Blueprints'))}
+            </button>
+          </div>
+        </article>
+
+        <!-- Card 3: One-Click Complete Engineering Delivery Bundle + 3D Sync -->
+        <article class="satmap-delivery-card is-accent-card" data-sat-delivery-card="bundle">
+          <div class="satmap-dc-head">
+            <span class="satmap-dc-step-tag">③</span>
+            <div>
+              <h4>${esc(satL('一键导出全套工程交付包并同步三维设计', 'Export Full Delivery Bundle & Sync to 3D'))}</h4>
+              <p>${esc(satL('自动打包六页《光筑专业报告》、全套施工总图、主材清册与合规校核文件，并双向写入三维设计工程库', 'Packages 6-page Pro Report, Master CAD, BOM schedule & compliance JSON, and syncs bidirectionally with 3D Design'))}</p>
+            </div>
+          </div>
+          <div class="satmap-dc-actions">
+            <button type="button" class="sat-btn success" data-sat-action="export-delivery-bundle" ${bundleBusy ? 'disabled' : ''}>
+              📦 ${esc(satL(bundleBusy ? '正在打包交付文件…' : '一键导出交付包并同步三维', bundleBusy ? 'Packaging Bundle...' : 'Export Bundle & Sync 3D'))}
+            </button>
+            <button type="button" class="sat-btn" data-sat-action="sync-to-3d">
+              🔄 ${esc(satL('仅同步三维', 'Sync 3D'))}
+            </button>
+            <button type="button" class="sat-btn" data-sat-action="jump-3d-result">
+              🚀 ${esc(satL('进入三维成果', 'Open 3D Result'))}
+            </button>
+          </div>
+          ${lastBundle ? `
+            <div class="satmap-dc-receipt is-ok">
+              <span>${esc(satL(`✓ 已生成四份标准工程交付文件${lastBundle.synced_3d ? '并同步三维工程库' : ''}`, `✓ ${lastBundle.file_count || 4} engineering files packaged${lastBundle.synced_3d ? ' & synced to 3D' : ''}`))}</span>
+              ${lastBundle.download_zip_url ? `<a class="satmap-dc-dl-link" href="${esc(lastBundle.download_zip_url)}" download>${esc(satL('下载压缩包', 'Download ZIP'))}</a>` : ''}
+              ${(lastBundle.files || []).filter((f) => f.download_url).map((f) => `
+                <a class="satmap-dc-dl-link" href="${esc(f.download_url)}" download="${esc(f.filename || '')}">${esc(isEn ? (fileLabelMapEn[f.key] || 'File') : (fileLabelMapZh[f.key] || '交付文件'))}</a>
+              `).join('')}
+            </div>
+          ` : ''}
+        </article>
+      </div>
+
+      <!-- 8-Item Pre-Delivery Engineering Compliance Health Check -->
+      <div class="satmap-health-card" data-sat-health-check="1">
+        <div class="satmap-health-head">
+          <div class="satmap-health-title">
+            <strong>🛡️ ${esc(satL('八项出图前工程合规自检', '8-Item Pre-Delivery Engineering Compliance Check'))}</strong>
+            <span class="satmap-health-score is-${esc(hc.overall_status || 'pass')}">
+              ${esc(satL(`合规得分 ${hc.score} 分 · 通过 ${hc.pass_count}/${(hc.items || []).length} 项`, `Compliance Score ${hc.score} · ${hc.pass_count}/${(hc.items || []).length} Passed`))}
+            </span>
+            ${hc.warn_count > 0 ? `<span class="satmap-health-pill is-warn">${esc(satL(`提示 ${hc.warn_count} 项`, `${hc.warn_count} Warning`))}</span>` : ''}
+            ${hc.fail_count > 0 ? `<span class="satmap-health-pill is-fail">${esc(satL(`待整改 ${hc.fail_count} 项`, `${hc.fail_count} Action Needed`))}</span>` : ''}
+          </div>
+          <button type="button" class="sat-btn" data-sat-action="run-health-check" ${hcBusy ? 'disabled' : ''}>
+            🔍 ${esc(satL(hcBusy ? '正在核验…' : '重新核验八项指标', hcBusy ? 'Checking...' : 'Re-run 8-Item Check'))}
+          </button>
+        </div>
+        <div class="satmap-health-grid">
+          ${(hc.items || []).map((it) => `
+            <div class="satmap-health-item is-${esc(it.status || 'pass')}" data-sat-health-id="${esc(it.id)}">
+              <div class="satmap-hi-top">
+                <span class="satmap-hi-code">${esc(isEn ? it.code : (it.code_zh || '核验项'))}</span>
+                <b class="satmap-hi-name">${esc(isEn ? it.title_en : it.title_zh)}</b>
+                <span class="satmap-hi-badge is-${esc(it.status || 'pass')}">${esc(statusBadgeText(it.status))}</span>
+              </div>
+              <div class="satmap-hi-val">${esc(isEn ? it.display_en : it.display_zh)}</div>
+              ${it.status !== 'pass' ? `<small class="satmap-hi-hint">${esc(isEn ? it.fix_hint_en : it.fix_hint_zh)}</small>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </section>`;
+  }
+
+  /**
    * Step 5: 简洁专业「施工图纸工作台」
    * 双栏大画幅蓝图视口 + 折叠式图签/支架荷载检视器 + 单行紧凑图纸标签栏
    */
@@ -4949,6 +5521,7 @@ export class SatMapView {
                 <button type="button" class="satmap-cad-dark-nav-item" data-sat-action="jump-3d-sim"><span>🌐 全景3D模拟</span></button>
                 <button type="button" class="satmap-cad-dark-nav-item" data-sat-action="export-internal-report"><span>🖨️ 导出内部投决报告</span></button>
                 <button type="button" class="satmap-cad-dark-nav-item" data-sat-action="export-owner-report"><span>🖨️ 导出业主汇报书</span></button>
+                <button type="button" class="satmap-cad-dark-nav-item" data-sat-action="export-pvsyst-v2"><span>📄 ${esc(satL('导出光筑专业报告', 'Export Guangzhu Pro Report'))}</span></button>
               </nav>
             </div>
           </details>
@@ -4959,12 +5532,18 @@ export class SatMapView {
             <div class="sat-popover-panel">
               <button type="button" class="sat-btn" data-sat-action="export-all-dxf">导出全部 16 张总图 (.dxf)</button>
               <button type="button" class="sat-btn" data-sat-action="export-bom-csv">导出工程材料清册 (.csv)</button>
+              <button type="button" class="sat-btn" data-sat-action="export-owner-report">导出业主投资汇报书</button>
+              <button type="button" class="sat-btn" data-sat-action="export-internal-report">导出内部技术投决书</button>
             </div>
           </details>
+          <button type="button" class="sat-btn" data-sat-action="preview-pro-report">👁 ${esc(satL('预览报告', 'Preview Report'))}</button>
+          <button type="button" class="sat-btn sat-btn-pvsyst-v2" data-sat-action="export-pvsyst-v2">📄 ${esc(satL('导出光筑专业报告', 'Export Guangzhu Pro Report'))}</button>
           <button type="button" class="sat-btn primary" data-sat-action="export-dxf">导出当前 DXF</button>
           <button type="button" class="sat-btn success" data-sat-action="export-cad-pdf">一键生成十六合一施工图集 (.pdf)</button>
         </div>
       </div>
+
+      ${this.renderStep5DeliveryAndHealthHub()}
 
       <!-- Spacious 2-Column CAD Studio: Clean Left Inspector + Wide Blueprint Viewport -->
       <div class="satmap-cad-studio-grid">
@@ -5420,8 +5999,8 @@ export class SatMapView {
    *    Interior-Routed String Wiring, and Live Selection Preview
    */
   drawMapCanvas() {
-    if (typeof document === 'undefined') return;
-    const canvas = this.host?.querySelector('#satmap-main-canvas') || document.getElementById('satmap-main-canvas');
+    const canvas = this.host?.querySelector('#satmap-main-canvas') ||
+      (typeof document !== 'undefined' ? document.getElementById('satmap-main-canvas') : null);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -5704,8 +6283,10 @@ export class SatMapView {
       ctx.restore();
     }
 
-    // 3. Draw Red Keepout Strips / Skylights (红色正交/多边形禁布区)
+    // 3. Draw Red Keepout Strips / Skylights (红色正交/多边形禁布区 · 阳光棚模式下低矮设备跨障显示)
     if (this.showRoofOverlay) {
+      const isCanopyMode = (this.orientationMode || this.mfState?.orientationMode) === 'elevated_canopy';
+      const canopyClearanceM = Number(this.mfState?.canopyClearanceM) || 2.8;
       for (const obs of this.obstacles) {
         ctx.save();
         ctx.beginPath();
@@ -5715,23 +6296,30 @@ export class SatMapView {
           else ctx.lineTo(sx, sy);
         });
         ctx.closePath();
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.42)';
+        const obsH = Number(obs.heightM ?? obs.height_m ?? 0);
+        const bridgedByCanopy = isCanopyMode && obsH > 0 && obsH <= canopyClearanceM - 0.3 && obs.kind !== 'chimney';
+        ctx.fillStyle = bridgedByCanopy ? 'rgba(14, 165, 233, 0.24)' : 'rgba(239, 68, 68, 0.42)';
         ctx.fill();
         ctx.lineWidth = 2.0;
-        ctx.strokeStyle = '#ef4444';
+        ctx.strokeStyle = bridgedByCanopy ? '#38bdf8' : '#ef4444';
+        if (bridgedByCanopy) ctx.setLineDash([5, 3]);
         ctx.stroke();
+        if (bridgedByCanopy) ctx.setLineDash([]);
 
         if (screenPts.length >= 3) {
           const avgX = screenPts.reduce((s, p) => s + p[0], 0) / screenPts.length;
           const avgY = screenPts.reduce((s, p) => s + p[1], 0) / screenPts.length;
-          ctx.fillStyle = '#fecaca';
+          ctx.fillStyle = bridgedByCanopy ? '#bae6fd' : '#fecaca';
           ctx.font = 'bold 10.5px "Microsoft YaHei", sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText(obs.name || '禁布区', avgX, avgY + 3);
+          const obsLabel = obsH >= 0.35
+            ? `${obs.name || '禁布区'} (${obsH.toFixed(1)}m${bridgedByCanopy ? '·跨障' : ''})`
+            : (obs.name || '禁布区');
+          ctx.fillText(obsLabel, avgX, avgY + 3);
         }
         // Draw draggable vertex handles on each obstacle corner
         screenPts.forEach(([sx, sy]) => {
-          ctx.fillStyle = '#ef4444';
+          ctx.fillStyle = bridgedByCanopy ? '#0ea5e9' : '#ef4444';
           ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = 1.4;
           ctx.beginPath();
@@ -5744,6 +6332,7 @@ export class SatMapView {
 
       // 4. Draw Placed Solar Modules — Batched by Color for 60fps performance + 3D Bracket Tilt & Shadow
       if (this.modules && this.modules.length > 0) {
+        const isEastWestMode = (this.orientationMode || this.mfState?.orientationMode) === 'east_west';
         const activeTilt = this.roofType === 'flat' ? (this.tiltDeg || 15) : (this.roofSlopeDeg || 6);
         const tiltLiftPx = this.is3D ? Math.max(2.5, Math.min(12, Math.sin((activeTilt * Math.PI) / 180) * 18)) : 0;
 
@@ -5786,7 +6375,10 @@ export class SatMapView {
         ctx.globalAlpha = this.is3D ? 0.88 : 0.76;
         const groups = new Map();
         for (const m of this.modules) {
-          const col = this.showStringColors ? (m.color || '#1d4ed8') : '#0f2952';
+          const defaultModCol = isEastWestMode
+            ? (m.slope === 'west' ? '#0e7490' : '#1d4ed8')
+            : '#0f2952';
+          const col = this.showStringColors ? (m.color || '#1d4ed8') : defaultModCol;
           let arr = groups.get(col);
           if (!arr) {
             arr = [];
@@ -5811,6 +6403,20 @@ export class SatMapView {
           ctx.stroke();
         }
         ctx.restore();
+
+        // 4A-0. Paired East/West Butterfly Tilt Direction Indicators on 2D Canvas
+        if (isEastWestMode && scalePxPerM >= 9) {
+          ctx.save();
+          ctx.font = `${scalePxPerM >= 22 ? 'bold 10px' : 'bold 8px'} sans-serif`;
+          ctx.textAlign = 'center';
+          for (const m of this.modules) {
+            const [mcx, mcy] = toScreen(m.cx, m.cy);
+            if (mcx < -10 || mcx > W + 10 || mcy < -10 || mcy > H + 10) continue;
+            ctx.fillStyle = m.slope === 'west' ? '#fde68a' : '#bae6fd';
+            ctx.fillText(m.slope === 'west' ? '◀W' : 'E▶', mcx, mcy + 3 - tiltLiftPx * 0.5);
+          }
+          ctx.restore();
+        }
 
         // 4A-1. When zoomed in deeply (Z20..Z24, scalePxPerM >= 14), render half-cut monocrystalline cell grid & module ID labels on visible modules
         if (scalePxPerM >= 14) {
@@ -5839,7 +6445,7 @@ export class SatMapView {
           }
           ctx.stroke();
 
-          if (scalePxPerM >= 26) {
+          if (scalePxPerM >= 26 && !isEastWestMode) {
             ctx.fillStyle = '#f8fafc';
             ctx.font = `${scalePxPerM >= 50 ? 'bold 10px' : 'bold 8.5px'} monospace`;
             ctx.textAlign = 'center';
@@ -5892,9 +6498,11 @@ export class SatMapView {
           const strObj = this.strings.find((st) => st.id === hm.stringId);
           const nInStr = strObj?.modules?.length || this.modulesPerString || 18;
           const vmpStr = (nInStr * modSpec.vmp_v).toFixed(0);
-          const vocColdStr = (nInStr * modSpec.voc_v * 1.091).toFixed(0);
+          const vocCheck = computeColdVocAndStringSafety(modSpec, this.getSelectedInverter(), this.mfState, nInStr);
+          const vocColdStr = vocCheck.string_cold_voc_v.toFixed(0);
+          const slopeTag = hm.slope === 'east' ? '东翼90°' : hm.slope === 'west' ? '西翼270°' : hm.slope === 'north' ? '北坡' : '南坡';
           const [hx, hy] = this.hoverScreenPos || hp0;
-          const cardW = 248;
+          const cardW = 256;
           const cardH = 66;
           const boxX = Math.max(12, Math.min(W - cardW - 12, hx + 14));
           const boxY = Math.max(52, Math.min(H - cardH - 48, hy - cardH - 10));
@@ -5906,7 +6514,7 @@ export class SatMapView {
           ctx.fillStyle = '#f8fafc';
           ctx.font = 'bold 11.5px "Microsoft YaHei", sans-serif';
           ctx.textAlign = 'left';
-          ctx.fillText(`组件 ${hm.id} · 第${(hm.row ?? 0) + 1}排-${(hm.col ?? 0) + 1}列 (${hm.slope === 'north' ? '北坡' : '南坡'})`, boxX + 8, boxY + 17);
+          ctx.fillText(`组件 ${hm.id} · 第${(hm.row ?? 0) + 1}排-${(hm.col ?? 0) + 1}列 (${slopeTag})`, boxX + 8, boxY + 17);
           ctx.fillStyle = '#fde047';
           ctx.font = 'bold 11px "Microsoft YaHei", sans-serif';
           ctx.fillText(`所属组串：${hm.stringId || '待分配'} (${nInStr}块串联)`, boxX + 8, boxY + 36);
@@ -5943,6 +6551,28 @@ export class SatMapView {
         ctx.beginPath();
         for (const rm of this.removedModules) {
           const [p0, p1, p2, p3] = rm.cornersM.map(([mx, my]) => toScreen(mx, my));
+          ctx.moveTo(p0[0], p0[1]);
+          ctx.lineTo(p1[0], p1[1]);
+          ctx.lineTo(p2[0], p2[1]);
+          ctx.lineTo(p3[0], p3[1]);
+          ctx.closePath();
+        }
+        ctx.fill();
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
+      // 4C. Draw Amber Dashed Ghost Outlines for Auto-Pruned Heavy-Shading ("Poison") Modules
+      if (this.prunedShadedModules && this.prunedShadedModules.length > 0 && this.mfState?.showPrunedShadedSlots !== false) {
+        ctx.save();
+        ctx.lineWidth = 1.3;
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.92)';
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.16)';
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        for (const pm of this.prunedShadedModules) {
+          const [p0, p1, p2, p3] = pm.cornersM.map(([mx, my]) => toScreen(mx, my));
           ctx.moveTo(p0[0], p0[1]);
           ctx.lineTo(p1[0], p1[1]);
           ctx.lineTo(p2[0], p2[1]);
@@ -8549,7 +9179,10 @@ export class SatMapView {
     }
     this.refreshPvsystData({ fetchBackend: false });
     this.refresh();
-    this.notice(`已导入组件参数文件「${fileName}」：${parsed.brand} ${parsed.model} (${parsed.stc_w}Wp, Voc=${parsed.voc_v}V)。`);
+    this.notice(
+      `已导入组件参数文件「${fileName}」：${parsed.brand} ${parsed.model} (${parsed.stc_w}Wp, Voc=${parsed.voc_v}V)。` +
+      satL('（注：未注册自定义设备仅用于卫星仿真与专业报告；保存至三维工程库前请选用标准名录设备）', ' (Note: Custom equipment applies to satellite simulation/report only; select a registered catalog model before saving to 3D projects.)')
+    );
     return parsed;
   }
 
@@ -8566,7 +9199,10 @@ export class SatMapView {
     }
     this.refreshPvsystData({ fetchBackend: false });
     this.refresh();
-    this.notice(`已导入逆变器参数文件「${fileName}」：${parsed.brand} ${parsed.model} (${parsed.rated_ac_kw}kW, ${parsed.mppt_count}路MPPT)。`);
+    this.notice(
+      `已导入逆变器参数文件「${fileName}」：${parsed.brand} ${parsed.model} (${parsed.rated_ac_kw}kW, ${parsed.mppt_count}路MPPT)。` +
+      satL('（注：未注册自定义设备仅用于卫星仿真与专业报告；保存至三维工程库前请选用标准名录设备）', ' (Note: Custom equipment applies to satellite simulation/report only; select a registered catalog model before saving to 3D projects.)')
+    );
     return parsed;
   }
 
@@ -8671,9 +9307,14 @@ export class SatMapView {
       </div>
       ${sheets.map((sh) => `<div class="sheet">${this.renderCadSvg(sh)}</div>`).join('')}
       </body></html>`;
-    const url = URL.createObjectURL(new Blob([htmlDoc], { type: 'text/html;charset=utf-8' }));
-    window.open(url, '_blank', 'noopener');
-    this.notice('已在新窗口打开全套 16 张施工 CAD 蓝图集（支持直接打印或另存为 PDF）。');
+    openHtmlInPreviewModal(this, {
+      html: htmlDoc,
+      filename: `${this.cadPrefix}-16SHEETS-BLUEPRINTS.html`,
+      titleZh: `${this.cadTitle} · 十六张施工蓝图全集`,
+      titleEn: '16-Sheet Construction CAD Blueprints',
+    });
+    this.refresh();
+    this.notice(satL('已在应用内预览窗打开全套十六张施工蓝图集（支持一键打印或导出）。', 'Opened 16-sheet Construction CAD Blueprints in preview modal.'));
   }
 
   exportExecutiveReport(kind = 'owner') {
@@ -8725,7 +9366,7 @@ export class SatMapView {
       <div class="kpi-grid">
         <div class="kpi"><span>规划直流装机容量</span><strong>${s.dcKw} kWp</strong><small style="display:block;color:#475569">${esc(mod.model)} × ${s.moduleCount} 块</small></div>
         <div class="kpi"><span>逆变器与组串配置</span><strong>${s.acKw} kW</strong><small style="display:block;color:#475569">${esc(inv.model)} × ${s.inverterCount} 台 (${s.stringCount} 串)</small></div>
-        <div class="kpi"><span>首年 P50 并网发电量</span><strong>${(s.annualKwh / 10000).toFixed(2)} 万kWh</strong><small style="display:block;color:#475569">等效满发 ${s.specificYield} h · PR ${s.prPct}% · LCOE ${dcf?.lcoeRmbPerKwh || 0.21} 元/度</small></div>
+        <div class="kpi"><span>首年 P50 并网发电量</span><strong>${(s.annualKwh / 10000).toFixed(2)} 万kWh</strong><small style="display:block;color:#475569">等效满发 ${s.specificYield} h · PR ${s.prPct}% · LCOE ${dcf?.lcoeRmbPerKwh != null ? `${dcf.lcoeRmbPerKwh} 元/度` : '未核定'}</small></div>
         <div class="kpi"><span>总投资与静态/动态回收期</span><strong>${s.capexWan} 万 / ${s.paybackYears != null ? `${s.paybackYears}年` : '未回收'} (${dcf?.dynamicPaybackYears != null ? `${dcf.dynamicPaybackYears}年` : '未回收'})</strong><small style="display:block;color:#059669">全投资 IRR ${s.irrPct != null ? `${s.irrPct}%` : '无法收回'} · 25年NPV(${this.discountRatePct ?? 6}%) ${s.npv25Wan || 0} 万</small></div>
       </div>
       <div class="eng-box">
@@ -8744,9 +9385,14 @@ export class SatMapView {
       </div>
       ${sheetKeys.map((sh) => `<div class="sheet">${this.renderCadSvg(sh)}</div>`).join('')}
       </body></html>`;
-    const url = URL.createObjectURL(new Blob([htmlDoc], { type: 'text/html;charset=utf-8' }));
-    window.open(url, '_blank', 'noopener');
-    this.notice(`已生成并打开「${title}」（支持直接打印或导出 PDF）。`);
+    openHtmlInPreviewModal(this, {
+      html: htmlDoc,
+      filename: `${this.cadPrefix}-${isOwner ? 'OWNER-REPORT' : 'INTERNAL-TECH-REPORT'}.html`,
+      titleZh: title,
+      titleEn: isOwner ? 'Owner Investment & Proposal Report' : 'Internal Engineering & Investment Report',
+    });
+    this.refresh();
+    this.notice(satL(`已在应用内预览窗生成并打开「${title}」（支持一键打印或导出）。`, 'Generated & opened Executive Report in preview modal.'));
   }
 
   /**
@@ -9069,9 +9715,14 @@ export class SatMapView {
         col: Number.isFinite(m.col) ? m.col : idx + 1,
       })),
       module_count: this.summary.moduleCount,
+      inverter_count: this.summary.inverterCount,
       dc_kw: this.summary.dcKw,
       ac_kw: this.summary.acKw,
       annual_kwh: this.summary.annualKwh,
+      expected_module_count: this.summary.moduleCount,
+      expected_inverter_count: this.summary.inverterCount,
+      expected_dc_kw: this.summary.dcKw,
+      expected_ac_kw: this.summary.acKw,
     };
 
     try {
@@ -9079,44 +9730,84 @@ export class SatMapView {
       const res = await this.api('satmap/save-project', payload);
       const pid = res?.project_id || 'satmap-project';
       const ver = res?.version || 1;
-      this.notice(`已成功转入光筑工程库：${pid} (v${ver})，正在打开工程结果页...`);
+      const recon = res?.allocation_reconciliation;
+      this.lastSaveReconciliation = recon || null;
+      if (recon && recon.matched === false) {
+        const sub = recon.submitted || {};
+        const ana = recon.analyzed_3d || res?.summary || {};
+        const expInv = sub.inverter_count ?? this.summary.inverterCount;
+        const expAc = sub.ac_kw ?? this.summary.acKw;
+        const expDc = sub.dc_kw ?? this.summary.dcKw;
+        const actInv = ana.inverter_count ?? ana.inverters ?? '—';
+        const actAc = ana.ac_kw ?? '—';
+        const actDc = ana.dc_kw ?? '—';
+        const warnMsg = satL(
+          `卫星侧预计 ${expInv} 台逆变器（交流 ${expAc} 千瓦 / 直流 ${expDc} 千瓦），三维引擎复核为 ${actInv} 台逆变器（交流 ${actAc} 千瓦 / 直流 ${actDc} 千瓦），请核对配串长度与设备参数！`,
+          `Satellite expected ${expInv} inverter(s) (${expAc} kWac / ${expDc} kWp), while 3D engine resolved ${actInv} inverter(s) (${actAc} kWac / ${actDc} kWp). Please verify string sizing and equipment specs!`
+        );
+        this.saveReconciliationWarning = warnMsg;
+        this.refresh();
+        this.notice(warnMsg, { persist: true });
+      } else {
+        this.saveReconciliationWarning = '';
+        this.notice(`已成功转入光筑工程库：${pid} (v${ver})，正在打开工程结果页...`);
+      }
       if (typeof location !== 'undefined') {
         location.hash = `#result/${encodeURIComponent(pid)}?version=${ver}`;
       }
       return res;
     } catch (err) {
-      this.notice(`保存转入工程库失败（未生成工程库记录）：${err.message || '请检查后端服务状态后重试'}`);
+      this.notice(`保存转入工程库失败（未生成工程库记录）：${err.message || '请检查后端服务状态后重试'}`, { persist: true });
       return null;
     }
   }
 
   refresh({ resetScroll = false } = {}) {
     if (!this.host) return;
-    if (this.twin3d) {
-      this.twin3d.dispose();
-      this.twin3d = null;
+    if (this._isRefreshing) {
+      this._pendingRefreshOpts = {
+        resetScroll: Boolean(this._pendingRefreshOpts?.resetScroll || resetScroll),
+      };
+      return;
     }
-    const prevShell = this.host.querySelector('.satmap-shell');
-    const prevScrollTop = !resetScroll
-      ? (prevShell?.scrollTop || this.host.scrollTop || 0)
-      : 0;
-    this.host.innerHTML = this.html();
-    this.mount(this.host);
-    if (!resetScroll && prevScrollTop > 0) {
-      const nextShell = this.host.querySelector('.satmap-shell');
-      if (nextShell) nextShell.scrollTop = prevScrollTop;
-      this.host.scrollTop = prevScrollTop;
+    this._isRefreshing = true;
+    try {
+      if (typeof document !== 'undefined' && document.activeElement && document.activeElement !== document.body) {
+        const activeEl = document.activeElement;
+        if (activeEl === this.host || this.host.contains?.(activeEl)) {
+          try { activeEl.blur?.(); } catch { /* ignore */ }
+        }
+      }
+      if (this.twin3d) {
+        this.twin3d.dispose();
+        this.twin3d = null;
+      }
+      const prevShell = this.host.querySelector('.satmap-shell');
+      const prevScrollTop = !resetScroll
+        ? (prevShell?.scrollTop || this.host.scrollTop || 0)
+        : 0;
+      const nextHtml = this.html();
+      this.host.innerHTML = nextHtml;
+      this.mount(this.host);
+      if (!resetScroll && prevScrollTop > 0) {
+        const nextShell = this.host.querySelector('.satmap-shell');
+        if (nextShell) nextShell.scrollTop = prevScrollTop;
+        this.host.scrollTop = prevScrollTop;
+      }
+    } finally {
+      this._isRefreshing = false;
+      if (this._pendingRefreshOpts) {
+        const pending = this._pendingRefreshOpts;
+        this._pendingRefreshOpts = null;
+        this.refresh(pending);
+      }
     }
   }
 
   render(host) {
     if (!host) return;
-    if (this.twin3d) {
-      this.twin3d.dispose();
-      this.twin3d = null;
-    }
-    host.innerHTML = this.html();
-    this.mount(host);
+    this.host = host;
+    this.refresh({ resetScroll: true });
   }
 
   mount(host) {
@@ -9209,6 +9900,15 @@ export class SatMapView {
             this.drawingPointsM = [];
             this.cursorPointM = null;
             this.dragPreview = null;
+            this.refresh();
+            return;
+          }
+          if (this.linkage3d?.showImportModal || this.linkage3d?.reportPreview?.open || (this.step === 1 && this.mfState?.openInStep1)) {
+            if (this.linkage3d) {
+              this.linkage3d.showImportModal = false;
+              if (this.linkage3d.reportPreview) this.linkage3d.reportPreview.open = false;
+            }
+            if (this.mfState && this.step === 1) this.mfState.openInStep1 = false;
             this.refresh();
             return;
           }
@@ -9868,6 +10568,15 @@ export class SatMapView {
             this.refresh();
             return;
           }
+          if (this.linkage3d?.showImportModal || this.linkage3d?.reportPreview?.open || (this.step === 1 && this.mfState?.openInStep1)) {
+            if (this.linkage3d) {
+              this.linkage3d.showImportModal = false;
+              if (this.linkage3d.reportPreview) this.linkage3d.reportPreview.open = false;
+            }
+            if (this.mfState && this.step === 1) this.mfState.openInStep1 = false;
+            this.refresh();
+            return;
+          }
           if (this.isFullscreen) {
             this.isFullscreen = false;
             this.refresh();
@@ -10000,7 +10709,23 @@ export class SatMapView {
         this.showLocationPickerModal = false;
         this.showPvlaneStartModal = false;
         this.showTariffModal = false;
+        if (this.linkage3d) {
+          this.linkage3d.showImportModal = false;
+          if (this.linkage3d.reportPreview) this.linkage3d.reportPreview.open = false;
+        }
+        if (this.mfState && this.step === 1) {
+          this.mfState.openInStep1 = false;
+        }
         this.refresh();
+        return;
+      }
+
+      const mfRow = ev.target.closest('[data-sat-mf-row]');
+      if (mfRow && !ev.target.closest('button')) {
+        if (this.mfState) {
+          this.mfState.selectedSchemeId = mfRow.getAttribute?.('data-sat-mf-row') || mfRow.dataset?.satMfRow;
+          this.refresh();
+        }
         return;
       }
 
@@ -10026,6 +10751,83 @@ export class SatMapView {
 
       const btn = ev.target.closest('button');
       if (!btn) return;
+
+      const reportPageRaw = btn.getAttribute?.('data-sat-report-page') || btn.dataset?.satReportPage;
+      if (reportPageRaw) {
+        const pageNo = Math.max(1, Math.min(6, Number(reportPageRaw) || 1));
+        if (!this.linkage3d) this.linkage3d = createDefaultLinkageState();
+        if (this.linkage3d.reportPreview) {
+          this.linkage3d.reportPreview.activePage = pageNo;
+        }
+        host.querySelectorAll('[data-sat-report-page]').forEach((b) => {
+          const bp = Number(b.getAttribute?.('data-sat-report-page') || b.dataset?.satReportPage || 0);
+          b.classList.toggle('primary', bp === pageNo);
+        });
+        const frame = host.querySelector('#satmap-pro-report-iframe');
+        const doc = frame?.contentDocument || frame?.contentWindow?.document;
+        const targetEl = doc?.getElementById(`gz-report-page-${pageNo}`) || doc?.getElementById(`page-${pageNo}`);
+        if (targetEl && typeof targetEl.scrollIntoView === 'function') {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (frame?.contentWindow?.scrollTo) {
+          frame.contentWindow.scrollTo({ top: (pageNo - 1) * 1060, behavior: 'smooth' });
+        }
+        return;
+      }
+
+      const cat3dTab = btn.getAttribute?.('data-sat-3dcat-tab') || btn.dataset?.sat3dcatTab;
+      if (cat3dTab) {
+        if (this.linkage3d) {
+          this.linkage3d.catalogTab = cat3dTab;
+          this.refresh();
+        }
+        return;
+      }
+
+      const import3dId = btn.getAttribute?.('data-sat-import3d-id') || btn.dataset?.satImport3dId;
+      if (import3dId) {
+        const kind = btn.getAttribute?.('data-sat-import3d-kind') || btn.dataset?.satImport3dKind || 'project';
+        const verRaw = btn.getAttribute?.('data-sat-import3d-ver') || btn.dataset?.satImport3dVer;
+        const ver = verRaw ? Number(verRaw) : null;
+        await importFrom3DItem(this, kind, import3dId, ver);
+        this.refresh();
+        this.notice(
+          satL(
+            `已从三维设计载入屋面与参数：「${this.projectName}」（${this.summary.moduleCount} 块组件 · ${this.summary.dcKw} kWp · 障碍物 ${this.obstacles.length} 处）。`,
+            `Imported 3D roof & parameters: ${this.summary.moduleCount} pcs · ${this.summary.dcKw} kWp (${this.obstacles.length} obstacles).`
+          )
+        );
+        return;
+      }
+
+      const mfPreviewId = btn.getAttribute?.('data-sat-mf-preview') || btn.dataset?.satMfPreview;
+      if (mfPreviewId) {
+        const sc = applyMultiFactorSchemeToView(this, mfPreviewId, { previewOnly: true });
+        if (sc) {
+          this.refresh();
+          this.notice(
+            satL(
+              `正在预览方案「${sc.name_zh}」：装机 ${this.summary.dcKw} kWp（${this.summary.moduleCount} 块），点击「退出预览还原排布」可撤回。`,
+              `Previewing scheme "${sc.name_en || sc.id}": ${this.summary.dcKw} kWp (${this.summary.moduleCount} pcs).`
+            )
+          );
+        }
+        return;
+      }
+
+      const mfApplyId = btn.getAttribute?.('data-sat-mf-apply') || btn.dataset?.satMfApply;
+      if (mfApplyId) {
+        const sc = applyMultiFactorSchemeToView(this, mfApplyId, { previewOnly: false });
+        if (sc) {
+          this.refresh();
+          this.notice(
+            satL(
+              `已正式应用多维寻优方案「${sc.name_zh}」：装机 ${this.summary.dcKw} kWp（${this.summary.moduleCount} 块），首年发电 ${(this.summary.annualKwh / 10000).toFixed(2)} 万kWh。`,
+              `Applied multi-factor scheme "${sc.name_en || sc.id}": ${this.summary.dcKw} kWp (${this.summary.moduleCount} pcs).`
+            )
+          );
+        }
+        return;
+      }
 
       if (btn.dataset.satLeftTab) {
         this.leftPanelTab = btn.dataset.satLeftTab;
@@ -10161,11 +10963,11 @@ export class SatMapView {
         return;
       }
 
-      if (btn.dataset.sat3dMode) {
-        this.sim3dMode = btn.dataset.sat3dMode;
+      if (btn.hasAttribute('data-sat-3d-mode')) {
+        this.sim3dMode = btn.getAttribute('data-sat-3d-mode');
         if (this.twin3d?.available) {
           host.querySelectorAll('[data-sat-3d-mode]').forEach((b) => {
-            b.classList.toggle('active', b.dataset.sat3dMode === this.sim3dMode);
+            b.classList.toggle('active', b.getAttribute('data-sat-3d-mode') === this.sim3dMode);
           });
           this.twin3d.setSimConfig({ displayMode: this.sim3dMode });
         } else {
@@ -10174,11 +10976,11 @@ export class SatMapView {
         return;
       }
 
-      if (btn.dataset.sat3dDate) {
-        this.sim3dDateStr = btn.dataset.sat3dDate;
+      if (btn.hasAttribute('data-sat-3d-date')) {
+        this.sim3dDateStr = btn.getAttribute('data-sat-3d-date');
         if (this.twin3d?.available) {
           host.querySelectorAll('[data-sat-3d-date]').forEach((b) => {
-            b.classList.toggle('active', b.dataset.sat3dDate === this.sim3dDateStr);
+            b.classList.toggle('active', b.getAttribute('data-sat-3d-date') === this.sim3dDateStr);
           });
           this.twin3d.setSimConfig({ dateStr: this.sim3dDateStr });
         } else {
@@ -10187,11 +10989,11 @@ export class SatMapView {
         return;
       }
 
-      if (btn.dataset.sat3dCam) {
-        this.sim3dCam = btn.dataset.sat3dCam;
+      if (btn.hasAttribute('data-sat-3d-cam')) {
+        this.sim3dCam = btn.getAttribute('data-sat-3d-cam');
         if (this.twin3d?.available) {
           host.querySelectorAll('[data-sat-3d-cam]').forEach((b) => {
-            b.classList.toggle('active', b.dataset.sat3dCam === this.sim3dCam);
+            b.classList.toggle('active', b.getAttribute('data-sat-3d-cam') === this.sim3dCam);
           });
           this.twin3d.setCameraPreset(this.sim3dCam);
         } else {
@@ -10397,6 +11199,27 @@ export class SatMapView {
         }
         this.refresh();
         this.notice(`已应用最佳倾角 ${Number.isFinite(optTilt) ? optTilt : this.tiltDeg}° 与方位角 ${Number.isFinite(optAz) ? optAz : this.azimuthDeg}° 并重算 8760h 能量平衡。`);
+        return;
+      }
+      if (pvAct === 'export-pvsyst-v2' || pvAct === 'download-pvsyst-v2-pdf') {
+        const rep = await exportPvsystProfessionalReportV2(this);
+        this.refresh();
+        this.notice(
+          satL(
+            rep.openedNatively
+              ? '已导出《光筑专业报告》并自动在系统阅读器中打开。'
+              : '已生成《光筑专业报告》（六页计算书·含光筑水印）并开启预览。',
+            rep.openedNatively
+              ? 'Exported Guangzhu Pro Report PDF & opened natively.'
+              : 'Generated 6-page Guangzhu Pro Report & opened preview.'
+          )
+        );
+        return;
+      }
+      if (pvAct === 'export-standard-report') {
+        await previewGuangzhuProReport(this);
+        this.refresh();
+        this.notice(satL('已在应用内打开六页《光筑专业报告》预览。', 'Opened 6-page Guangzhu Pro Report in-app preview.'));
         return;
       }
       if (pvAct === 'recalculate' || pvAct === 'refresh-weather') {
@@ -10675,6 +11498,13 @@ export class SatMapView {
         this.showLocationPickerModal = false;
         this.showPvlaneStartModal = false;
         this.showTariffModal = false;
+        if (this.linkage3d) {
+          this.linkage3d.showImportModal = false;
+          if (this.linkage3d.reportPreview) this.linkage3d.reportPreview.open = false;
+        }
+        if (this.mfState && this.step === 1) {
+          this.mfState.openInStep1 = false;
+        }
         this.refresh();
       } else if (act === 'open-tariff-modal') {
         this.showTariffModal = true;
@@ -10862,6 +11692,124 @@ export class SatMapView {
           this.timerInterval = null;
         }
         this.refresh();
+      } else if (act === 'open-import-3d') {
+        if (!this.linkage3d) this.linkage3d = createDefaultLinkageState();
+        this.linkage3d.showImportModal = true;
+        this.linkage3d.loadingCatalog = true;
+        this.refresh();
+        await fetch3DCatalog(this);
+        this.refresh();
+      } else if (act === 'sync-to-3d') {
+        const syncRes = await syncSatmapTo3D(this, { syncMode: 'both' });
+        this.refresh();
+        this.notice(
+          satL(
+            `已双向同步至三维设计（工程 ${syncRes.projectId} · 第${syncRes.version}版）：可一键进入三维设计成果场景或三维屋面编辑器。`,
+            `Synced Satellite scheme to 3D Design (${syncRes.projectId} · v${syncRes.version}).`
+          )
+        );
+      } else if (act === 'toggle-linkage-diff') {
+        if (this.linkage3d) {
+          this.linkage3d.showDiffCard = !this.linkage3d.showDiffCard;
+          this.refresh();
+        }
+      } else if (act === 'jump-3d-result') {
+        await navigateTo3DTarget(this, 'result');
+      } else if (act === 'jump-3d-roof') {
+        await navigateTo3DTarget(this, 'roof');
+      } else if (act === 'toggle-multifactor-studio') {
+        if (!this.mfState) this.mfState = createDefaultMultiFactorState();
+        if (this.step === 3) {
+          this.mfState.openInStep3 = !this.mfState.openInStep3;
+        } else {
+          if (this.step !== 1) this.step = 1;
+          this.mfState.openInStep1 = !this.mfState.openInStep1;
+        }
+        if ((this.step === 3 && this.mfState.openInStep3) || (this.step === 1 && this.mfState.openInStep1)) {
+          this.mfState.lastResult = runClientMultiFactorOptimization(this);
+          if (!this.mfState.selectedSchemeId && this.mfState.lastResult?.recommended_id) {
+            this.mfState.selectedSchemeId = this.mfState.lastResult.recommended_id;
+          }
+        }
+        this.refresh();
+      } else if (act === 'run-multifactor-opt') {
+        const res = await requestMultiFactorOptimization(this);
+        this.refresh();
+        const rec = (res?.schemes || []).find((s) => s.id === res?.recommended_id) || res?.schemes?.[0];
+        if (rec) {
+          this.notice(
+            satL(
+              `多维因数寻优完成：推荐「${rec.name_zh}」（综合得分 ${rec.composite_score} · ${rec.dc_kw} kWp · 首年 ${(rec.annual_kwh / 10000).toFixed(2)} 万kWh）。`,
+              `Multi-factor optimization complete: Recommended "${rec.name_en || rec.id}" (Score ${rec.composite_score} · ${rec.dc_kw} kWp).`
+            )
+          );
+        }
+      } else if (act === 'restore-mf-preview') {
+        if (restoreMultiFactorPreview(this)) {
+          this.refresh();
+          this.notice(satL('已退出多维方案预览并还原先前排布。', 'Exited preview and restored previous layout.'));
+        }
+      } else if (act === 'next-step') {
+        const nextStep = Math.min(5, (Number(this.step) || 1) + 1);
+        this.step = nextStep;
+        if (nextStep >= 2 && (!this.modules || this.modules.length === 0)) {
+          this.layoutModules({ quiet: true, autoCreateRoof: true });
+          this.electricalConfirmed = true;
+          this.showStringColors = true;
+          this.computeElectricalAllocation();
+        }
+        if (nextStep === 3) {
+          this.refreshPvsystData({ fetchBackend: true });
+        }
+        this.refresh({ resetScroll: true });
+      } else if (act === 'preview-pro-report') {
+        await previewGuangzhuProReport(this);
+        this.refresh();
+        this.notice(
+          satL(
+            '已在应用内打开《光筑专业报告》六页在线预览（支持按页快速跳转、直接打印或一键导出）。',
+            'Opened 6-page Guangzhu Pro Report in-app preview modal.'
+          )
+        );
+      } else if (act === 'print-preview-report') {
+        const frame = host.querySelector('#satmap-pro-report-iframe');
+        if (frame?.contentWindow?.print) {
+          frame.contentWindow.focus?.();
+          frame.contentWindow.print();
+        } else if (typeof window !== 'undefined' && typeof window.print === 'function') {
+          window.print();
+        }
+      } else if (act === 'export-pvsyst-v2' || act === 'export-pro-report') {
+        const rep = await exportPvsystProfessionalReportV2(this);
+        this.refresh();
+        this.notice(
+          satL(
+            rep.openedNatively
+              ? '已成功导出《光筑专业报告》并在系统阅读器中打开。'
+              : '已生成《光筑专业报告》（六页计算书·含光筑水印），已完成下载或在线预览。',
+            rep.openedNatively
+              ? 'Exported Guangzhu Pro Report PDF & opened in system viewer.'
+              : 'Generated 6-page Guangzhu Pro Report (downloaded / opened in preview).'
+          )
+        );
+      } else if (act === 'export-delivery-bundle') {
+        const bRes = await exportSatmapDeliveryBundle(this, { syncTo3D: true, openFolder: true });
+        this.refresh();
+        this.notice(
+          satL(
+            `已生成全套工程交付包（共 ${bRes.file_count || 4} 份标准文件）并同步至三维设计工程库。`,
+            `Exported full engineering delivery bundle (${bRes.file_count || 4} files) & synced to 3D Design.`
+          )
+        );
+      } else if (act === 'run-health-check') {
+        const hcRes = await runEngineeringHealthCheck(this);
+        this.refresh();
+        this.notice(
+          satL(
+            `八项出图前工程合规核验完成：综合得分 ${hcRes.score} 分（通过 ${hcRes.pass_count}/8 项）。`,
+            `8-Item Engineering Compliance Check complete: Score ${hcRes.score} (${hcRes.pass_count}/8 passed).`
+          )
+        );
       } else if (act === 'timer-reset') {
         if (this.timerInterval) {
           clearInterval(this.timerInterval);
@@ -10876,7 +11824,92 @@ export class SatMapView {
     // Delegated Change / Input Handler
     host.onchange = (ev) => {
       const el = ev.target;
-      if (!el) return;
+      if (!el || el._satSuppressEchoChange) return;
+      el._satSuppressEchoChange = true;
+      try {
+
+      const mfFieldAttr = el.getAttribute?.('data-sat-mf-field') || el.dataset?.satMfField;
+      if (mfFieldAttr) {
+        const mKey = mfFieldAttr;
+        const mf = this.mfState || (this.mfState = createDefaultMultiFactorState());
+        if (mKey === 'catalogSearch') {
+          if (!this.linkage3d) this.linkage3d = createDefaultLinkageState();
+          this.linkage3d.catalogSearch = el.value;
+          this.refresh();
+          return;
+        }
+        if (mKey === 'orientationMode') {
+          this.orientationMode = el.value;
+          mf.orientationMode = el.value;
+          if (el.value === 'east_west' && this.tiltDeg > 16) {
+            this.tiltDeg = 10;
+          }
+        } else if (mKey === 'mountOrientation') {
+          this.orientation = el.value === 'landscape' ? 'landscape' : 'portrait';
+        } else if (mKey === 'rackRows') {
+          mf.rackRows = el.value === '1P' ? '1P' : '2P';
+        } else if (mKey === 'canopyClearanceM') {
+          mf.canopyClearanceM = Math.max(1.8, Math.min(6.0, Number(el.value) || 2.8));
+        } else if (mKey === 'maxRoofLoadKgM2') {
+          mf.maxRoofLoadKgM2 = Math.max(15, Math.min(150, Number(el.value) || 35));
+          this.roofLoadLimitKnM2 = Number((mf.maxRoofLoadKgM2 / 102).toFixed(2));
+        } else if (mKey === 'fixingType') {
+          mf.fixingType = el.value;
+        } else if (mKey === 'fireLaneWidthM') {
+          mf.fireLaneWidthM = Math.max(0, Math.min(4.0, Number(el.value) || 0));
+        } else if (mKey === 'maintWalkwayIntervalM') {
+          mf.maintWalkwayIntervalM = Math.max(6, Math.min(36, Number(el.value) || 18));
+        } else if (mKey === 'basicWindW0KnM2') {
+          mf.basicWindW0KnM2 = Math.max(0.25, Math.min(1.25, Number(el.value) || 0.45));
+        } else if (mKey === 'basicSnowS0KnM2') {
+          mf.basicSnowS0KnM2 = Math.max(0, Math.min(1.0, Number(el.value) || 0.35));
+        } else if (mKey === 'extremeTempMinC') {
+          const parsedMin = Number(el.value);
+          mf.extremeTempMinC = Number.isFinite(parsedMin) ? Math.max(-45, Math.min(20, parsedMin)) : -10;
+        } else if (mKey === 'extremeTempMaxC') {
+          mf.extremeTempMaxC = Math.max(20, Math.min(60, Number(el.value) || 40));
+        } else if (mKey === 'maxModuleShadingLossPct') {
+          mf.maxModuleShadingLossPct = Math.max(3, Math.min(35, Number(el.value) || 12));
+        } else if (mKey === 'autoPruneShaded') {
+          mf.autoPruneShaded = Boolean(el.checked);
+        } else if (mKey === 'showPrunedShadedSlots') {
+          mf.showPrunedShadedSlots = Boolean(el.checked);
+        } else if (mKey === 'albedoSurface') {
+          mf.albedoSurface = el.value;
+          const ap = ALBEDO_PRESETS.find((x) => x.id === el.value);
+          if (ap) mf.albedo = ap.value ?? ap.albedo ?? 0.28;
+        } else if (mKey === 'pollutionLevel') {
+          mf.pollutionLevel = el.value;
+        } else if (mKey === 'loadProfile') {
+          mf.loadProfile = el.value;
+          const lp = LOAD_PROFILES.find((x) => x.id === el.value);
+          if (lp) {
+            this.selfConsumptionRatio = lp.id === 'export_all' ? 0 : Math.round(lp.selfUseBase * 100);
+          }
+        } else if (mKey === 'objective') {
+          mf.objective = el.value;
+        }
+
+        const envPreset = POLLUTION_LEVELS.find((p) => p.id === mf.pollutionLevel) || POLLUTION_LEVELS[1];
+        this.pvsystParams = {
+          ...(this.pvsystParams || {}),
+          albedo: mf.albedo,
+          soiling_pct: envPreset.soilingPct,
+        };
+
+        if (this.hasLaidOut) {
+          this.layoutModules({ quiet: true, autoCreateRoof: false });
+        } else {
+          this.recomputeEngineeringAnalyses();
+        }
+        mf.lastResult = runClientMultiFactorOptimization(this);
+        if (mf.lastResult?.recommended_id) {
+          mf.selectedSchemeId = mf.lastResult.recommended_id;
+        }
+        persistLatestSatmapScheme(this);
+        this.refresh();
+        return;
+      }
 
       if (el.dataset.satFile === 'project-json') {
         const file = el.files?.[0];
@@ -11125,7 +12158,11 @@ export class SatMapView {
         }
       }
 
+      persistLatestSatmapScheme(this);
       this.refresh();
+      } finally {
+        el._satSuppressEchoChange = false;
+      }
     };
 
     host.oninput = (ev) => {

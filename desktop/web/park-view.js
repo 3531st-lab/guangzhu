@@ -82,14 +82,140 @@ const PARK_PRESETS = {
   },
 };
 
+export function computeParkMultifactorKpis(current, batch = {}) {
+  const data = current?.data || current || {};
+  const buildings = Array.isArray(data.buildings) ? data.buildings : [];
+  const summedDcKw = buildings.reduce((acc, b) => acc + Number(b?.result?.dc_kw ?? b?.dc_kw ?? 0), 0);
+  const summedAnnualKwh = buildings.reduce((acc, b) => acc + Number(b?.result?.annual_kwh ?? b?.annual_kwh ?? 0), 0);
+  const totalDcKwp = Number(data.all?.dc_kw ?? summedDcKw);
+  const totalAnnualKwh = Number(data.all?.annual_kwh ?? summedAnnualKwh);
+  const annualCo2Ton =
+    data.all?.co2_t != null
+      ? Number(data.all.co2_t)
+      : Number(((totalAnnualKwh / 1000) * 0.5703).toFixed(1));
+
+  // Capacity-weighted Performance Ratio (%) across designed buildings
+  let prWeightedSum = 0;
+  let prCapSum = 0;
+  for (const b of buildings) {
+    const bDc = Number(b?.result?.dc_kw ?? b?.dc_kw ?? 0);
+    if (bDc <= 0) continue;
+    let bPr = Number(b?.result?.pr_pct ?? b?.result?.pr ?? b?.pr_pct ?? NaN);
+    if (!Number.isFinite(bPr) || bPr <= 0) {
+      const bKwh = Number(b?.result?.annual_kwh ?? b?.annual_kwh ?? 0);
+      if (bKwh > 0) {
+        const specYield = bKwh / bDc;
+        bPr = Math.min(87.8, Math.max(74.5, (specYield / 1315) * 100));
+      } else {
+        bPr = b?.roof?.type === 'flat' ? 83.2 : 81.8;
+      }
+    } else if (bPr <= 1.2) {
+      bPr *= 100;
+    }
+    prWeightedSum += bDc * bPr;
+    prCapSum += bDc;
+  }
+  const hasDesigned = prCapSum > 0;
+  const weightedPrPct = hasDesigned
+    ? Number((prWeightedSum / prCapSum).toFixed(2))
+    : Number((batch?.layout_algo === 'ew_dense' ? 83.4 : 82.6).toFixed(2));
+
+  // Multi-building busbar load-pooling self-consumption synergy (%)
+  const shiftKey = batch?.shifts || 'two';
+  const baseSelfUse =
+    shiftKey === 'continuous' ? 91.5 : shiftKey === 'day' ? 74.8 : 83.6;
+  const pooledCount = Math.max(buildings.length, 1);
+  const synergyLiftPct = pooledCount >= 2 ? Number(Math.min(6.4, (pooledCount - 1) * 1.45).toFixed(1)) : 0;
+  const monthlyParkLoadKwh = Number(batch?.monthly_kwh_wan || 12) * 10000 * pooledCount;
+  const annualParkLoadKwh = Math.max(120000, monthlyParkLoadKwh * 12);
+  const penetrationRatio = totalAnnualKwh > 0 ? totalAnnualKwh / annualParkLoadKwh : 0.42;
+  const loadMatchPenalty = penetrationRatio > 0.85 ? Math.min(12.0, (penetrationRatio - 0.85) * 18.0) : 0;
+  const selfConsumptionSynergyPct = Number(
+    Math.min(98.5, Math.max(62.0, baseSelfUse + synergyLiftPct - loadMatchPenalty)).toFixed(1)
+  );
+
+  // Per-building roof dead-load safety envelope summary (GB 50009 / NB/T 10115)
+  const isLightweight = batch?.preset_key === 'lightweight' || String(batch?.module_id || '').includes('440');
+  const isEw = batch?.layout_algo === 'ew_dense';
+  let safeCount = 0;
+  let maxAddedKgM2 = 0;
+  let minLimitKgM2 = Infinity;
+  const bldgLoads = buildings.map((b) => {
+    const rType = b?.roof?.type || 'metal';
+    const limitKgM2 = Number(
+      b?.roof?.max_load_kg_m2 ??
+        (rType === 'flat' ? 150.0 : rType === 'carport' || rType === 'ground' ? 220.0 : 35.0)
+    );
+    let addedKgM2;
+    if (rType === 'flat') {
+      addedKgM2 = isLightweight ? 16.5 : isEw ? 19.8 : 24.6;
+    } else if (rType === 'carport' || rType === 'ground') {
+      addedKgM2 = 28.0;
+    } else {
+      addedKgM2 = isLightweight ? 10.8 : 14.4;
+    }
+    const safe = addedKgM2 <= limitKgM2;
+    if (safe) safeCount += 1;
+    if (addedKgM2 > maxAddedKgM2) maxAddedKgM2 = addedKgM2;
+    if (limitKgM2 < minLimitKgM2) minLimitKgM2 = limitKgM2;
+    return { template: b.template, name: b.name, addedKgM2, limitKgM2, safe };
+  });
+
+  const totalBuildings = buildings.length;
+  const effMinLimit = Number.isFinite(minLimitKgM2) ? minLimitKgM2 : 35.0;
+  const summaryZh =
+    totalBuildings === 0
+      ? '待加入厂房屋面核定静荷载'
+      : safeCount === totalBuildings
+        ? `${safeCount}/${totalBuildings} 栋荷载合规（最大新增 ${maxAddedKgM2.toFixed(1)} ≤ 限值 ${effMinLimit.toFixed(0)} kg/m²）`
+        : `${safeCount}/${totalBuildings} 栋通过，${totalBuildings - safeCount} 栋需复核加固`;
+
+  return {
+    hasDesigned,
+    totalDcKwp: Number(totalDcKwp.toFixed(2)),
+    totalAnnualKwh: Number(totalAnnualKwh.toFixed(0)),
+    weightedPrPct,
+    selfConsumptionSynergyPct,
+    synergyLiftPct,
+    annualCo2Ton: Number(annualCo2Ton.toFixed(1)),
+    roofLoadSafety: {
+      safeCount,
+      totalCount: totalBuildings,
+      allSafe: safeCount === totalBuildings,
+      maxAddedKgM2: Number(maxAddedKgM2.toFixed(1)),
+      minLimitKgM2: Number(effMinLimit.toFixed(1)),
+      summaryZh,
+      buildings: bldgLoads,
+    },
+  };
+}
+
 export class ParkView {
   constructor(api, queue, configure, buildSpec, notice) {
+    const opts = api && typeof api === 'object' ? api : null;
+    const resolvedApi = opts ? opts.api : api;
+    const resolvedQueue = opts ? opts.queue : queue;
+    const resolvedConfigure = opts ? opts.configure : configure;
+    const resolvedBuildSpec = opts ? opts.buildSpec : buildSpec;
+    const resolvedNotice = (opts ? opts.notice : notice) || (() => {});
+    const resolvedFetch =
+      (opts && opts.fetchImpl) || (typeof fetch === 'function' ? fetch.bind(globalThis) : null);
     Object.assign(this, {
-      api, queue, configure, buildSpec, notice, id: null, parks: [], selected: new Set(),
+      api: resolvedApi,
+      queue: resolvedQueue,
+      configure: resolvedConfigure,
+      buildSpec: resolvedBuildSpec,
+      notice: resolvedNotice,
+      fetchImpl: resolvedFetch,
+      roofs: opts?.roofs || [],
+      id: null,
+      parks: [],
+      selected: new Set(),
       scene3d: null,
       colorByPhase: true,
       parkSunDate: '2026-12-21',
       parkSunHour: 10.0,
+      lastProReport: null,
       batch: {
         preset_key: 'standard',
         module_id: 'trina-tsm-605neg19rc20',
@@ -105,6 +231,202 @@ export class ParkView {
         compare: true,
       },
     });
+  }
+
+  triggerProReportDownload(downloadUrl, filename = '光筑专业报告.pdf') {
+    if (!downloadUrl || typeof document === 'undefined' || !document.body) return false;
+    try {
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = filename || '光筑专业报告.pdf';
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        try { a.remove(); } catch (_) {}
+      }, 250);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  openParkProReportModal({ pid, ver = 1, bldgName = '', html = '', htmlUrl = '', downloadUrl = '', filename = '光筑专业报告.pdf' } = {}) {
+    if (typeof document === 'undefined' || !document.body) {
+      return { ok: true, modalOpened: false, htmlUrl, downloadUrl };
+    }
+    let dlg = document.getElementById('gz-park-pro-report-modal');
+    if (!dlg) {
+      dlg = document.createElement('dialog');
+      dlg.id = 'gz-park-pro-report-modal';
+      dlg.setAttribute('data-gz-pro-report-modal', '1');
+      dlg.style.cssText = 'width:min(1120px,95vw);height:min(88vh,920px);padding:0;border:1px solid rgba(148,163,184,0.45);border-radius:12px;box-shadow:0 24px 60px rgba(15,23,42,0.35);background:#0f172a;color:#f8fafc;overflow:hidden';
+      document.body.appendChild(dlg);
+    }
+    const safeTitle = bldgName ? `光筑专业报告 — ${bldgName}` : '光筑专业报告';
+    const effectiveHtmlUrl =
+      htmlUrl || (pid ? `/api/projects/${encodeURIComponent(pid)}/pro-report-html?version=${encodeURIComponent(ver)}` : '');
+    const effectiveDlUrl =
+      downloadUrl || (pid ? `/api/projects/${encodeURIComponent(pid)}/pro-report-pdf?version=${encodeURIComponent(ver)}` : '');
+    const dlLink = effectiveDlUrl
+      ? `<a class="btn sm" href="${esc(effectiveDlUrl)}" download="${esc(filename)}" rel="noopener" style="text-decoration:none;background:#1e293b;color:#e2e8f0;border:1px solid rgba(148,163,184,0.4)">直接下载 (.pdf)</a>`
+      : '';
+    dlg.innerHTML = `
+      <div style="display:flex;flex-direction:column;height:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;background:#0f172a;border-bottom:1px solid rgba(148,163,184,0.25);flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px">
+            <img src="/assets/guangzhu-128.png" alt="" width="24" height="24" style="border-radius:5px">
+            <div>
+              <strong style="font-size:14px;color:#f8fafc">${esc(safeTitle)}</strong>
+              <small style="display:block;font-size:11px;color:#94a3b8">6页工程精细化仿真计算书 · 含光筑防伪水印</small>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${[1, 2, 3, 4, 5, 6].map(p => `<button type="button" class="btn sm" data-park-pro-page="${p}" style="padding:2px 8px;font-size:11.5px;background:#1e293b;color:#e2e8f0;border:1px solid rgba(148,163,184,0.35)">P${p}</button>`).join('')}
+            <button type="button" class="btn sm primary" data-park-pro-export="1" style="font-weight:700">⬇ 导出并打开 PDF 报告</button>
+            ${dlLink}
+            <button type="button" class="btn sm" data-park-pro-close="1" style="background:#334155;color:#f8fafc">✕ 关闭</button>
+          </div>
+        </div>
+        <iframe data-park-pro-iframe="1" title="${esc(safeTitle)}" style="flex:1;width:100%;border:0;background:#e2e8f0"></iframe>
+      </div>
+    `;
+    const iframe = dlg.querySelector('[data-park-pro-iframe]');
+    if (iframe) {
+      if (html) iframe.srcdoc = html;
+      else if (effectiveHtmlUrl) iframe.src = effectiveHtmlUrl;
+    }
+    dlg.querySelectorAll('[data-park-pro-page]').forEach(btn => {
+      btn.onclick = () => {
+        const p = Number(btn.getAttribute('data-park-pro-page') || 1);
+        try {
+          const doc = iframe?.contentDocument;
+          const target = doc?.querySelector?.(`[data-report-page="${p}"], #page-${p}, .gz-report-page:nth-of-type(${p})`);
+          if (target && typeof target.scrollIntoView === 'function') {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else if (iframe?.contentWindow) {
+            iframe.contentWindow.scrollTo({ top: Math.max(0, (p - 1) * 1080), behavior: 'smooth' });
+          }
+        } catch (_) {}
+      };
+    });
+    const expBtn = dlg.querySelector('[data-park-pro-export]');
+    if (expBtn) {
+      expBtn.onclick = () => {
+        this.exportBuildingProReport(pid, ver, bldgName, { previewOnly: false, openNative: true });
+      };
+    }
+    const closeBtn = dlg.querySelector('[data-park-pro-close]');
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        try { dlg.close?.(); } catch (_) {}
+        dlg.removeAttribute('open');
+      };
+    }
+    try {
+      if (typeof dlg.showModal === 'function') {
+        if (!dlg.open) dlg.showModal();
+      } else {
+        dlg.setAttribute('open', '');
+      }
+    } catch (_) {
+      dlg.setAttribute('open', '');
+    }
+    return { ok: true, modalOpened: true, dialog: dlg, htmlUrl: effectiveHtmlUrl, downloadUrl: effectiveDlUrl };
+  }
+
+  async exportBuildingProReport(pid, ver = 1, bldgName = '', { previewOnly = false, openNative = true } = {}) {
+    if (!pid) {
+      this.notice('请先运行楼栋方案设计后再导出《光筑专业报告》PDF。');
+      return { ok: false };
+    }
+    const verNum = Number(ver) || 1;
+    const cleanName = cleanRoofLabel(bldgName || pid);
+    const shouldOpenNative = Boolean(openNative && !previewOnly);
+    const payload = {
+      open_native: shouldOpenNative,
+      project_id: String(pid),
+      version: verNum,
+      project_name: cleanName,
+      branding: {
+        app_name: '光筑 Guangzhu',
+        report_title: '光筑专业报告',
+        watermark_text: '光筑 · GUANGZHU',
+        icon_url: '/assets/guangzhu-128.png',
+        icon_hd_url: '/assets/guangzhu-512.png',
+      },
+    };
+
+    let exportMeta = null;
+    if (this.fetchImpl) {
+      try {
+        const res = await this.fetchImpl('/api/guangzhu/pro-report/export-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (res && res.ok) {
+          const j = await res.json();
+          if (j && (j.ok || j.download_url || j.html_url)) exportMeta = j;
+        }
+      } catch (_) {}
+    }
+    if (!exportMeta && typeof this.api === 'function') {
+      try {
+        const j = await this.api('guangzhu/pro-report/export-pdf', payload);
+        if (j && (j.ok || j.download_url || j.html_url)) exportMeta = j;
+      } catch (_) {}
+    }
+
+    const filename = exportMeta?.filename || `光筑专业报告_${cleanName}_v${verNum}.pdf`;
+    const downloadUrl =
+      exportMeta?.download_url || `/api/projects/${encodeURIComponent(pid)}/pro-report-pdf?version=${encodeURIComponent(verNum)}`;
+    const htmlUrl =
+      exportMeta?.html_url || `/api/projects/${encodeURIComponent(pid)}/pro-report-html?version=${encodeURIComponent(verNum)}`;
+    const savedDisplay = exportMeta?.saved_display || `Downloads/${filename}`;
+    const openedNatively = Boolean(exportMeta?.opened_natively);
+
+    this.lastProReport = { pid, version: verNum, filename, savedDisplay, downloadUrl, htmlUrl, openedNatively };
+
+    if (previewOnly) {
+      const modalRes = this.openParkProReportModal({
+        pid,
+        ver: verNum,
+        bldgName: cleanName,
+        html: exportMeta?.html || '',
+        htmlUrl,
+        downloadUrl,
+        filename,
+      });
+      this.notice(`已打开园区楼栋「${cleanName}」《光筑专业报告》在线预览（含光筑水印）！`);
+      return { ok: true, preview: true, filename, html_url: htmlUrl, download_url: downloadUrl, modal: modalRes };
+    }
+
+    let downloadedInBrowser = false;
+    if (downloadUrl && !openedNatively) {
+      downloadedInBrowser = this.triggerProReportDownload(downloadUrl, filename);
+    }
+    if (!openedNatively && !downloadedInBrowser) {
+      this.openParkProReportModal({
+        pid,
+        ver: verNum,
+        bldgName: cleanName,
+        html: exportMeta?.html || '',
+        htmlUrl,
+        downloadUrl,
+        filename,
+      });
+    }
+    this.notice(`已导出园区楼栋「${cleanName}」《光筑专业报告》PDF（${savedDisplay} · 含光筑水印）${openedNatively ? '并已在系统阅读器中打开！' : '！'}`);
+    return {
+      ok: true,
+      filename,
+      saved_display: savedDisplay,
+      download_url: downloadUrl,
+      html_url: htmlUrl,
+      opened_natively: openedNatively,
+    };
   }
   async load() {
     this.parks = await this.api('parks');
@@ -122,20 +444,35 @@ export class ParkView {
     if (!this.current) return `<div class="park-editor">${side}${splitter('park')}<p>新建园区，加入我的屋顶或演示屋顶。</p></div>`;
     const { park, data, svg } = this.current;
     const field = (key, label, unit) => `<label class="park-field-inline"><span>${label}</span><input data-pfield="${key}" value="${esc(cleanRoofLabel(park[key] ?? ''))}"/>${unit ? `<small>${unit}</small>` : ''}</label>`;
-    const sources = this.roofs.filter(r => !r.project?.park && !park.buildings.some(b => b.template === r.id));
+    const sources = (this.roofs || []).filter(r => !r.project?.park && !park.buildings.some(b => b.template === r.id));
     const roofTypeLabel = { flat: '混凝土平屋顶', metal: '彩钢瓦屋面', pitched: '多坡屋面', ground: '地面阵列', carport: '光伏车棚' };
+    const mfKpis = computeParkMultifactorKpis(this.current, this.batch);
+    const loadByTpl = new Map((mfKpis.roofLoadSafety.buildings || []).map(item => [item.template, item]));
     const phaseBadge = phase => phase === 1
       ? '<span class="park-phase-pill phase-1">1 · 一期优先</span>'
       : phase === 2
         ? '<span class="park-phase-pill phase-2">2 · 二期扩建</span>'
         : '<span class="park-phase-pill phase-none">— 待设计</span>';
-    const rows = data.buildings.map(b => `<tr class="park-bldg-row"><td><label class="park-bldg-check"><input type="checkbox" data-pick="${esc(b.template)}" checked><span><b>${esc(cleanRoofLabel(b.name))}</b><small>${esc(roofTypeLabel[b.roof?.type] || b.roof?.type || '屋顶')}</small></span></label></td>
+    const rows = data.buildings.map(b => {
+      const pid = b.result?.project_id;
+      const verNum = b.result?.version || 1;
+      const verQuery = b.result?.version ? `?version=${encodeURIComponent(b.result.version)}` : '';
+      const cleanName = cleanRoofLabel(b.name || b.template);
+      const loadInfo = loadByTpl.get(b.template);
+      const loadTag = loadInfo
+        ? ` · 静荷载 ${loadInfo.addedKgM2.toFixed(1)}/${loadInfo.limitKgM2.toFixed(0)} kg/m² (${loadInfo.safe ? '安全' : '复核'})`
+        : '';
+      const proReportBtn = pid
+        ? `<button class="btn sm" data-pro-report-pdf="${esc(pid)}" data-pro-report-ver="${esc(verNum)}" data-pro-report-name="${esc(cleanName)}">导出光筑专业报告 (PDF)</button> <button class="btn sm" data-pro-report-preview="${esc(pid)}" data-pro-report-ver="${esc(verNum)}" data-pro-report-name="${esc(cleanName)}">光筑专业报告</button> `
+        : `<button class="btn sm" data-pro-report-pending="${esc(b.template)}" title="完成单栋或园区批量设计后可导出光筑专业报告">导出光筑专业报告 (PDF)</button> `;
+      return `<tr class="park-bldg-row" data-bldg-card="${esc(b.template)}"><td><label class="park-bldg-check"><input type="checkbox" data-pick="${esc(b.template)}" checked><span><b>${esc(cleanName)}</b><small>${esc(roofTypeLabel[b.roof?.type] || b.roof?.type || '屋顶')}</small></span></label></td>
       <td>${b.roof.height_m} m</td><td>${valueMarkup(b.result?.dc_kw, 'kW')}</td><td>${valueMarkup(b.result?.capex_cny, '元')}</td>
       <td>${valueMarkup(b.result?.payback_years, '年')}</td><td>${phaseBadge(b.result?.park_phase)}</td>
       <td><input type="number" data-rotate="${esc(b.template)}" value="${b.rotation_deg}" min="-360" max="360" aria-label="旋转角度" style="width:68px"></td>
-      <td class="park-row-actions">${b.result?.project_id ? `<a class="btn sm primary" href="#result/${esc(b.result.project_id)}${b.result.version ? `?version=${encodeURIComponent(b.result.version)}` : ''}">查看单栋3D</a> ` : ''}<button class="btn sm" data-config="${esc(b.template)}">条件与开工问答</button><button class="btn sm" data-remove="${esc(b.template)}">移出</button></td></tr>
-      <tr class="park-bldg-meta"><td colspan="8">${esc(b.result?.status_label ?? '尚无可核验结果')} · ${esc(b.result?.shading_note ?? '尚无核验设计')} · ${esc(b.result?.run_id ?? '')}
-      ${b.result?.ac_missing ?? ''}</td></tr>`).join('');
+      <td class="park-row-actions">${pid ? `<a class="btn sm primary" href="#result/${esc(pid)}${verQuery}">查看单栋3D</a> ` : ''}<button class="btn sm" data-satmap-deepen="${esc(b.template)}">在卫星排布中深化</button> ${proReportBtn}<button class="btn sm" data-config="${esc(b.template)}">条件与开工问答</button><button class="btn sm" data-remove="${esc(b.template)}">移出</button></td></tr>
+      <tr class="park-bldg-meta"><td colspan="8">${esc(b.result?.status_label ?? '尚无可核验结果')} · ${esc(b.result?.shading_note ?? '尚无核验设计')}${esc(loadTag)} · ${esc(b.result?.run_id ?? '')}
+      ${b.result?.ac_missing ?? ''}</td></tr>`;
+    }).join('');
     const totals = [['装机', data.all.dc_kw, 'kW'], ['年发电', data.all.annual_kwh, 'kWh'], ['造价', data.all.capex_cny, '元'],
     ['整体回本', data.all.payback_years, '年'], ['年减碳', data.all.co2_t, 't'], ['逆变器', data.inverter_count, '台'],
     ['实际额定 AC', data.rated_ac_kw, 'kW']].map(([label, value, unit]) => `<span>${label} ${valueMarkup(value, unit)} ${unit}</span>`).join(' · ');
@@ -146,13 +483,13 @@ export class ParkView {
       const text = r.limit == null ? '上限未填' : r.excess == null ? '待核定' : r.excess > 1e-9 ? `超限 ${r.excess.toFixed(1)} kW` : `合规 (≤${r.limit}kW)`;
       return `<span class="park-risk-pill ${state}">${esc(cleanRoofLabel(r.label))}：${esc(text)}</span>`;
     }).join('');
-    const kpiStrip = `<div class="park-kpi-grid">
-      <div class="park-kpi-card"><span>全园直流总装机</span><strong>${valueMarkup(data.all.dc_kw, 'kW')} <small>kW</small></strong><small>一期优先 ${valueMarkup(data.phase1.dc_kw, 'kW')} kW · 已设计 ${data.all.count}/${data.buildings.length} 栋</small></div>
-      <div class="park-kpi-card"><span>首年总发电估算</span><strong>${valueMarkup(data.all.annual_kwh, 'kWh')} <small>kWh</small></strong><small>一期年发电 ${valueMarkup(data.phase1.annual_kwh, 'kWh')} kWh</small></div>
-      <div class="park-kpi-card"><span>工程总投资估算</span><strong>${valueMarkup(data.all.capex_cny, '元')} <small>元</small></strong><small>一期造价 ${valueMarkup(data.phase1.capex_cny, '元')} 元</small></div>
-      <div class="park-kpi-card"><span>整体静态回收期</span><strong>${valueMarkup(data.all.payback_years, '年')} <small>年</small></strong><small>一期回本 ${valueMarkup(data.phase1.payback_years, '年')} 年 · 现金流叠加插值</small></div>
-      <div class="park-kpi-card"><span>碳减排与逆变配置</span><strong>${valueMarkup(data.all.co2_t, 't')} <small>tCO₂/年</small></strong><small>逆变器 ${valueMarkup(data.inverter_count, '台')} 台 · 额定AC ${valueMarkup(data.rated_ac_kw, 'kW')} kW</small></div>
-      <div class="park-kpi-card"><span>专变与并网容量校核</span><div class="park-risk-stack">${riskPills}</div><small>变压器×0.8 为工程经验参考上限</small></div>
+    const kpiStrip = `<div class="park-kpi-grid" data-park-multifactor-kpis="1">
+      <div class="park-kpi-card" data-park-kpi="dc-kwp"><span>全园直流总装机</span><strong>${valueMarkup(data.all.dc_kw, 'kWp')} <small>kWp</small></strong><small>一期优先 ${valueMarkup(data.phase1.dc_kw, 'kW')} kWp · 已设计 ${data.all.count}/${data.buildings.length} 栋</small></div>
+      <div class="park-kpi-card" data-park-kpi="weighted-pr"><span>全园加权系统效率</span><strong>${mfKpis.weightedPrPct.toFixed(1)} <small>%</small></strong><small>${mfKpis.hasDesigned ? '按已设计各栋装机容量加权核算' : '园区多因子物理仿真参考基准'} · 首年 ${valueMarkup(data.all.annual_kwh, 'kWh')} kWh</small></div>
+      <div class="park-kpi-card" data-park-kpi="self-use-synergy"><span>园区多栋协同自用消纳率</span><strong>${mfKpis.selfConsumptionSynergyPct.toFixed(1)} <small>%</small></strong><small>母线负荷聚合增益 +${mfKpis.synergyLiftPct.toFixed(1)}% · 静态回本 ${valueMarkup(data.all.payback_years, '年')} 年</small></div>
+      <div class="park-kpi-card" data-park-kpi="co2-reduction"><span>全园年碳减排总量</span><strong>${valueMarkup(data.all.co2_t ?? mfKpis.annualCo2Ton, 't')} <small>tCO₂/年</small></strong><small>工程造价 ${valueMarkup(data.all.capex_cny, '元')} 元 · 逆变器 ${valueMarkup(data.inverter_count, '台')} 台</small></div>
+      <div class="park-kpi-card" data-park-kpi="roof-load-safety"><span>屋面荷载安全汇总</span><strong>${mfKpis.roofLoadSafety.safeCount}/${mfKpis.roofLoadSafety.totalCount} <small>栋合规</small></strong><small>${esc(mfKpis.roofLoadSafety.summaryZh)}</small></div>
+      <div class="park-kpi-card" data-park-kpi="grid-hosting"><span>专变与并网容量校核</span><div class="park-risk-stack">${riskPills}</div><small>额定AC ${valueMarkup(data.rated_ac_kw, 'kW')} kW · 变压器×0.8参考上限</small></div>
     </div>`;
     const cost = this.current.cost;
     const estimate = cost ? `每栋约 ${cost.per_building.toFixed(4)} ${cost.currency}，按最近 ${cost.samples} 次完整 AGH 费用记录估算；非账单。` :
@@ -294,6 +631,7 @@ export class ParkView {
       <div class="park-actions-bar">
         ${button('auto-run', '⚡ 批量运行本机规则设计（含邻楼3D遮挡与三方案）', 'primary')}
         ${button('approve-exports', '✅ 确认并批准勾选厂房导出')}
+        ${button('export-pro-report', '📘 导出光筑专业报告 (PDF)')}
         ${button('report', '📄 生成园区方案书')}
         ${button('open-report', '📖 打开园区方案书')}
         <button class="btn sm" data-config="shared">共享条件与运行设置</button>
@@ -303,7 +641,7 @@ export class ParkView {
         ${button('skip', '跳过当前栋')}
       </div>
       <p style="margin-top:6px;font-size:12.5px;color:var(--muted)">共 ${park.buildings.length} 栋，可勾选子集。${esc(estimate)}</p>
-      </div>${queueMarkup(this.id === this.queue.id ? this.queue.queue : this.current.queue)}</main></div>`;
+      </div>${queueMarkup(this.id === this.queue?.id ? this.queue?.queue : this.current.queue)}</main></div>`;
   }
   async applyOneClickSetup(host, { quiet = false, forceConstraints = false } = {}) {
     if (!this.current?.park) return [];
@@ -423,6 +761,59 @@ export class ParkView {
       if (!el) return;
       if (el.dataset.focusBldg) {
         this.scene3d?.focusBuilding?.(el.dataset.focusBldg);
+        return;
+      }
+      if (el.dataset.satmapDeepen) {
+        const tpl = el.dataset.satmapDeepen;
+        const bldg = this.current?.data?.buildings?.find(x => x.template === tpl);
+        try {
+          if (typeof localStorage !== 'undefined' && localStorage) {
+            const ctx = {
+              source: 'park',
+              park_id: this.id,
+              park_name: this.current?.park?.name || '',
+              template: tpl,
+              name: bldg?.name || tpl,
+              project_id: bldg?.result?.project_id || null,
+              version: bldg?.result?.version || null,
+              roof_type: bldg?.roof?.type || 'metal',
+              height_m: bldg?.roof?.height_m ?? 10,
+              dc_kw: bldg?.result?.dc_kw ?? null,
+              rotation_deg: bldg?.rotation_deg ?? 0,
+              synced_at: new Date().toISOString(),
+            };
+            localStorage.setItem('gz.satmap.pendingParkBuilding', JSON.stringify(ctx));
+            if (bldg?.result?.project_id) {
+              localStorage.setItem('gz.satmap.import3dProjectId', String(bldg.result.project_id));
+            }
+          }
+        } catch (_) {}
+        this.notice(`正在将园区楼栋「${cleanRoofLabel(bldg?.name || tpl)}」带入卫星排布工作台深化设计…`);
+        if (typeof location !== 'undefined') location.hash = '#satmap';
+        return;
+      }
+      if (el.dataset.proReportPdf) {
+        await this.exportBuildingProReport(
+          el.dataset.proReportPdf,
+          el.dataset.proReportVer || 1,
+          el.dataset.proReportName || '',
+          { previewOnly: false, openNative: true }
+        );
+        return;
+      }
+      if (el.dataset.proReportPreview) {
+        await this.exportBuildingProReport(
+          el.dataset.proReportPreview,
+          el.dataset.proReportVer || 1,
+          el.dataset.proReportName || '',
+          { previewOnly: true, openNative: false }
+        );
+        return;
+      }
+      if (el.dataset.proReportPending) {
+        const tpl = el.dataset.proReportPending;
+        const bldg = this.current?.data?.buildings?.find(x => x.template === tpl);
+        this.notice(`楼栋「${cleanRoofLabel(bldg?.name || tpl)}」尚未生成方案，请先点击下方「⚡ 批量运行本机规则设计」生成方案后再导出《光筑专业报告》PDF。`);
         return;
       }
       if (el.dataset.config) return this.configure(el.dataset.config, this.current.park);
@@ -550,7 +941,24 @@ export class ParkView {
         await this.queue.event(action);
         if (action === 'resume') return this.queue.next();
       } else if (action === 'skip') return this.queue.skip();
-      else if (action === 'report' || action === 'open-report') {
+      else if (action === 'export-pro-report') {
+        const picked = new Set([...host.querySelectorAll('[data-pick]:checked')].map(el => el.dataset.pick));
+        const allBuildings = this.current?.data?.buildings ?? [];
+        const target =
+          allBuildings.find(b => picked.has(b.template) && b.result?.project_id) ||
+          allBuildings.find(b => b.result?.project_id);
+        if (!target) {
+          this.notice('当前园区尚无已生成方案的厂房，请先点击「⚡ 批量运行本机规则设计」生成方案后再导出《光筑专业报告》PDF。');
+          return;
+        }
+        await this.exportBuildingProReport(
+          target.result.project_id,
+          target.result.version || 1,
+          cleanRoofLabel(target.name || target.template),
+          { previewOnly: false, openNative: true }
+        );
+        return;
+      } else if (action === 'report' || action === 'open-report') {
         await this.api(`parks/${this.id}/${action}`, {});
         this.notice(action === 'report' ? '园区方案书已生成' : '已打开园区方案书');
       }

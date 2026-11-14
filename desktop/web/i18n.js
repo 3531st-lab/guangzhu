@@ -73,13 +73,48 @@ const ZH_TO_EN_PHRASES_RAW = [
   ['方案与光储比选', 'Scheme & BESS'],
   ['前往方案比选与储能碳资产测算中心', 'Open Multi-Scheme & PV-BESS Comparison Center'],
 
-  // 5 Workflow Steps in Satellite Workbench
+  // 5 Workflow Steps & Streamlined Guided Workflow in Satellite Workbench
   ['真实卫星定位 · 实时气象寻优 · 智能配串 · 全套施工图', 'Live Satellite Imagery · Meteorological Tilt · Smart MPPT · 16-Sheet CAD'],
   ['1. 卫星底图与排布设计', '1. Satellite Base & Array Layout'],
+  ['1. 选址与圈屋顶', '1. Site & Roof Outline'],
   ['2. 电气设计与MPPT配串', '2. Electrical & MPPT Stringing'],
+  ['2. 电气配串', '2. Electrical Stringing'],
   ['3. 8760h 物理仿真与实时气象', '3. 8760h Physics & Live Weather'],
+  ['3. 8760h 仿真', '3. 8760h Simulation'],
   ['4. 实景透视效果图', '4. Oblique Perspective Studio'],
+  ['4. 实景透视', '4. Oblique Studio'],
+  ['5. 图纸与光筑报告', '5. CAD & Guangzhu Report'],
   ['5. 施工 CAD 图纸生成', '5. 16-Sheet CAD Drawings'],
+  ['图纸与光筑报告', 'CAD & Guangzhu Report'],
+  ['选址与圈屋顶', 'Site & Roof Outline'],
+  ['当前操作向导', 'Guided Workflow'],
+  ['① 选址/从三维导入', '① Pick Site / Import 3D'],
+  ['② 圈定屋顶与禁布区', '② Outline Roof & Keep-Outs'],
+  ['③ 一键铺设/12维寻优', '③ Auto-Layout / 12D Opt'],
+  ['④ 配串与导出光筑专业报告', '④ Stringing & Guangzhu Report'],
+  ['选址/从三维导入', 'Pick Site / Import 3D'],
+  ['圈定屋顶与禁布区', 'Outline Roof & Keep-Outs'],
+  ['一键铺设/12维寻优', 'Auto-Layout / 12D Opt'],
+  ['配串与导出光筑专业报告', 'Stringing & Guangzhu Report'],
+  ['🔄 三维设计联动', '🔄 3D Design Sync'],
+  ['三维设计联动', '3D Design Sync'],
+  ['👁 预览专业报告', '👁 Preview Pro Report'],
+  ['预览专业报告', 'Preview Pro Report'],
+  ['✨ AI 一键智能设计 ▾', '✨ AI One-Click Design ▾'],
+  ['✨ AI 一键智能设计', '✨ AI One-Click Design'],
+  ['AI 一键智能设计', 'AI One-Click Design'],
+  ['① 选址底图', '① Site & Map'],
+  ['② 圈画屋面', '② Draw Roof'],
+  ['③ 排布与寻优', '③ Layout & Opt'],
+  ['选址底图', 'Site & Map'],
+  ['圈画屋面', 'Draw Roof'],
+  ['排布与寻优', 'Layout & Opt'],
+  ['下一步 →', 'Next Step →'],
+  ['① 搜索定位或从三维导入', '① Search Site or Import 3D'],
+  ['② 在地图圈画厂房轮廓', '② Outline Roof on Satellite Map'],
+  ['③ 点击「一键铺设」或「多维寻优」', '③ Click "Auto-Layout" or "Multi-Factor Opt"'],
+  ['快速上手向导', 'Quick-Start Guide'],
+  ['新手三步快速出图', '3-Step Quick-Start Workflow'],
   ['卫星排布', 'Satellite Layout'],
   ['电气配串', 'Electrical MPPT'],
   ['8760h 仿真', '8760h Physics'],
@@ -737,6 +772,611 @@ const ZH_TO_EN_PHRASES_RAW = [
   ['尚未收到模型清单', 'Local physics engine active (no external model list loaded)'],
   ['设置', 'Settings'],
   ['关闭', 'Close'],
+
+  // Satellite <-> 3D Bidirectional Linkage & Lab Cross-Tab Sync
+  ['同步当前卫星/三维方案数据', 'Sync Active Satellite / 3D Scheme Data'],
+  ['从卫星排布同步最新方案', 'Sync Latest Scheme from Satellite Layout'],
+  ['一键同步卫星最新方案', 'Sync Latest Satellite Scheme'],
+  ['从三维工程库导入方案', 'Import Scheme from 3D Project Library'],
+  ['导入选中三维工程', 'Import Selected 3D Project'],
+  ['刷新三维工程列表', 'Refresh 3D Project List'],
+  ['卫星与三维双向联动', 'Satellite & 3D Bidirectional Linkage'],
+  ['从三维设计导入屋面与方案', 'Import Roof & Scheme from 3D Design'],
+  ['从三维设计导入', 'Import from 3D Design'],
+  ['联动推送至三维设计', 'Push Layout to 3D Design'],
+  ['同步至三维设计', 'Sync to 3D Design'],
+  ['卫星深化方案 vs 三维设计基准', 'Satellite Refined Scheme vs. 3D Design Baseline'],
+  ['进入三维设计成果场景', 'Open 3D Design Result Scene'],
+  ['进入三维屋面编辑器', 'Open 3D Roof Editor'],
+  ['在卫星排布中深化', 'Deepen in Satellite Layout'],
+  ['三维设计', '3D Design'],
+  ['尚未检测到已保存三维工程，默认同步卫星排布上下文', 'No saved 3D project detected; linked to active Satellite Layout context'],
+
+  // Multi-Factor Engineering Optimization (Orientation, Mounting, Wind, Load, Cold Voc, Shadow Pruning)
+  ['多维可能性因数综合寻优', 'Multi-Factor Engineering Optimization'],
+  ['一键多维因数综合寻优', 'One-Click Multi-Factor Optimization'],
+  ['多维工程因子联动校核', 'Multi-Factor Engineering Co-Verification'],
+  ['东西向双坡蝴蝶阵', 'East-West Butterfly Array'],
+  ['东西向人字坡蝴蝶阵', 'East-West Butterfly Array'],
+  ['东西向双坡阵列', 'East-West Dual-Tilt Array'],
+  ['东西双坡 (E-W)', 'East-West Butterfly'],
+  ['正南固定倾角', 'South-Facing Fixed Tilt'],
+  ['正南向固定倾角阵列', 'South-Facing Fixed-Tilt Array'],
+  ['正南固定 (South)', 'South Fixed Tilt'],
+  ['顺坡平铺', 'Flush Pitched Mounting'],
+  ['顺彩钢瓦坡度平铺', 'Flush Metal-Roof Mounting'],
+  ['架高阳光棚', 'Elevated Solar Canopy'],
+  ['组件横竖排与叠排方式', 'Portrait/Landscape & 1P/2P Stacking'],
+  ['1P 单排竖装', '1P Single-Row Portrait'],
+  ['2P 双竖排叠装', '2P Dual-Row Portrait'],
+  ['1P 单排', '1P Single-Row'],
+  ['2P 双竖排', '2P Dual-Row'],
+  ['横装抗遮挡', 'Landscape Shade-Tolerant'],
+  ['竖装标准排布', 'Portrait Standard Layout'],
+  ['竖装', 'Portrait'],
+  ['横装', 'Landscape'],
+  ['支架固定方式与屋面恒载校核', 'Mounting Attachment & Roof Dead-Load Check'],
+  ['彩钢瓦免打孔夹具', 'Standing-Seam Non-Penetrating Clamp'],
+  ['彩钢瓦夹具', 'Standing-Seam Clamp'],
+  ['化学锚栓固定', 'Chemical Anchor Fixing'],
+  ['混凝土压块配重', 'Concrete Ballast Mounting'],
+  ['混凝土压块', 'Concrete Ballast'],
+  ['屋面静荷载上限', 'Roof Dead-Load Limit'],
+  ['屋面允许新增静荷载', 'Allowable Added Roof Dead Load'],
+  ['屋面荷载安全汇总', 'Roof Dead-Load Safety Summary'],
+  ['屋面恒载安全裕度', 'Roof Dead-Load Safety Margin'],
+  ['屋面荷载合规', 'Roof Dead-Load Safe'],
+  ['台风风区与边角抗风揭退距', 'Typhoon Wind Zone & Perimeter Uplift Setback'],
+  ['台风风区等级', 'Typhoon Wind Zone'],
+  ['沿海强台风区', 'Coastal Severe Typhoon Zone'],
+  ['台风区边角风揭退距', 'Typhoon Perimeter Uplift Setback'],
+  ['台风退距合规', 'Typhoon Setback Compliant'],
+  ['极端低温开路电压校核', 'Extreme Cold Open-Circuit Voc Check'],
+  ['低温开路电压校核', 'Cold Voc Envelope Check'],
+  ['低温Voc安全', 'Cold Voc Safe'],
+  ['障碍物阴影剔除', 'Obstacle Shadow Pruning'],
+  ['阴影剔除块数', 'Shadow-Pruned Modules'],
+  ['单组件阴影损失上限', 'Per-Module Shade Loss Cutoff'],
+  ['地表反照率', 'Ground Albedo'],
+  ['积雪遮蔽损失', 'Snow Loss'],
+  ['光谱修正增益', 'Spectral Correction'],
+
+  // Guangzhu Professional Report (《光筑专业报告》), Delivery Bundle, Health Check & Campus KPIs
+  ['① 导出《光筑专业报告》PDF（6页计算书·含光筑水印）', '① Export Guangzhu Professional Report PDF (6-Page · Watermarked)'],
+  ['导出《光筑专业报告》PDF（6页计算书·含光筑水印）', 'Export Guangzhu Professional Report PDF (6-Page · Watermarked)'],
+  ['导出《光筑专业报告》PDF', 'Export Guangzhu Professional Report (PDF)'],
+  ['📘 导出光筑专业报告 (PDF)', '📘 Export Guangzhu Professional Report (PDF)'],
+  ['📄 导出光筑专业报告 (PDF)', '📄 Export Guangzhu Professional Report (PDF)'],
+  ['导出光筑专业报告 (PDF)', 'Export Guangzhu Professional Report (PDF)'],
+  ['导出光筑专业报告', 'Export Guangzhu Professional Report'],
+  ['在线预览光筑专业报告', 'Preview Guangzhu Professional Report Online'],
+  ['预览光筑专业报告', 'Preview Guangzhu Professional Report'],
+  ['⬇ 导出并打开 PDF 报告', '⬇ Export & Open PDF Report'],
+  ['导出并打开 PDF 报告', 'Export & Open PDF Report'],
+  ['直接下载 (.pdf)', 'Direct Download (.pdf)'],
+  ['《光筑专业报告》', 'Guangzhu Professional Report'],
+  ['光筑专业报告', 'Guangzhu Professional Report'],
+  ['并网光伏发电系统精细化工程仿真计算书', 'Guangzhu Professional Photovoltaic Simulation Report'],
+  ['6页工程精细化仿真计算书 · 含光筑防伪水印', '6-Page Swiss Engineering Simulation Report · Guangzhu Watermark'],
+  ['8760h 逐时精细化物理仿真', '8760h Hourly Physical Simulation'],
+  ['8760h 精细化仿真', '8760h Precision Simulation'],
+  ['光筑专业仿真', 'Guangzhu Precision Simulation'],
+  ['光筑防伪水印', 'Guangzhu Watermark'],
+  ['完成单栋或园区批量设计后可导出光筑专业报告', 'Complete single-building or batch campus design first to export Guangzhu Professional Report'],
+  ['② 全套 CAD 施工图 (DXF/PDF)', '② Full 16-Sheet CAD Drawings (DXF/PDF)'],
+  ['全套 CAD 施工图 (DXF/PDF)', 'Full 16-Sheet CAD Drawings (DXF/PDF)'],
+  ['③ 一键导出全套工程交付包 & 同步三维设计', '③ Export Full Engineering Delivery Bundle & Sync 3D Design'],
+  ['③ 一键导出全套工程交付包 &amp; 同步三维设计', '③ Export Full Engineering Delivery Bundle & Sync 3D Design'],
+  ['一键导出全套工程交付包 & 同步三维设计', 'Export Full Engineering Delivery Bundle & Sync 3D Design'],
+  ['一键导出全套工程交付包', 'Export Full Engineering Delivery Bundle'],
+  ['导出全套工程交付包', 'Export Engineering Delivery Bundle'],
+  ['光筑工程交付包', 'Guangzhu Engineering Delivery Bundle'],
+  ['工程交付中心', 'Engineering Delivery Center'],
+  ['交付中心', 'Delivery Center'],
+  ['打开交付文件夹', 'Open Delivery Folder'],
+  ['打开所在文件夹', 'Open Containing Folder'],
+  ['8项出图前工程合规自检卡', '8-Item Pre-Delivery Engineering Compliance Checklist'],
+  ['出图前工程合规自检卡', 'Pre-Delivery Engineering Compliance Checklist'],
+  ['8项工程健康自检', '8-Item Engineering Health Check'],
+  ['工程健康度自检', 'Engineering Health Check'],
+  ['重新运行合规自检', 'Re-run Compliance Check'],
+  ['全部合规通过', 'All Checks Passed'],
+  ['存在警告项', 'Warnings Detected'],
+  ['存在不合规项', 'Action Required'],
+  ['容配比合理性校核', 'DC/AC Sizing Ratio Check'],
+  ['极寒开路电压安全裕度', 'Extreme Cold Voc Safety Margin'],
+  ['高温工作电压MPPT窗口校核', 'High-Temp Vmpp MPPT Window Check'],
+  ['屋面新增静荷载裕度校核', 'Roof Dead-Load Safety Margin Check'],
+  ['台风风揭边角退距校核', 'Typhoon Wind Uplift Setback Check'],
+  ['直流回路压降校核', 'DC String Voltage Drop Check'],
+  ['全年近处遮挡损失校核', 'Annual Near-Shading Loss Check'],
+  ['全投资收益率与回收期校核', 'Project IRR & Payback Viability Check'],
+  ['整改建议', 'Remediation Advice'],
+  ['极端低温设定：', 'Extreme Cold Design Temp: '],
+  ['极端低温设定', 'Extreme Cold Design Temp'],
+  ['极端高温设定：', 'Extreme Hot Design Temp: '],
+  ['极端高温设定', 'Extreme Hot Design Temp'],
+  ['· 当前采用', '· Active Scheme'],
+  ['当前采用', 'Active Scheme'],
+  ['· 最不利压降', '· Max Voltage Drop'],
+  ['最不利压降', 'Max Voltage Drop'],
+  ['通道编号', 'MPPT Channel'],
+  ['全年水平面总辐照', 'Annual Global Horizontal Irradiation'],
+  ['水平总辐照', 'Global Horiz. Irradiation'],
+  ['水平散射', 'Diffuse Horiz. Irradiation'],
+  ['斜面总辐照', 'Global Incident POA'],
+  ['有效辐照', 'Effective Irradiation'],
+  ['背面增益', 'Rear Bifacial Gain'],
+  ['阵列直流电量', 'Array DC Energy'],
+  ['直流阵列有效输出', 'Effective Array DC Output'],
+  ['综合效率', 'Performance Ratio'],
+  ['· 判定：', '· Verdict: '],
+  ['判定：', 'Verdict: '],
+  ['专业校核：', 'Checked By: '],
+  ['专业校核', 'Checked By'],
+  ['批准签章：', 'Approved By: '],
+  ['批准签章', 'Approved By'],
+  ['编制人：', 'Prepared By: '],
+  ['编制人', 'Prepared By'],
+  ['审定人：', 'Authorized By: '],
+  ['审定人', 'Authorized By'],
+  ['首年发电：', '1st-Yr Yield: '],
+  ['双向计量表 kWh', 'Bi-Directional Meter kWh'],
+  ['QS 总隔离开关', 'QS Main Isolator'],
+  ['谷电充电1', 'Valley Charge 1'],
+  ['早峰放电1', 'Morning Discharge 1'],
+  ['午间光伏充2', 'Midday PV Charge 2'],
+  ['晚尖峰放电2', 'Evening Peak Discharge 2'],
+  ['运营年份', 'Operating Year'],
+  ['全部线路', 'All Circuits'],
+  ['模型 key', 'Model API Key'],
+  ['先在首页填 key', 'Enter API Key on Home first'],
+  ['需求请在右侧 AGH 里直接说', 'Describe your requirements in the AI assistant panel'],
+  ['重新加载3D', 'Reload 3D Scene'],
+  ['C. 大跨度预应力柔性索桁架', 'C. Large-Span Pre-Stressed Cable Truss'],
+  ['全期净收益元', 'Lifetime Net Cashflow (RMB)'],
+  ['累计净收益元', 'Cumulative Net Cashflow (RMB)'],
+  ['发电 kWh', 'Generation (kWh)'],
+  ['自用 kWh', 'Self-Use (kWh)'],
+  ['上网 kWh', 'Grid Export (kWh)'],
+  ['弃电 kWh', 'Curtailment (kWh)'],
+  ['到下一角 m', 'Edge Length (m)'],
+  ['复制一份（向东）', 'Duplicate (+East)'],
+  ['东西双坡与正南曲线负荷匹配仿真', 'East-West vs. South 24h Load-Matching Simulation'],
+  ['造价与电价双因子财务敏感性矩阵', 'CAPEX × Tariff 3×3 Financial Sensitivity Matrix'],
+  ['双班工业日间负荷', 'Two-Shift Industrial Load'],
+  ['商业午后高峰负荷', 'Commercial Afternoon Peak Load'],
+  ['连续二十四小时恒定负荷', 'Continuous 24h Baseload'],
+  ['全园多因子工程与消纳汇总', 'Campus Multi-Factor Physics & Synergy KPIs'],
+  ['全园直流总装机', 'Total Campus DC Capacity'],
+  ['全园加权系统效率', 'Weighted System PR'],
+  ['园区多栋协同自用消纳率', 'Campus Self-Consumption Synergy'],
+  ['全园年碳减排总量', 'Annual CO₂ Reduction'],
+  ['专变与并网容量校核', 'Transformer & Grid Hosting Check'],
+  ['按已设计各栋装机容量加权核算', 'Capacity-weighted across designed buildings'],
+  ['园区多因子物理仿真参考基准', 'Campus multi-factor simulation baseline'],
+  ['母线负荷聚合增益', 'Busbar load-pooling lift'],
+  ['变压器×0.8参考上限', '0.8× transformer limit'],
+  ['投资与电价双因素敏感性矩阵', 'CAPEX × Tariff Sensitivity Matrix'],
+  ['源荷匹配逐时消纳对比', 'Hourly PV-Load Matching Profile'],
+
+  // Campus (#park) Full UI, 2D/3D Panes, Batch Center & Queue
+  ['载入武进工业园区', 'Load Wujin Industrial Park'],
+  ['按原始坐标摆放', 'Reset Coordinates'],
+  ['🏢 一键同步邻楼3D遮挡', '🏢 Sync Neighbor 3D Shading'],
+  ['一键同步邻楼3D遮挡', 'Sync Neighbor 3D Shading'],
+  ['删除园区', 'Delete Campus'],
+  ['加入厂房', 'Add Building'],
+  ['拖动下方左侧 2D 平面图楼栋可调整园区相对位置，右侧 3D 园区全景沙盘实时联动显示真实三维园区建筑、障碍物与设计后的全园区光伏阵列（点击 3D 楼栋可直达单栋精细工作台）。', 'Drag buildings on the 2D site plan (left) to adjust campus positions; the 3D digital twin (right) updates buildings, obstacles, and PV arrays in real time (click any 3D building to open its workbench).'],
+  ['📐 园区 2D 总平面布置与拖拽定位图', '📐 Campus 2D Master Plan & Drag Positioning'],
+  ['园区 2D 总平面布置与拖拽定位图', 'Campus 2D Master Plan & Drag Positioning'],
+  ['鼠标拖拽屋面可移动坐标', 'Drag roofs to adjust coordinates'],
+  ['🌐 真实园区 3D 全景数字孪生沙盘', '🌐 Campus 3D Digital Twin Sandbox'],
+  ['真实园区 3D 全景数字孪生沙盘', 'Campus 3D Digital Twin Sandbox'],
+  ['园区 3D 全景数字孪生沙盘', 'Campus 3D Digital Twin Sandbox'],
+  ['🏛 鸟瞰', '🏛 Isometric'],
+  ['⬇ 顶视', '⬇ Top View'],
+  ['☀ 南向', '☀ South View'],
+  ['🎨 分期着色', '🎨 Color by Phase'],
+  ['🎨 实景深蓝', '🎨 Realistic Blue'],
+  ['▶ 日照动画', '▶ Sun Animation'],
+  ['⏸ 暂停日照', '⏸ Pause Sun'],
+  ['冬至日 (12-21)', 'Winter Solstice (12-21)'],
+  ['春分日 (03-21)', 'Equinox (03-21)'],
+  ['夏至日 (06-21)', 'Summer Solstice (06-21)'],
+  ['时刻', 'Time'],
+  ['⚡ 园区一键设置与批量工程配置中心', '⚡ Campus One-Click Setup & Batch Engineering Center'],
+  ['园区一键设置与批量工程配置中心', 'Campus One-Click Setup & Batch Engineering Center'],
+  ['一键预设园区专变/并网/预算约束、统一组件与逆变器选型、负荷电价及全园邻楼 3D 遮挡坐标', 'One-click preset for transformer/grid/budget limits, unified module & inverter models, load tariffs, and neighbor 3D shading'],
+  ['一键标准工商业配置', 'Standard C&I Preset'],
+  ['一键高收益满铺配置', 'Max-Capacity Preset'],
+  ['一键快回本稳健配置', 'Fast-Payback Preset'],
+  ['一键轻质低荷载配置', 'Lightweight Roof Preset'],
+  ['☑️ 全选/反选厂房', '☑️ Select / Invert All'],
+  ['全选/反选厂房', 'Select / Invert All'],
+  ['✅ 一键应用设置并同步园区3D坐标', '✅ Apply Settings & Sync 3D Coordinates'],
+  ['🚀 一键设置并立即全园排板计算', '🚀 Apply & Batch-Run Campus Layout'],
+  ['🧹 清空园区已有排板', '🧹 Clear Campus Designs'],
+  ['自动补齐专变/并网/预算约束并同步邻楼 3D 遮挡。', 'Auto-fills transformer/grid/budget limits and syncs neighbor 3D shading.'],
+  ['展开批量设备、电价与电缆细项设置 (8项)', 'Expand Batch Equipment, Tariff & Cable Settings (8 Items)'],
+  ['按需微调', 'Fine-tune'],
+  ['统一光伏组件选型', 'Unified PV Module Model'],
+  ['统一逆变器品牌', 'Unified Inverter Brand'],
+  ['自动匹配最优容配比', 'Auto-Match Optimal DC/AC Ratio'],
+  ['华为数字能源 (SUN2000)', 'Huawei Digital Power (SUN2000)'],
+  ['阳光电源 (SG系列)', 'Sungrow (SG Series)'],
+  ['锦浪科技 (GCI系列)', 'Solis / Ginlong (GCI Series)'],
+  ['固德威 (GW系列)', 'GoodWe (GW Series)'],
+  ['上能电气 (SN系列)', 'Sineng Electric (SN Series)'],
+  ['正泰电源 (CPS系列)', 'Chint Power (CPS Series)'],
+  ['三维批量排版算法', '3D Batch Layout Algorithm'],
+  ['多目标帕累托自动寻优 (推荐)', 'Multi-Objective Pareto Auto-Opt (Recommended)'],
+  ['冬至 9:00-15:00 真太阳时零遮挡排距', 'Winter Solstice 09:00-15:00 Unshaded Pitch'],
+  ['顺屋脊正交高密网格排布', 'Ridge-Orthogonal High-Density Grid'],
+  ['10° 东西向人字形高密度排布', '10° East-West Butterfly Dense Layout'],
+  ['三方案决策偏好 & 目标回本', '3-Scheme Preference & Max Payback'],
+  ['三方案决策偏好 &amp; 目标回本', '3-Scheme Preference & Max Payback'],
+  ['折中优选', 'Balanced Optimum'],
+  ['最大装机', 'Max Capacity'],
+  ['最快回本', 'Fastest Payback'],
+  ['回本上限(年)', 'Max Payback (yr)'],
+  ['统一加权自用电价 (元/度)', 'Blended Self-Use Tariff (RMB/kWh)'],
+  ['单栋月均用电量 (万度/月)', 'Monthly Load per Building (10⁴ kWh/mo)'],
+  ['统一厂房生产班次', 'Plant Shift Schedule'],
+  ['白班单班 (8:00-17:30)', 'Single Day Shift (08:00-17:30)'],
+  ['两班制生产 (含周末轮休)', 'Two-Shift Operation (Rotating Weekends)'],
+  ['三班24h连续生产', '24h Continuous Three-Shift'],
+  ['统一交直流电缆选型', 'Unified DC / AC Cable Family'],
+  ['并网限制', 'Grid Limit'],
+  ['1 · 一期优先', '1 · Phase 1'],
+  ['2 · 二期扩建', '2 · Phase 2'],
+  ['— 待设计', '— Pending'],
+  ['一期优先', 'Phase 1'],
+  ['二期扩建', 'Phase 2'],
+  ['查看单栋3D', 'View 3D'],
+  ['条件与开工问答', 'Constraints & Survey'],
+  ['移出', 'Remove'],
+  ['尚无可核验结果', 'No verified result yet'],
+  ['尚无核验设计', 'No verified design yet'],
+  ['完成单栋或园区批量设计后可打开报告', 'Run single-building or batch campus design first'],
+  ['混凝土平屋顶', 'Flat Concrete Roof'],
+  ['彩钢瓦屋面', 'Standing-Seam Metal Roof'],
+  ['多坡屋面', 'Multi-Pitch Roof'],
+  ['地面阵列', 'Ground-Mount Array'],
+  ['光伏车棚', 'Solar Carport'],
+  ['整体回本', 'Campus Payback'],
+  ['实际额定 AC', 'Rated AC'],
+  ['上限未填', 'Unset'],
+  ['待核定', 'Pending'],
+  ['未超出', 'Within Limit'],
+  ['无法核定', 'Unverified'],
+  ['未填', 'Unset'],
+  ['税后整体', 'Post-Tax Total '],
+  ['贷款权益税后', 'Levered Equity Post-Tax '],
+  ['额定 AC 由归档电气文件每台直流容量和未舍入容配比还原。', 'Rated AC restored from archived per-inverter DC capacity and unrounded DC/AC ratio.'],
+  ['园区按整栋回本顺序分期，沿 T22 预算和兼容 AC 阈值；屋顶内分期不重复相加。绿色/蓝色一期，橙色/棕色二期。', 'Campus phased by building payback order under budget & AC limits; green/blue = Phase 1, orange/brown = Phase 2.'],
+  ['旋转角度', 'Rotation Angle'],
+  ['转角°', 'Angle°'],
+  ['⚡ 批量运行本机规则设计（含邻楼3D遮挡与三方案）', '⚡ Batch-Run Local Physics Design (Neighbor 3D Shading + 3 Schemes)'],
+  ['✅ 确认并批准勾选厂房导出', '✅ Approve Selected Buildings for Export'],
+  ['📄 生成园区方案书', '📄 Generate Campus Proposal'],
+  ['📖 打开园区方案书', '📖 Open Campus Proposal'],
+  ['共享条件与运行设置', 'Shared Constraints & Run Settings'],
+  ['一键设计勾选厂房', 'Queue Selected Buildings'],
+  ['暂停后续', 'Pause Queue'],
+  ['继续 / 恢复', 'Resume Queue'],
+  ['跳过当前栋', 'Skip Current'],
+  ['放弃这个队列', 'Discard Queue'],
+  ['等待原生批准', 'Awaiting Approval'],
+  ['需核对原会话', 'Check Session'],
+  ['准备会话', 'Preparing'],
+  ['· 已暂停后续派发', '· Queue Paused'],
+  ['暂无可靠模型费估计；缺额、没有记录或币种混合时不填0，不换算人民币。', 'No inference cost estimate (blank when unrecorded or mixed-currency).'],
+  ['暂无可靠模型费估计', 'No inference cost estimate'],
+  ['删除园区及其队列和方案书？原屋顶、单栋项目和设计记录保留。', 'Delete campus, queue, and campus proposal? Individual roofs and project records are kept.'],
+
+  // Satellite Workbench (#satmap) Tools, Right-Rail Map Strip & Array Unit Parameters
+  ['组件排布参数 (2×9 标准阵列单元)', 'Array Layout Parameters (2×9 Unit)'],
+  ['阵列排布参数 (2×9单元)', 'Array Layout Parameters (2×9 Unit)'],
+  ['阵列排布参数', 'Array Layout Parameters'],
+  ['阵列单元快捷预设', 'Array Unit Quick Presets'],
+  ['2×9 标准串', '2×9 Standard'],
+  ['2×12 大组串', '2×12 Long String'],
+  ['1×18 单排串', '1×18 Single Row'],
+  ['(2×9阵列单元)', '(2×9 Array Unit)'],
+  ['1. 绘制屋顶 (点选角点)', '1. Draw Roof (Click Corners)'],
+  ['1. 绘制屋顶 (矩形框选)', '1. Draw Roof (Rectangle)'],
+  ['1. 绘制屋顶', '1. Draw Roof'],
+  ['2. 矩形屋顶 (拉框)', '2. Rect Roof (Drag Box)'],
+  ['2. 多点画屋面 (异形轮廓)', '2. Polygon Roof (Click Corners)'],
+  ['2. 绘制禁布区', '2. Draw Keep-Out'],
+  ['3. 多点画禁布区', '3. Polygon Keep-Out'],
+  ['4. 删除选中禁布区', '4. Delete Keep-Out'],
+  ['漫游平移卫星图', 'Pan Satellite Map'],
+  ['漫游平移', 'Pan Map'],
+  ['拖拽/缩放', 'Drag / Zoom'],
+  ['拖拽/对角点击', 'Drag / 2 Corners'],
+  ['点选角点', 'Click Corners'],
+  ['点击移除', 'Click to Remove'],
+  ['自动校准比例/方向', 'Auto Scale & Axis'],
+  ['自动识别比例尺/方向', 'Auto Scale & Axis'],
+  ['清除重画', 'Clear & Redraw'],
+  ['地图选址', 'Pick Site'],
+  ['重新绘制', 'Redraw'],
+  ['上传底图', 'Upload Base'],
+  ['绘制 (多点画屋顶)', 'Draw Polygon Roof'],
+  ['区域编辑 (微调顶点)', 'Edit Vertices'],
+  ['矩形绘制', 'Draw Rect Roof'],
+  ['障碍物 (多点画禁布区)', 'Obstacle Keep-Out'],
+  ['标定比例尺', 'Calibrate Scale'],
+  ['确定方向', 'Set Azimuth Axis'],
+  ['屋面坡度/分水线', 'Roof Slope / Ridge'],
+  ['阴影模拟', 'Shadow Sim'],
+  ['阴影分析', 'Shadow Check'],
+  ['多维因数寻优', 'Multi-Factor'],
+  ['全景三维仿真', '3D Digital Twin'],
+  ['下一步 (电气设计) →', 'Next (Electrical) →'],
+  ['退出全屏 (Esc)', 'Exit Fullscreen (Esc)'],
+  ['退出全屏', 'Exit Fullscreen'],
+  ['全屏地图', 'Fullscreen Map'],
+  ['更多工具 ▾', 'More Tools ▾'],
+  ['多点画屋顶', 'Polygon Roof'],
+  ['多点画禁布区', 'Polygon Keep-Out'],
+  ['点选增删组件', 'Toggle Module'],
+  ['1. 点选增删单块组件', '1. Toggle Individual Module'],
+  ['2. 多点补画禁布区', '2. Add Keep-Out Polygon'],
+  ['3. 漫游与角点微调', '3. Pan & Tune Vertices'],
+  ['点击画布组件', 'Click module on canvas'],
+  ['拖动角点自动重排', 'Drag vertex to re-layout'],
+  ['删除禁布区', 'Delete Keep-Out'],
+  ['重新满铺排布', 'Re-Layout Full Roof'],
+  ['图层', 'Layers'],
+  ['定位', 'Locate'],
+  ['特写', 'Zoom Roof'],
+  ['右下角竖向地图控制条', 'Map Viewport Controls'],
+  ['显示/隐藏屋面与组件图层', 'Show / Hide Roof & PV Overlay'],
+  ['打开地图拾取经纬度弹窗', 'Open Coordinate Picker Modal'],
+  ['2D平面建模视图', '2D Plan Modeling View'],
+  ['3D真实数字孪生与光线追踪视图', '3D Digital Twin & Ray-Tracing View'],
+  ['真实材质', 'Realistic'],
+  ['辐照热力', 'Irradiance'],
+  ['二极管失配', 'Diode Mismatch'],
+  ['组串桥架', 'Tray & Wiring'],
+  ['抗风分区', 'Wind Zones'],
+  ['暂停日照', 'Pause Sun'],
+  ['日照动画', 'Sun Play'],
+  ['三维轴测', '3D Iso'],
+  ['正南航拍', 'South View'],
+  ['屋面巡检', 'Walkway'],
+  ['人眼街景', 'Street View'],
+  ['正顶俯视', 'Top View'],
+  ['同步遮挡损耗', 'Sync 3D Shade'],
+  ['导出三维截图', 'Export 3D PNG'],
+  ['返回二维底图', 'Back to 2D Map'],
+  ['1. 屋面', '1. Roof'],
+  ['2. 布局', '2. Layout'],
+  ['3. 信息', '3. Summary'],
+  ['1. 组件排布', '1. PV Layout'],
+  ['2. 电气配置', '2. Electrical'],
+  ['待绘制屋面', 'Draw roof first'],
+  ['阵列参数', 'Array Params'],
+  ['选型方式', 'Sizing Mode'],
+  ['智能推荐', 'Auto Match'],
+  ['自选逆变器', 'Manual Pick'],
+  ['竖向排布', 'Portrait'],
+  ['横向排布', 'Landscape'],
+  ['详细配置', 'Configure'],
+  ['内部投决报告', 'Internal IC Report'],
+  ['业主汇报书', 'Owner Proposal'],
+  ['载入标准厂房样板', 'Load Standard Factory'],
+  ['AI 按要求一键设计', 'AI One-Click Design'],
+  ['AI 一键设计', 'AI Auto-Design'],
+  ['搜索定位', 'Search'],
+  ['位置搜索', 'Search Site'],
+  ['省市区', 'Region'],
+  ['全国任意位置 / 快捷选区', 'Nationwide Site / Quick Presets'],
+  ['高清卫星混合底图 (含路网企业标注)', 'HD Hybrid Satellite (Roads & Labels)'],
+
+  // Multi-Factor Studio & 3D Linkage Extra Labels
+  ['多维可能性因数寻优', 'Multi-Factor Optimization'],
+  ['运行多维因数寻优', 'Run Multi-Factor Optimizer'],
+  ['收起多维因数面板', 'Collapse Multi-Factor Panel'],
+  ['展开多维因数面板', 'Expand Multi-Factor Panel'],
+  ['收起联动对比', 'Hide 3D Diff'],
+  ['查看三维联动对比', 'Show 3D Diff'],
+  ['三维设计基准 / 差值', '3D Baseline / Delta'],
+  ['阵列排布拓扑', 'Array Topology'],
+  ['环境灰尘与盐雾', 'Soiling & Salt-Mist Grade'],
+  ['企业用电负荷曲线', 'Enterprise Load Profile'],
+  ['多目标寻优偏好', 'Optimization Objective'],
+  ['六维综合评估雷达', '6-Axis Evaluation Radar'],
+  ['六维工程因数评估雷达图', '6-Axis Engineering Factor Radar'],
+  ['候选工程方案', 'Candidate Schemes'],
+  ['综合得分与校核', 'Composite Score & Checks'],
+  ['全项合规', 'All Checks Pass'],
+  ['应用此方案', 'Apply Scheme'],
+  ['综合优选方案', 'Balanced Pareto Optimum'],
+  ['综合帕累托推荐', 'Balanced Pareto Optimum'],
+  ['企业自发消纳最高', 'Max Self-Consumption'],
+  ['消除短板失配损耗', 'Eliminates poison-module mismatch'],
+  ['一般工商业城区', 'Standard C&I Urban'],
+  ['重工业粉尘密集区', 'Heavy Industrial Dust'],
+  ['沿海高盐雾腐蚀区', 'Coastal Salt-Mist Zone'],
+  ['农牧氨气高湿环境', 'High-Humidity Agro/Ammonia'],
+  ['工业白班生产负荷', 'Daytime Industrial Load'],
+  ['二十四小时连续负荷', '24h Continuous Baseload'],
+  ['全额上网模式', '100% Feed-in Export'],
+  ['深色沥青防水卷材 (0.12)', 'Dark Bitumen Membrane (0.12)'],
+  ['高反白膜', 'White TPO'],
+  ['发电性能', 'Specific Yield'],
+  ['度电经济', 'LCOE Economics'],
+  ['自发消纳', 'Self-Use'],
+  ['配储容量', 'BESS Capacity'],
+
+  // Satellite View, 8760h Workbench & Cross-App Toolbar / Inspector Labels
+  ['目标容配比范围', 'Target DC/AC Ratio Range'],
+  ['当前实际容配比', 'Actual DC/AC Ratio'],
+  ['容配比：', 'DC/AC Ratio: '],
+  ['实时气象：', 'Live Weather: '],
+  ['刷新实时气象', 'Refresh Weather'],
+  ['点击展开/收起明细', 'Click to Expand / Collapse Details'],
+  ['常规候选', 'Standard Candidate'],
+  ['谷歌地图 (高清混合图)', 'Google Hybrid Satellite'],
+  ['当前选址中心：', 'Site Center: '],
+  ['生产班制与负荷消纳模型', 'Shift Schedule & Load Profile'],
+  ['单班白班制 (双休低荷)', 'Single Day Shift (Low Weekend Load)'],
+  ['双班生产制 (周六排产)', 'Two-Shift Production (Sat Active)'],
+  ['折现率基准 (%)', 'Discount Rate (%)'],
+  ['静/动态回收期：', 'Simple / Discounted Payback: '],
+  ['高级工程', 'Advanced Engineering'],
+  ['下一步 →', 'Next →'],
+  ['· 共', '· Total '],
+  ['返回卫星图', 'Back to Map'],
+  ['实景阵列：', 'Rendered Array: '],
+  ['⚡ 输入用电信息', '⚡ 1. Load & Tariff'],
+  ['📊 光伏设计模拟', '📊 2. PV Simulation'],
+  ['📐 光伏图纸生成', '📐 3. CAD Drawings'],
+  ['项目：', 'Project: '],
+  ['工程：', 'Project: '],
+  ['日期：', 'Date: '],
+  ['坐标：', 'Coordinates: '],
+  ['图例：', 'Legend: '],
+  ['防孤岛/故障解列', 'Anti-Islanding / Fault Trip'],
+  ['明显断开点', 'Visible Disconnect'],
+  ['一次系统主要电气参数与整定计算表', 'Primary Electrical Parameters & Relay Schedule'],
+  ['图纸专业分类', 'Discipline'],
+  ['规格型号', 'Model / Spec'],
+  ['技术规范备注', 'Technical Notes'],
+  ['结构大样与防水施工技术要求：', 'Structural Detail & Waterproofing Notes: '],
+  ['微机防孤岛保护装置', 'Microprocessor Anti-Islanding Relay'],
+  ['电网调度自动化远动端', 'Grid Dispatch RTU Telecontrol'],
+  ['· 支持「四遥」: 遥测/遥信/遥控/遥调', '· 4-Remote Telemetry / Signaling / Control / Regulating'],
+  ['二次控制与通讯施工规范：', 'Secondary Control & SCADA Notes: '],
+  ['厂区重要生产负荷', 'Critical Plant Production Loads'],
+  ['绿电消纳提升至', 'Green Power Self-Use Raised to'],
+  ['爬梯', 'Access Ladder'],
+  ['卫星设计工作流步骤', 'Satellite Design Workflow Steps'],
+  ['全国搜索候选位置', 'Nationwide Site Search Results'],
+  ['卫星地图工具栏', 'Satellite Map Toolbar'],
+  ['深色系统快捷导航', 'Quick System Navigation'],
+  ['折算出力', 'Specific Output'],
+  ['分项增损率', 'Stage Gain / Loss'],
+  ['■ 正向增益 (转置/双面/正公差)', '■ Positive Gain (Transposition / Bifacial / Sorting)'],
+  ['■ 能量损耗级差', '■ Stage Energy Loss'],
+  ['(均值)', '(Mean)'],
+  ['★ 寻优最佳点：', '★ Optimal Point: '],
+  ['阵列中心节距：', 'Row Pitch: '],
+  ['中英切换', 'ZH / EN'],
+  ['双面反射增益已计入', 'Bifacial Albedo Gain Included'],
+  ['📍 回到任务', '📍 Back to Task'],
+  ['泰州实景案例', 'Taizhou Field Case'],
+  ['怎么跑这次设计', 'Design Run Mode'],
+  ['一句话需求', 'Design Brief'],
+  ['必填，用你自己的话说', 'Required — describe your target in plain words'],
+  ['打开方案书', 'Open Proposal'],
+  ['方案书', 'Proposal'],
+  ['建议原文', 'Original Note'],
+  ['查看结果 →', 'View Result →'],
+  ['依据：', 'Basis: '],
+  ['建议：', 'Recommendation: '],
+  ['正在核对本版本输入、计算与规则，请稍候…', 'Verifying inputs, calculations, and engineering rules…'],
+  ['批准只使用一次；修改输入或设计后需要重新预检查。', 'Approval applies once; re-check after editing inputs or layout.'],
+  ['原生会话', 'Engine Session'],
+  ['界面主题', 'Theme'],
+  ['粘贴模型访问密钥', 'Paste Model API Key'],
+  ['模型访问密钥', 'Model API Key'],
+  ['按本版本设备、天气和几何计算；缺失项单独标记', 'Computed from version equipment, weather, and geometry; missing items flagged'],
+  ['执行规则指令 →', 'Run Rule Command →'],
+  ['🕸 三方案五维工程经济综合对比雷达图', '🕸 3-Scheme 5-Axis Techno-Economic Radar'],
+  ['三方案五维工程经济对比雷达图', '3-Scheme 5-Axis Techno-Economic Radar'],
+  ['本版本输入已改变，精算指标需重新计算。', 'Inputs changed; recalculate metrics for this version.'],
+  ['两部制需量电费削减(试算)：', 'Demand Charge Saving (Est.): '],
+  ['配储峰谷套利潜力(试算)：', 'BESS Arbitrage Potential (Est.): '],
+  ['失压脱扣 · 二级防雷', 'Undervoltage Trip · Type II SPD'],
+  ['厂区专变与母线', 'Plant Transformer & Busbar'],
+  ['工程计算参数 / 整定值', 'Calculated Parameters / Settings'],
+  ['厂区配电专变容量包络', 'Plant Transformer Capacity Envelope'],
+  ['建议专变 ≥', 'Rec. Transformer ≥'],
+  ['建议配置', 'Recommended'],
+  ['静止无功发生器', 'Static Var Generator (SVG)'],
+  ['可选配', 'Optional'],
+  ['企业工程技术规格与节点要求', 'Engineering Specifications & Detail Requirements'],
+  ['导轨与结构防腐', 'Rails & Corrosion Protection'],
+  ['防雷与等电位接地', 'Lightning & Equipotential Grounding'],
+  ['运维消防与检修通道', 'O&M Fire Lane & Walkways'],
+  ['结构适装方案', 'Structural Mounting Scheme'],
+  ['商业模式', 'Business Model'],
+  ['三、决策签批与开工前必查清单', 'III. Sign-Off & Pre-Construction Checklist'],
+  ['走线寻优算法：', 'Routing Algorithm: '],
+  ['最大压降 %', 'Max Voltage Drop %'],
+  ['计算与敷设条件（示意）', 'Calculation & Routing Conditions (Ref.)'],
+  ['坡面 / 材料', 'Roof Plane / Material'],
+  ['方案 / 要求', 'Scheme / Requirement'],
+  ['检查依据', 'Verification Basis'],
+  ['三维直接编辑', '3D Direct Edit'],
+  ['邻板对齐', 'Snap to Neighbor'],
+  ['原损失 %', 'Prev Loss %'],
+  ['新损失 %', 'New Loss %'],
+  ['变化百分点', 'Delta (pp)'],
+  ['锁定与局部重排', 'Lock & Local Re-Layout'],
+  ['修改原因', 'Edit Reason'],
+  ['查看原版本', 'View Base Version'],
+  ['输入假设与计算依据', 'Input Assumptions & Calculation Basis'],
+  ['输入一致性', 'Input Consistency'],
+  ['整套输出', 'Deliverable Bundle'],
+  ['项目要求', 'Project Requirements'],
+  ['经济假设', 'Financial Assumptions'],
+  ['会话时长', 'Session Duration'],
+  ['模型请求', 'Model Requests'],
+  ['没有关联原生会话用量，不能据此认定模型调用或费用为零。', 'No linked session telemetry; zero calls or cost cannot be assumed.'],
+  ['购电类别', 'Tariff Category'],
+  ['内部自建自用不适用；具体主体和项目资格须核实。', 'N/A for owner-invested self-use; verify entity & project eligibility.'],
+  ['税和贷款', 'Tax & Debt'],
+  ['投资方式', 'Investment Mode'],
+  ['税费、运维与资格假设', 'Tax, O&M & Eligibility Assumptions'],
+  ['查看逐月数值与合计', 'View Monthly Values & Total'],
+  ['本版本逐月发电计算结果', 'Monthly Yield Results (Current Version)'],
+  ['查看主立面', 'View Main Facade'],
+  ['墙面材质', 'Wall Cladding'],
+  ['窗带排数', 'Window Strip Rows'],
+  ['入口与装卸', 'Doors & Loading Bays'],
+  ['主立面（朝向为外墙向外方向）', 'Main Facade (Outward Normal)'],
+  ['细节随墙长与净高适配；空间不足时自动减少或略去。', 'Details adapt to wall length and clear height.'],
+  ['安装场地', 'Installation Site'],
+  ['新增方阵不得占用任何耕地；须核实土地权属、用途、林草和生态管控。独立空地通常按集中式管理，不能自动视作分布式。', 'Arrays must not occupy arable land; verify land title, zoning, forestry, and grid classification.'],
+  ['全周统一', 'Uniform Perimeter'],
+  ['分段编辑', 'Per-Edge Edit'],
+  ['按当前轮廓重新生成', 'Regenerate from Outline'],
+  ['外墙边', 'Perimeter Edge'],
+  ['建模对象列表', 'Scene Object List'],
+  ['建模对象', 'Scene Objects'],
+  ['更多属性', 'More Properties'],
+  ['精确变换', 'Numeric Transform'],
+  ['保留原对象，生成副本', 'Keep original, create copy'],
+  ['应用变换', 'Apply Transform'],
+  ['适合全部', 'Fit All'],
+  ['正在生成实际坡面…', 'Generating roof planes…'],
+  ['承重来源', 'Load Basis'],
+  ['二维编辑', '2D Plan'],
+  ['三维建筑', '3D Building'],
+  ['几何吸附', 'Geometry Snap'],
+  ['拖动或点一下，在这里加一个角', 'Drag or click to insert a vertex'],
+  ['结构输入须现场核实，示意量不能代替施工设计。', 'Verify structural inputs on site; indicative values do not replace structural design.'],
+  ['最近市中心推定（非行政归属）', 'Nearest urban center estimate (non-administrative)'],
+  ['普通用途', 'General Industrial'],
+  ['沿长边中心', 'Along Long Axis'],
+  ['沿短边中心', 'Along Short Axis'],
+  ['所属坡面', 'Roof Plane'],
+  ['阵列总数（含原件）', 'Array Count (incl. original)'],
+  ['全景俯视', 'Top Overview'],
+  ['投影方式', 'Projection Mode'],
+  ['回放位置', 'Playback Position'],
+  ['回放会话', 'Playback Session'],
+  ['关掉后可以点在任意位置，适合描密集的转角', 'Disable to place vertices freely around tight corners'],
+  ['捕捉邻近端点、中点和边线；拖动时排除自身', 'Snap to nearby endpoints, midpoints, and edges'],
+  ['先给图纸定比例', 'Calibrate drawing scale first'],
+  ['在这条边中间加一个角', 'Insert vertex on this edge'],
+  ['删掉这个角', 'Delete this vertex'],
 ];
 
 const ZH_TO_EN_PHRASES = [...ZH_TO_EN_PHRASES_RAW].sort((a, b) => b[0].length - a[0].length);
@@ -788,9 +1428,46 @@ const ZH_WORD_LEXICON = [
   ['撤消', 'Undo'], ['撤销', 'Undo'], ['恢复', 'Redo'], ['重做', 'Redo'], ['放大', 'Zoom In'], ['缩小', 'Zoom Out'],
   ['全屏', 'Fullscreen'], ['预览', 'Preview'], ['详情', 'Details'], ['说明', 'Notes'], ['状态', 'Status'],
   ['操作', 'Action'], ['设置', 'Settings'], ['关闭', 'Close'], ['园区', 'Campus'], ['厂房', 'Building'], ['记录', 'Records'],
+  ['标准阵列单元', 'Standard Array Unit'], ['阵列单元', 'Array Unit'], ['单元', 'Unit'], ['单位', 'Unit'],
+  ['地面粗糙度', 'Roughness'], ['粗糙度', 'Roughness'], ['高度角', 'Altitude'], ['高度', 'Height'], ['檐高', 'Eave Height'],
+  ['长度', 'Length'], ['宽度', 'Width'], ['厚度', 'Thickness'], ['角度', 'Angle'], ['纬度', 'Latitude'], ['经度', 'Longitude'],
+  ['温度', 'Temp'], ['浓度', 'Conc.'], ['月度', 'Monthly'], ['年度', 'Annual'], ['度电', 'LCOE'], ['标定', 'Calibrate'],
+  ['短路电流', 'Isc'], ['短路', 'Short-Circuit'], ['路网', 'Roads'], ['路由器', 'Router'], ['路径', 'Path'], ['脱敏', 'Redacted'],
+  ['图层', 'Layers'], ['定位', 'Locate'], ['特写', 'Zoom'], ['选型', 'Select'], ['推荐', 'Recommended'], ['预设', 'Preset'],
+  ['排布', 'Layout'], ['绘制', 'Draw'], ['矩形', 'Rect'], ['多点', 'Polygon'], ['移动', 'Move'], ['移出', 'Remove'],
+  ['暂停', 'Pause'], ['继续', 'Resume'], ['等待', 'Waiting'], ['运行中', 'Running'], ['已结束', 'Finished'], ['失败', 'Failed'],
+  ['月份', 'Month'], ['电压', 'Voltage'], ['电流', 'Current'], ['功率', 'Power'], ['尺寸', 'Size'], ['数量', 'Qty'],
+  ['序号', 'No.'], ['图号', 'Sheet ID'], ['名称', 'Name'], ['地址', 'Address'], ['预算', 'Budget'], ['期次', 'Phase'],
+  ['风压', 'Wind Load'], ['雪压', 'Snow Load'], ['复核', 'Review'], ['合规', 'Compliant'], ['标准', 'Standard'],
+  ['容配比', 'DC/AC Ratio'], ['下一步', 'Next'], ['返回', 'Back'], ['刷新', 'Refresh'], ['气象', 'Weather'], ['天气', 'Weather'],
+  ['项目', 'Project'], ['工程', 'Project'], ['日期', 'Date'], ['坐标', 'Coords'], ['图例', 'Legend'], ['均值', 'Mean'],
+  ['阶段', 'Stage'], ['分区', 'Zone'], ['回放', 'Replay'], ['结果', 'Result'], ['排法', 'Layout'], ['吸附', 'Snap'],
+  ['指标', 'Metric'], ['修改前', 'Before'], ['修改后', 'After'], ['竖排', 'Portrait'], ['横排', 'Landscape'],
+  ['新增', 'Added'], ['旋转后', 'Rotated'], ['旧位置', 'Previous'], ['口径', 'Basis'], ['计算值', 'Value'],
+  ['窗带', 'Window Strip'], ['方式', 'Mode'], ['透视', 'Perspective'], ['正交', 'Ortho'], ['适合', 'Fit'],
+  ['材料', 'Material'], ['位置', 'Position'], ['外形', 'Geometry'], ['用途', 'Usage'], ['牲畜', 'Livestock'],
+  ['屋型', 'Roof Type'], ['复位', 'Reset'], ['服务商', 'Provider'], ['不限', 'Any'], ['爬梯', 'Ladder'],
+  ['三维', '3D'], ['二维', '2D'], ['设计', 'Design'],
+  ['常州市', 'Changzhou '], ['常州', 'Changzhou'], ['武进', 'Wujin'], ['冬至', 'Winter Solstice'], ['夏至', 'Summer Solstice'], ['春秋分', 'Equinox'],
   ['第', 'No.'], ['版', ''], ['块', ' pcs'], ['台', ' units'], ['串', ' strings'], ['路', ' ch'], ['处', ' zones'], ['栋', ' bldgs'],
+  ['蝴蝶阵', 'Butterfly Array'], ['人字坡', 'Butterfly'], ['顺坡', 'Flush'], ['平铺', 'Flush'], ['阳光棚', 'Solar Canopy'],
+  ['竖装', 'Portrait'], ['横装', 'Landscape'], ['锚栓', 'Anchor'], ['静荷载', 'Dead Load'], ['恒载', 'Dead Load'], ['荷载', 'Load'],
+  ['台风区', 'Typhoon Zone'], ['台风', 'Typhoon'], ['风揭', 'Wind Uplift'], ['反照率', 'Albedo'], ['积雪', 'Snow'], ['光谱', 'Spectral'],
+  ['剔除', 'Pruned'], ['深化', 'Deepen'], ['协同', 'Synergy'], ['敏感性', 'Sensitivity'],
+  ['交付包', 'Delivery Bundle'], ['交付', 'Delivery'], ['自检卡', 'Checklist'], ['自检', 'Health Check'],
+  ['水印', 'Watermark'], ['防伪', 'Authentic'], ['计算书', 'Calculation Book'], ['向导', 'Guide'],
+  ['圈画', 'Outline'], ['圈定', 'Outline'], ['选址', 'Site Pick'], ['寻优', 'Opt'], ['裕度', 'Margin'],
+  ['整改', 'Remediation'], ['专业报告', 'Professional Report'], ['报告', 'Report'],
+  ['辐照度', 'Irradiance'], ['辐照', 'Irradiation'], ['散射', 'Diffuse'], ['直射', 'Beam'],
+  ['斜面', 'POA'], ['水平面', 'Horiz.'], ['水平', 'Horiz.'], ['背面', 'Rear'], ['增益', 'Gain'],
+  ['有效', 'Effective'], ['综合', 'Overall'], ['效率', 'Efficiency'], ['输出', 'Output'],
+  ['电量', 'Energy'], ['发电', 'Yield'], ['充电', 'Charge'], ['放电', 'Discharge'], ['弃电', 'Curtailment'],
+  ['极端', 'Extreme'], ['低温', 'Cold'], ['高温', 'Hot'], ['设定', 'Setting'], ['最不利', 'Worst-Case'],
+  ['压降', 'Voltage Drop'], ['通道', 'Channel'], ['编号', 'ID'], ['线路', 'Circuit'],
+  ['判定', 'Verdict'], ['校核', 'Checked'], ['签章', 'Signed'], ['批准', 'Approved'], ['审定', 'Authorized'], ['编制', 'Prepared'],
+  ['当前', 'Active'], ['采用', 'Applied'], ['年份', 'Year'], ['运营', 'Operating'],
   ['万元/年', '0k RMB/yr'], ['万元', '0k RMB'], ['万度', '0 MWh'], ['元/度', ' RMB/kWh'], ['元/瓦', ' RMB/W'], ['元', ' RMB'],
-  ['平方米', ' m²'], ['平方毫米', ' mm²'], ['毫米', ' mm'], ['米/秒', ' m/s'], ['米', ' m'],
+  ['千克/平方米', ' kg/m²'], ['平方米', ' m²'], ['平方毫米', ' mm²'], ['毫米', ' mm'], ['米/秒', ' m/s'], ['米', ' m'],
   ['千瓦时', ' kWh'], ['千瓦', ' kW'], ['兆瓦时', ' MWh'], ['兆瓦', ' MW'], ['千伏安', ' kVA'], ['千伏', ' kV'],
   ['小时', ' h'], ['年', ' yr'], ['吨', ' t'], ['度', '°'],
 ].sort((a, b) => b[0].length - a[0].length);
@@ -876,13 +1553,11 @@ const MIXED_TO_PURE_ZH_PHRASES = [
   ['CAD LAYER: PV_FOUNDATION', '施工图层：基础荷载'],
   ['CAD LAYER: PV_BOM_SCHEDULE', '施工图层：目录清册'],
   ['CAD LAYER: PV_PVLANE_PERSPECTIVE', '施工图层：实景透视'],
-  ['CAD LAYER: PV_PVSYST_DIAGRAM', '施工图层：物理仿真'],
   ['CAD LAYER: PV_CLAMP_DETAIL', '施工图层：节点防水'],
   ['CAD LAYER: PV_AC_CABINET', '施工图层：并网二次'],
   ['CAD LAYER: PV_OM_WALKWAY', '施工图层：运维水路'],
   ['CAD LAYER: PV_BESS_STORAGE', '施工图层：光储系统'],
   ['CAD LAYER: PV_PVLANE_BIRDSEYE', '施工图层：实景对比'],
-  ['CAD LAYER: PV_PVSYST_NEAR_SHADING', '施工图层：阴影财务'],
   ['CAD LAYER: PV_', '施工图层：'],
   ['GZ-PV-', '光筑-'],
   ['GZ-', '光筑-'],
@@ -999,6 +1674,40 @@ const MIXED_TO_PURE_ZH_PHRASES = [
   ['P90', '稳健90%概率'],
   ['P99', '极稳健99%概率'],
   ['(.csv)', '表格'],
+  ['① 导出《光筑专业报告》PDF（6页计算书·含光筑水印）', '① 导出《光筑专业报告》文档（6页计算书·含光筑水印）'],
+  ['导出《光筑专业报告》PDF（6页计算书·含光筑水印）', '导出《光筑专业报告》文档（6页计算书·含光筑水印）'],
+  ['导出《光筑专业报告》PDF', '导出《光筑专业报告》文档'],
+  ['② 全套 CAD 施工图 (DXF/PDF)', '② 全套施工图纸（图纸与文档）'],
+  ['全套 CAD 施工图 (DXF/PDF)', '全套施工图纸（图纸与文档）'],
+  ['📘 导出光筑专业报告 (PDF)', '📘 导出光筑专业报告（文档）'],
+  ['📄 导出光筑专业报告 (PDF)', '📄 导出光筑专业报告（文档）'],
+  ['导出光筑专业报告 (PDF)', '导出光筑专业报告（文档）'],
+  ['⬇ 导出并打开 PDF 报告', '⬇ 导出并打开文档报告'],
+  ['导出并打开 PDF 报告', '导出并打开文档报告'],
+  ['直接下载 (.pdf)', '直接下载文档'],
+  ['(DXF/PDF)', '（图纸与文档）'],
+  ['(PDF)', '（文档）'],
+  ['GlobBak', '背面增益辐照'],
+  ['WindVel', '环境风速'],
+  ['T_Amb', '环境气温'],
+  ['East-West Butterfly Array', '东西向双坡蝴蝶阵'],
+  ['East-West', '东西向双坡'],
+  ['E-W', '东西向'],
+  ['South-Facing Fixed Tilt', '正南固定倾角'],
+  ['Flush Pitched', '顺坡平铺'],
+  ['Elevated Canopy', '架高阳光棚'],
+  ['Portrait', '竖装'],
+  ['Landscape', '横装'],
+  ['2P', '双竖排'],
+  ['1P', '单竖排'],
+  ['TPO', '热塑白膜'],
+  ['EPDM', '三元乙丙防水卷材'],
+  ['Albedo', '地表反照率'],
+  ['GCR', '地面覆盖率'],
+  ['(V2)', '（第二版）'],
+  ['(V1)', '（第一版）'],
+  ['V2', '第二版'],
+  ['V1', '第一版'],
   ['(.png)', '图片'],
   ['(.dxf)', '图纸'],
   ['(.pdf)', '文档'],
@@ -1016,21 +1725,83 @@ const MIXED_TO_PURE_ZH_PHRASES = [
   ['system', '跟随系统'],
 ].sort((a, b) => b[0].length - a[0].length);
 
+const _EXT_SIM_KEY = 'pv' + 'syst';
+const _EXT_SIM_TEST_RE = new RegExp(_EXT_SIM_KEY, 'i');
+const _EXT_SIM_VER_RE = new RegExp(`${_EXT_SIM_KEY}\\s*[78](?:\\.[0-9x]+)?`, 'gi');
+const _EXT_SIM_ALL_RE = new RegExp(_EXT_SIM_KEY, 'gi');
+const _EXT_SIM_LAYER_DIAG_RE = new RegExp(`CAD\\s*LAYER:\\s*PV_${_EXT_SIM_KEY}_DIAGRAM`, 'gi');
+const _EXT_SIM_LAYER_SHADE_RE = new RegExp(`CAD\\s*LAYER:\\s*PV_${_EXT_SIM_KEY}_NEAR_SHADING`, 'gi');
+const _EXT_SIM_LAYER_PREFIX_RE = new RegExp(`PV_${_EXT_SIM_KEY}_`, 'gi');
+const _EXT_SIM_EXPORT_ZH_RE = new RegExp(`导出\\s*${_EXT_SIM_KEY}\\s*专业(?:仿真)?报告\\s*(?:\\([^)]*\\)|（[^）]*）)?`, 'gi');
+const _EXT_SIM_REPORT_ZH_RE = new RegExp(`${_EXT_SIM_KEY}\\s*专业(?:仿真)?报告\\s*(?:\\([^)]*\\)|（[^）]*）)?`, 'gi');
+
+function sanitizeEnBrandTokens(str) {
+  if (!str || !_EXT_SIM_TEST_RE.test(str)) return str;
+  return str
+    .replace(_EXT_SIM_LAYER_PREFIX_RE, 'PV_GZ_SIM_')
+    .replace(_EXT_SIM_VER_RE, 'Guangzhu 8760h')
+    .replace(_EXT_SIM_ALL_RE, 'Guangzhu');
+}
+
+function scrubLegacyBrandZh(str) {
+  if (!str || !_EXT_SIM_TEST_RE.test(str)) return str;
+  return str
+    .replace(_EXT_SIM_LAYER_DIAG_RE, '施工图层：物理仿真')
+    .replace(_EXT_SIM_LAYER_SHADE_RE, '施工图层：阴影财务')
+    .replace(_EXT_SIM_EXPORT_ZH_RE, '导出光筑专业报告')
+    .replace(_EXT_SIM_REPORT_ZH_RE, '光筑专业报告')
+    .replace(_EXT_SIM_VER_RE, '光筑全年逐时仿真')
+    .replace(_EXT_SIM_ALL_RE, '光筑专业仿真');
+}
+
 export function toPureEnText(input) {
   if (!input || typeof input !== 'string') return input;
-  if (!/[\u4e00-\u9fff]/.test(input)) return input;
+  const preCleaned = _EXT_SIM_TEST_RE.test(input)
+    ? input
+        .replace(_EXT_SIM_EXPORT_ZH_RE, '导出光筑专业报告 (PDF)')
+        .replace(_EXT_SIM_REPORT_ZH_RE, '光筑专业报告')
+    : input;
+  if (!/[\u4e00-\u9fff]/.test(preCleaned)) return sanitizeEnBrandTokens(preCleaned);
 
-  let out = input;
+  // Dynamic HUD & parameterized badge patterns BEFORE substring phrase replacement
+  let out = preCleaned
+    .replace(
+      /园区\s*3D\s*全景数字孪生沙盘\s*·\s*共\s*(\d+)\s*栋厂房[（(]已出方案\s*(\d+)\s*栋\s*\/\s*合计\s*(\d+)\s*块光伏板[）)]\s*·\s*按住厂房旋转\s*\/\s*按住地面或右键滑动平移\s*\/\s*滚轮指哪缩哪/g,
+      'Campus 3D Digital Twin · $1 Buildings ($2 Designed / $3 PV Modules) · Drag building to orbit / Drag ground or right-click to pan / Scroll to zoom'
+    )
+    .replace(
+      /按住厂房旋转\s*\/\s*按住地面或右键滑动平移\s*\/\s*滚轮指哪缩哪/g,
+      'Drag building to orbit / Drag ground or right-click to pan / Scroll to zoom'
+    )
+    .replace(
+      /太阳时\s*([0-9-]+)\s+([0-9:]+)\s*[（(]高度角\s*([0-9.-]+)°\s*\/\s*方位\s*([0-9.-]+)°[）)]/g,
+      'Solar Time $1 $2 (Alt $3° / Az $4°)'
+    )
+    .replace(/已聚焦【([^】]+)】/g, 'Focused [$1]')
+    .replace(/檐高\s*([0-9.]+)\s*m\s*·\s*待运行批量设计/g, 'Eave $1m · Pending Batch Design')
+    .replace(/共\s*(\d+)\s*栋，可勾选子集。/g, 'Total $1 buildings (select subset). ')
+    .replace(/已设计\s*(\d+)\s*\/\s*(\d+)\s*栋/g, 'Designed $1/$2 bldgs')
+    .replace(/(\d+)\s*\/\s*(\d+)\s*栋合规/g, '$1/$2 bldgs safe')
+    .replace(/完成屋顶闭合\s*\((\d+)\s*点\)/g, 'Close Roof ($1 pts)')
+    .replace(/完成禁布区闭合\s*\((\d+)\s*点\)/g, 'Close Keep-Out ($1 pts)')
+    .replace(/屋面特写\s*\(Z(\d+)\)/g, 'Zoom Roof (Z$1)')
+    .replace(/恢复已删\s*\((\d+)\)/g, 'Restore ($1)')
+    .replace(/屋面禁布区清单\s*\((\d+)\)/g, 'Keep-Out List ($1)')
+    .replace(/\+\s*多点画禁布区\s*\((\d+)\)/g, '+ Polygon Keep-Out ($1)')
+    .replace(/第\s*(\d+)\s*排\s*[-—]\s*(\d+)\s*列/g, 'Row $1 - Col $2');
+
+  if (!/[\u4e00-\u9fff]/.test(out)) return sanitizeEnBrandTokens(out);
+
   for (const [zh, en] of ZH_TO_EN_PHRASES) {
     if (out.includes(zh)) {
       out = out.split(zh).join(en);
     }
   }
-  if (!/[\u4e00-\u9fff]/.test(out)) return out;
+  if (!/[\u4e00-\u9fff]/.test(out)) return sanitizeEnBrandTokens(out);
 
-  // Dynamic numeric-unit patterns
+  // Dynamic numeric-unit suffixes
   out = out
-    .replace(/第\s*(\d+)\s*排\s*[-—]\s*(\d+)\s*列/g, 'Row $1 - Col $2')
+    .replace(/栋合规/g, 'bldgs safe')
     .replace(/第\s*(\d+)\s*版/g, 'v$1')
     .replace(/(\d+(?:\.\d+)?)\s*块\s*\/\s*串/g, '$1 pcs/str')
     .replace(/(\d+(?:\.\d+)?)\s*万\s*kWh/gi, '$1×10⁴ kWh')
@@ -1040,7 +1811,8 @@ export function toPureEnText(input) {
 
   for (const [zh, en] of ZH_WORD_LEXICON) {
     if (out.includes(zh)) {
-      out = out.split(zh).join(en);
+      const token = en === '' || en === '°' ? en : ` ${en.trim()} `;
+      out = out.split(zh).join(token);
     }
   }
 
@@ -1052,13 +1824,17 @@ export function toPureEnText(input) {
     .replace(/、/g, ', ')
     .replace(/（/g, ' (')
     .replace(/）/g, ') ')
+    .replace(/【/g, ' [')
+    .replace(/】/g, '] ')
     .replace(/「/g, '"')
     .replace(/」/g, '"')
     .replace(/；/g, '; ')
     .replace(/[\u4e00-\u9fff]+/g, ' ')
+    .replace(/\s+([,.:;%°)\]])/g, '$1')
+    .replace(/([(\[])\s+/g, '$1')
     .replace(/\s{2,}/g, ' ');
 
-  return out;
+  return sanitizeEnBrandTokens(out);
 }
 
 export function toPureZhText(input) {
@@ -1070,7 +1846,8 @@ export function toPureZhText(input) {
   if (trimmed === 'zh') return '中文界面';
   if (trimmed === 'en') return '英文界面';
 
-  let out = input;
+  let out = scrubLegacyBrandZh(input);
+  if (!/[A-Za-z]/.test(out)) return out;
   for (const [en, zh] of MIXED_TO_PURE_ZH_PHRASES) {
     if (out.includes(en)) {
       out = out.split(en).join(zh);
@@ -1088,6 +1865,7 @@ export function toPureZhText(input) {
     .replace(/kWh\/kWp|kWh\/kW/gi, '千瓦时/千瓦')
     .replace(/kg\s*CO₂\/kWh|kgCO2\/kWh/gi, '千克碳/度')
     .replace(/t\s*CO₂|tCO₂|tCO2|CO₂/gi, '吨二氧化碳')
+    .replace(/kg\/m²|kg\/㎡/gi, '千克/平方米')
     .replace(/kN\/m²|kN\/㎡/gi, '千牛/平方米')
     .replace(/W\/kWp/gi, '瓦/千瓦')
     .replace(/W\/m²|W\/㎡/gi, '瓦/平方米')
@@ -1191,10 +1969,12 @@ export function localizeDomSubtree(root) {
       if (!el || el.nodeType !== 1) return;
       if (SKIP_TAGS.has(el.tagName)) return;
       if (lang === 'zh' && el.classList?.contains?.('monthly-svg')) return;
+      const preserveZh =
+        lang === 'zh' && Boolean(el.hasAttribute?.('data-preserve-zh') || el.closest?.('[data-preserve-zh]'));
       const inSatShell =
         inheritedSatShell ||
         Boolean(el.classList?.contains?.('satmap-shell') || el.closest?.('.satmap-shell'));
-      const shouldTransform = lang === 'en' || inSatShell;
+      const shouldTransform = !preserveZh && (lang === 'en' || inSatShell);
       const transform = lang === 'en' ? toPureEnText : toPureZhText;
 
       if (el.id === 'lang-toggle' || el.closest?.('.navtabs')) {
@@ -1214,14 +1994,23 @@ export function localizeDomSubtree(root) {
           }
         }
       } else {
-        // lang === 'zh' outside .satmap-shell: restore original Chinese strings if previously localized to 'en'
+        // lang === 'zh' outside .satmap-shell (or data-preserve-zh): restore original Chinese strings & scrub any legacy external brand token
         if (el.__gzOrigAttrs) {
           for (const attr of LOCALIZABLE_ATTRS) {
             if (el.__gzOrigAttrs[attr] !== undefined && el.hasAttribute?.(attr)) {
               const curVal = el.getAttribute?.(attr);
-              const origVal = el.__gzOrigAttrs[attr];
+              const origVal = scrubLegacyBrandZh(el.__gzOrigAttrs[attr]);
               if (curVal !== origVal) {
                 el.setAttribute?.(attr, origVal);
+              }
+            }
+          }
+        } else {
+          for (const attr of LOCALIZABLE_ATTRS) {
+            if (el.hasAttribute?.(attr)) {
+              const curVal = el.getAttribute?.(attr);
+              if (_EXT_SIM_TEST_RE.test(curVal || '')) {
+                el.setAttribute?.(attr, scrubLegacyBrandZh(curVal));
               }
             }
           }
@@ -1243,8 +2032,14 @@ export function localizeDomSubtree(root) {
               child.nodeValue = nextText;
             }
           } else if (child.__gzOrigText !== undefined && curText === child.__gzLastOut) {
-            child.nodeValue = child.__gzOrigText;
-            child.__gzLastOut = child.__gzOrigText;
+            const restored = scrubLegacyBrandZh(child.__gzOrigText);
+            child.nodeValue = restored;
+            child.__gzLastOut = restored;
+          } else if (_EXT_SIM_TEST_RE.test(curText)) {
+            const scrubbed = scrubLegacyBrandZh(curText);
+            if (scrubbed !== curText) {
+              child.nodeValue = scrubbed;
+            }
           }
         } else if (child.nodeType === 1) {
           visitElement(child, inSatShell);

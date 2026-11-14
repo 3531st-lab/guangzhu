@@ -1,7 +1,6 @@
-"""PVsyst 7.x Bankable Hourly Energy Balance & Simulation Engine.
+"""Guangzhu 8760-Hour Bankable Hourly Energy Balance & Simulation Engine.
 
-Implements an 8760-hour photovoltaic energy balance pipeline aligned with
-PVsyst 7.x physical sub-models:
+Implements an 8760-hour photovoltaic energy balance pipeline with 16 physical sub-models:
   1. Global Horizontal (GlobHor) & Diffuse Horizontal (DiffHor)
   2. Perez / Hay-Davies Plane-of-Array Transposition (GlobInc)
   3. Far Horizon Profile Blocking & Near 3D Shading Optical Loss
@@ -367,6 +366,14 @@ def _compute_probabilities(p50_kwh: float, dc_kw: float) -> dict[str, Any]:
     }
 
 
+VALID_ORIENTATION_MODES: tuple[str, ...] = (
+    "south_fixed",
+    "east_west",
+    "flush_pitched",
+    "elevated_canopy",
+)
+
+
 def simulate_pvsyst(
     lat: float,
     lon: float,
@@ -375,11 +382,16 @@ def simulate_pvsyst(
     ac_kw: float | None = None,
     tilt_deg: float = 15.0,
     azimuth_deg: float = 180.0,
+    orientation_mode: str = "south_fixed",
     shading_loss_pct: float = 2.2,
     bifacial: bool = True,
     albedo: float = 0.22,
     bifaciality: float = 0.80,
+    bifacial_factor: float | None = None,
     soiling_pct: float = 2.0,
+    snow_loss_pct: float = 0.0,
+    spectral_corr_pct: float = 0.0,
+    stc_eff_pct: float = 21.6,
     iam_b0: float = 0.04,
     uc_w_m2k: float = 29.0,
     uv_w_m2k_ms: float = 0.0,
@@ -398,6 +410,8 @@ def simulate_pvsyst(
 ) -> dict[str, Any]:
     """Run full 8760-hour PVsyst 7.x physical simulation and return loss waterfall, monthly table, and optimization."""
     def _finite(name: str, val: float) -> float:
+        if isinstance(val, bool):
+            raise ValueError(f"{name} must be a finite number, not bool.")
         f = float(val)
         if not math.isfinite(f):
             raise ValueError(f"{name} must be a finite number.")
@@ -407,6 +421,10 @@ def simulate_pvsyst(
     lon = _finite("lon", lon)
     if not (-90.0 <= lat <= 90.0) or not (-180.0 <= lon <= 180.0):
         raise ValueError("lat must be in [-90, 90] and lon in [-180, 180].")
+
+    mode_norm = str(orientation_mode or "south_fixed").strip().lower()
+    if mode_norm not in VALID_ORIENTATION_MODES:
+        raise ValueError(f"orientation_mode must be one of {VALID_ORIENTATION_MODES}, got {orientation_mode!r}.")
 
     dc_kw = _finite("dc_kw", dc_kw)
     if dc_kw < 0.0:
@@ -427,6 +445,8 @@ def simulate_pvsyst(
     albedo = _finite("albedo", albedo)
     if not (0.0 <= albedo <= 1.0):
         raise ValueError("albedo must be within [0, 1].")
+    if bifacial_factor is not None:
+        bifaciality = bifacial_factor
     bifaciality = _finite("bifaciality", bifaciality)
     if not (0.0 <= bifaciality <= 1.0):
         raise ValueError("bifaciality must be within [0, 1].")
@@ -436,6 +456,15 @@ def simulate_pvsyst(
     soiling_pct = _finite("soiling_pct", soiling_pct)
     if not (0.0 <= soiling_pct < 100.0):
         raise ValueError("soiling_pct must be within [0, 100).")
+    snow_loss_pct = _finite("snow_loss_pct", snow_loss_pct)
+    if not (0.0 <= snow_loss_pct < 100.0):
+        raise ValueError("snow_loss_pct must be within [0, 100).")
+    spectral_corr_pct = _finite("spectral_corr_pct", spectral_corr_pct)
+    if not (-25.0 <= spectral_corr_pct <= 25.0):
+        raise ValueError("spectral_corr_pct must be within [-25, 25].")
+    stc_eff_pct = _finite("stc_eff_pct", stc_eff_pct)
+    if not (5.0 <= stc_eff_pct <= 40.0):
+        raise ValueError("stc_eff_pct must be within [5, 40].")
     iam_b0 = _finite("iam_b0", iam_b0)
     if not (0.0 <= iam_b0 <= 0.5):
         raise ValueError("iam_b0 must be within [0, 0.5].")
@@ -485,7 +514,76 @@ def simulate_pvsyst(
     glob_hor_kwh_m2 = float(np.sum(ghi) / 1000.0)
     diff_hor_kwh_m2 = float(np.sum(dhi) / 1000.0)
 
-    # 2–6. Transposition, Horizon/Near Shading, ASHRAE IAM, Soiling & Bifacial Gain (supports heterogeneous sub_arrays)
+    valid_sub_arrays: list[dict[str, Any]] = []
+    if sub_arrays is not None and not isinstance(sub_arrays, list):
+        raise ValueError("sub_arrays must be a list.")
+    if isinstance(sub_arrays, list):
+        for idx, sa in enumerate(sub_arrays):
+            if not isinstance(sa, dict):
+                raise ValueError("Each sub_arrays item must be a dict.")
+            raw_sa_kw = sa.get("dc_kw")
+            sa_kw = _finite("sub_arrays.dc_kw", raw_sa_kw) if raw_sa_kw is not None else 0.0
+            if sa_kw < 0.0:
+                raise ValueError("sub_arrays.dc_kw must be >= 0.")
+            sa_tilt = _finite("sub_arrays.tilt_deg", sa.get("tilt_deg", tilt_deg))
+            if not (0.0 <= sa_tilt <= 90.0):
+                raise ValueError("sub_arrays.tilt_deg must be within [0, 90].")
+            sa_az = float(_finite("sub_arrays.azimuth_deg", sa.get("azimuth_deg", azimuth_deg)) % 360.0)
+            if sa_kw > 0.05:
+                valid_sub_arrays.append({
+                    "name": str(sa.get("name") or f"子阵 #{idx + 1}"),
+                    "dc_kw": sa_kw,
+                    "tilt_deg": sa_tilt,
+                    "azimuth_deg": sa_az,
+                })
+
+    explicit_sub_arrays = len(valid_sub_arrays) >= 1
+    if mode_norm == "east_west" and not explicit_sub_arrays and dc_kw > 0.0:
+        ew_tilt = tilt_deg if tilt_deg > 0.5 else 10.0
+        if abs(azimuth_deg - 90.0) < 1e-3 or abs(azimuth_deg - 270.0) < 1e-3:
+            east_az, west_az = 90.0, 270.0
+        else:
+            east_az = float((azimuth_deg - 90.0) % 360.0)
+            west_az = float((azimuth_deg + 90.0) % 360.0)
+        half_dc = max(0.06, dc_kw * 0.5)
+        valid_sub_arrays = [
+            {
+                "name": f"东向子阵 (-90° / 方位 {east_az:.0f}°)",
+                "dc_kw": half_dc,
+                "tilt_deg": ew_tilt,
+                "azimuth_deg": east_az,
+                "pvsyst_azimuth_deg": -90.0,
+            },
+            {
+                "name": f"西向子阵 (+90° / 方位 {west_az:.0f}°)",
+                "dc_kw": half_dc,
+                "tilt_deg": ew_tilt,
+                "azimuth_deg": west_az,
+                "pvsyst_azimuth_deg": 90.0,
+            },
+        ]
+
+    # Orientation-mode physical coupling (100% unchanged when mode_norm == "south_fixed")
+    effective_uc = uc_w_m2k
+    effective_uv = uv_w_m2k_ms
+    rear_mount_factor = 1.0
+    near_shading_loss_pct = shading_loss_pct
+    if mode_norm == "east_west":
+        if not explicit_sub_arrays:
+            # Compact back-to-back East-West butterfly ridges eliminate wide N-S inter-row shadow trenches
+            near_shading_loss_pct = round(shading_loss_pct * 0.55, 4)
+        rear_mount_factor = 0.82
+    elif mode_norm == "flush_pitched":
+        # Close roof-parallel mounting restricts backside convective cooling & rear albedo view factor
+        effective_uc = min(uc_w_m2k, 21.5)
+        rear_mount_factor = 0.22
+    elif mode_norm == "elevated_canopy":
+        # Open free-standing canopy frame increases convective heat transfer and rear ground clearance
+        effective_uc = max(uc_w_m2k, 32.0)
+        effective_uv = max(uv_w_m2k_ms, 1.2)
+        rear_mount_factor = 1.18
+
+    # 2–6. Transposition, Horizon/Near Shading, ASHRAE IAM, Soiling, Snow & Bifacial Gain
     norm_horizon = _normalize_horizon_profile(horizon_profile)
     hz_az = np.array([pt["azimuth"] for pt in norm_horizon], dtype=float)
     hz_el = np.array([pt["elevation"] for pt in norm_horizon], dtype=float)
@@ -494,10 +592,21 @@ def simulate_pvsyst(
     sun_zen = sun["apparent_zenith"].to_numpy(dtype=float)
     horizon_limit_el = np.interp(sun_az, hz_az, hz_el, period=360.0)
     beam_blocked = (sun_el > 0.0) & (sun_el < horizon_limit_el)
-    near_shading_loss_pct = shading_loss_pct
     near_shade_factor = 1.0 - near_shading_loss_pct / 100.0
     iam_diff = max(0.0, 1.0 - iam_b0 * ((1.0 / math.cos(math.radians(60.0))) - 1.0))
     soiling_factor = 1.0 - soiling_pct / 100.0
+    spectral_factor = 1.0 + spectral_corr_pct / 100.0
+
+    months_arr = df.index.month.to_numpy()
+    if snow_loss_pct > 0.0:
+        winter_mask = np.isin(months_arr, [12, 1, 2, 3]) | (temp_air <= 4.0)
+        raw_snow_w = np.where(winter_mask, 1.0 + np.clip((4.0 - temp_air) * 0.12, 0.0, 1.5), 0.12)
+        denom_ghi = max(float(np.sum(ghi)), 1e-6)
+        weighted_mean = float(np.sum(ghi * raw_snow_w)) / denom_ghi
+        snow_hourly_loss = np.clip((snow_loss_pct / 100.0) * (raw_snow_w / max(weighted_mean, 1e-6)), 0.0, 0.92)
+        snow_factor_arr = 1.0 - snow_hourly_loss
+    else:
+        snow_factor_arr = None
 
     def _eval_plane_irradiance(plane_tilt: float, plane_az: float) -> dict[str, np.ndarray]:
         p_tilt = float(np.clip(plane_tilt, 0.0, 90.0))
@@ -529,18 +638,24 @@ def simulate_pvsyst(
         p_iam_beam = np.where(p_aoi < 88.0, np.clip(1.0 - iam_b0 * ((1.0 / np.maximum(c_aoi, 0.08)) - 1.0), 0.0, 1.0), 0.0)
         p_after_iam = p_dir_sh * p_iam_beam + p_diff_sh * iam_diff
         p_front_eff = p_after_iam * soiling_factor
+        if snow_factor_arr is not None:
+            p_front_eff = p_front_eff * snow_factor_arr
 
         if bifacial and bifaciality > 0.0:
             t_rad = math.radians(p_tilt)
-            vf_g = 0.28 + 0.12 * math.sin(t_rad)
+            vf_g = (0.28 + 0.12 * math.sin(t_rad)) * rear_mount_factor
             r_struct = 0.82 * (1.0 - 0.30 * (near_shading_loss_pct / 100.0))
             p_rear_eff = (
-                (ghi * albedo * vf_g * r_struct + dhi * 0.07 * math.sin(t_rad))
+                (ghi * albedo * vf_g * r_struct + dhi * 0.07 * math.sin(t_rad) * rear_mount_factor)
                 * bifaciality
                 * (1.0 - 0.35 * (soiling_pct / 100.0))
             )
         else:
             p_rear_eff = np.zeros_like(p_front_eff)
+
+        p_total_eff = p_front_eff + p_rear_eff
+        if spectral_corr_pct != 0.0:
+            p_total_eff = p_total_eff * spectral_factor
 
         return {
             "poa_global": p_glob,
@@ -549,22 +664,8 @@ def simulate_pvsyst(
             "poa_after_iam": p_after_iam,
             "poa_front_eff": p_front_eff,
             "poa_rear_eff": p_rear_eff,
-            "poa_eff": p_front_eff + p_rear_eff,
+            "poa_eff": p_total_eff,
         }
-
-    valid_sub_arrays: list[dict[str, Any]] = []
-    if isinstance(sub_arrays, list):
-        for idx, sa in enumerate(sub_arrays):
-            if not isinstance(sa, dict):
-                continue
-            sa_kw = float(sa.get("dc_kw") or 0.0)
-            if sa_kw > 0.05:
-                valid_sub_arrays.append({
-                    "name": str(sa.get("name") or f"子阵 #{idx + 1}"),
-                    "dc_kw": sa_kw,
-                    "tilt_deg": float(np.clip(float(sa.get("tilt_deg", tilt_deg)), 0.0, 90.0)),
-                    "azimuth_deg": float(float(sa.get("azimuth_deg", azimuth_deg)) % 360.0),
-                })
 
     sub_plane_evals: list[tuple[dict[str, Any], dict[str, np.ndarray]]] = []
     if len(valid_sub_arrays) >= 1:
@@ -614,7 +715,7 @@ def simulate_pvsyst(
 
     # 9. PV Conversion & Thermal Loss (Faiman Cell Temperature Model)
     alpha_abs = 0.72  # 0.90 absorption * (1 - 0.20 STC efficiency)
-    denom_u = np.maximum(8.0, uc_w_m2k + uv_w_m2k_ms * wind_speed)
+    denom_u = np.maximum(8.0, effective_uc + effective_uv * wind_speed)
     t_cell = temp_air + (alpha_abs * (poa_global + 0.5 * poa_rear_eff)) / denom_u
     temp_factor = np.clip(1.0 + (gamma_pdc_pct_c / 100.0) * (t_cell - 25.0), 0.68, 1.15)
     e_after_therm_kw = e_nom_hourly_kw * temp_factor
@@ -823,29 +924,52 @@ def simulate_pvsyst(
         },
     ]
 
-    # Monthly Balances Table (Months 1..12 matching PVsyst "Balances and main results")
+    # Monthly Balances Table (Months 1..12 with 13-column radiation, wind, rear bifacial gain & normalized yields)
     months = df.index.month.to_numpy()
+    days_per_month = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    glob_bak_total_kwh_m2 = float(np.sum(poa_rear_eff) / 1000.0)
+    mean_wind_ms = float(np.mean(wind_speed)) if len(wind_speed) > 0 else 2.2
     monthly_balances: list[dict[str, Any]] = []
     for m in range(1, 13):
         mask = months == m
+        n_days_m = days_per_month[m - 1]
         m_gh = float(np.sum(ghi[mask]) / 1000.0)
         m_dh = float(np.sum(dhi[mask]) / 1000.0)
         m_ta = float(np.mean(temp_air[mask])) if np.any(mask) else 20.0
+        m_ws = float(np.mean(wind_speed[mask])) if np.any(mask) else mean_wind_ms
         m_gi = float(np.sum(poa_global[mask]) / 1000.0)
         m_ge = float(np.sum(poa_eff[mask]) / 1000.0)
+        m_gb = float(np.sum(poa_rear_eff[mask]) / 1000.0)
         m_ea = float(np.sum(e_array_kw[mask]))
         m_eg = float(np.sum(e_grid_kw[mask]))
         m_pr = ((m_eg / max(m_gi * dc_kw, 1e-6)) * 100.0) if dc_kw > 0.0 else 0.0
+        m_yf = ((m_eg / dc_kw) / n_days_m) if dc_kw > 0.0 else 0.0
+        m_lc = max(0.0, (m_gi / n_days_m) - m_yf) if dc_kw > 0.0 else 0.0
         monthly_balances.append(
             {
                 "month": int(m),
                 "glob_hor": round(m_gh, 1),
+                "glob_hor_kwh_m2": round(m_gh, 1),
                 "diff_hor": round(m_dh, 1),
+                "diff_hor_kwh_m2": round(m_dh, 1),
                 "t_amb": round(m_ta, 1),
+                "t_amb_c": round(m_ta, 1),
+                "wind_ms": round(m_ws, 2),
+                "wind_vel": round(m_ws, 2),
                 "glob_inc": round(m_gi, 1),
+                "glob_inc_kwh_m2": round(m_gi, 1),
                 "glob_eff": round(m_ge, 1),
+                "glob_eff_kwh_m2": round(m_ge, 1),
+                "glob_bak_kwh_m2": round(m_gb, 2),
+                "glob_bak": round(m_gb, 2),
                 "e_array": round(m_ea, 0),
+                "e_array_kwh": round(m_ea, 0),
                 "e_grid": round(m_eg, 0),
+                "e_grid_kwh": round(m_eg, 0),
+                "yf_kwh_kwp_d": round(m_yf, 2),
+                "yf": round(m_yf, 2),
+                "lc_kwh_kwp_d": round(m_lc, 2),
+                "lc": round(m_lc, 2),
                 "pr_pct": round(m_pr, 1),
             }
         )
@@ -868,6 +992,14 @@ def simulate_pvsyst(
         ac_kw=ac_kw,
         tilt_deg=tilt_deg,
         azimuth_deg=azimuth_deg,
+        sub_arrays=valid_sub_arrays,
+        bifacial=bifacial,
+        bifaciality=bifaciality * rear_mount_factor,
+        albedo=albedo,
+        gamma_pdc_pct_c=gamma_pdc_pct_c,
+        inverter_eff_nom=inverter_eff_nom,
+        uc_w_m2k=effective_uc,
+        uv_w_m2k_ms=effective_uv,
         offline=offline,
     )
 
@@ -884,28 +1016,180 @@ def simulate_pvsyst(
             sa_share = (sa_glob_eff * sa["dc_kw"]) / max(raw_eff_kw_sum, 1e-6)
             sa_grid_kwh = e_grid_kwh * sa_share
             sa_spec = sa_grid_kwh / max(sa["dc_kw"], 1e-6)
+            pvsyst_az = float(((sa["azimuth_deg"] - 180.0 + 180.0) % 360.0) - 180.0)
             sub_arrays_summary.append({
                 "name": sa["name"],
                 "dc_kw": round(sa["dc_kw"], 2),
                 "tilt_deg": round(sa["tilt_deg"], 1),
                 "azimuth_deg": round(sa["azimuth_deg"], 1),
+                "pvsyst_azimuth_deg": round(float(sa.get("pvsyst_azimuth_deg", pvsyst_az)), 1),
                 "glob_inc_kwh_m2": round(sa_glob_inc, 1),
                 "transposition_gain_pct": round(sa_trans_pct, 2),
                 "specific_yield_kwh_kwp": round(sa_spec, 1),
                 "e_grid_kwh": round(sa_grid_kwh, 0),
             })
 
+    # Align hourly series to site local standard time (round(lon / 15°)) for diurnal & daily diagnostics
+    target_tz_h = int(round(lon / 15.0))
+    existing_tz_h = 0
+    if len(df.index) > 0 and getattr(df.index[0], "utcoffset", None) is not None:
+        utc_off = df.index[0].utcoffset()
+        if utc_off is not None:
+            existing_tz_h = int(round(utc_off.total_seconds() / 3600.0))
+    net_shift_h = target_tz_h - existing_tz_h
+    poa_local = np.roll(poa_global, net_shift_h) if net_shift_h != 0 else poa_global
+    e_grid_local = np.roll(e_grid_kw, net_shift_h) if net_shift_h != 0 else e_grid_kw
+    local_hours_of_day = (df.index.hour.to_numpy() + net_shift_h) % 24
+
+    # PVsyst Report Diagnostic Series 1: 365 Daily Input/Output Scatter Points (local midnight-to-midnight)
+    n_hours = len(poa_local)
+    n_days = min(365, n_hours // 24)
+    daily_io_points: list[dict[str, Any]] = []
+    for d_idx in range(n_days):
+        h0 = d_idx * 24
+        h1 = h0 + 24
+        d_month = int(df.index[min(h0 + 12, n_hours - 1)].month)
+        d_glob_inc = float(np.sum(poa_local[h0:h1]) / 1000.0)
+        d_e_grid = float(np.sum(e_grid_local[h0:h1]))
+        d_pr = (
+            float(np.clip(d_e_grid / (d_glob_inc * dc_kw), 0.0, 1.25))
+            if (dc_kw > 0.0 and d_glob_inc > 0.05)
+            else 0.0
+        )
+        daily_io_points.append({
+            "day": int(d_idx + 1),
+            "month": d_month,
+            "glob_inc_kwh_m2": round(d_glob_inc, 3),
+            "e_grid_kwh": round(d_e_grid, 2),
+            "pr": round(d_pr, 4),
+        })
+
+    # PVsyst Report Diagnostic Series 2: 10-Bin System AC Output Power Distribution Histogram
+    p_upper_kw = max(float(ac_kw), float(np.max(e_grid_kw)) if n_hours > 0 else 0.0, 1.0)
+    bin_edges = np.linspace(0.0, p_upper_kw, 11)
+    active_gen = e_grid_kw > 1e-4
+    power_distribution: list[dict[str, Any]] = []
+    for b_idx in range(10):
+        b_lo = float(bin_edges[b_idx])
+        b_hi = float(bin_edges[b_idx + 1])
+        if b_idx < 9:
+            in_bin = active_gen & (e_grid_kw >= b_lo) & (e_grid_kw < b_hi)
+        else:
+            in_bin = active_gen & (e_grid_kw >= b_lo)
+        b_hours = int(np.sum(in_bin))
+        b_energy = float(np.sum(e_grid_kw[in_bin])) if b_hours > 0 else 0.0
+        power_distribution.append({
+            "bin_kw_start": round(b_lo, 2),
+            "bin_kw_end": round(b_hi, 2),
+            "hours": b_hours,
+            "energy_kwh": round(b_energy, 2),
+        })
+
+    # PVsyst Report Diagnostic Series 3: Structured Loss Tree Detail
+    low_light_mask = poa_eff > 15.0
+    if np.any(low_light_mask) and glob_eff_kwh_m2 > 1e-6:
+        rel_eff_delta = np.where(
+            low_light_mask,
+            np.clip(0.015 * np.log(np.maximum(poa_eff, 25.0) / 1000.0), -0.045, 0.004),
+            0.0,
+        )
+        irrad_level_loss_pct = float(
+            max(0.0, -np.sum(poa_eff * rel_eff_delta) / max(float(np.sum(poa_eff)), 1e-6) * 100.0)
+        )
+    else:
+        irrad_level_loss_pct = 0.0
+
+    collector_area_m2 = (dc_kw / max(stc_eff_pct / 100.0, 0.05)) if dc_kw > 0.0 else 0.0
+    loss_tree_detail: dict[str, Any] = {
+        "glob_hor": round(glob_hor_kwh_m2, 2),
+        "inc_gain_pct": round(transposition_gain_pct, 2),
+        "horizon_loss_pct": round(horizon_loss_pct, 2),
+        "near_shading_loss_pct": round(near_shading_loss_pct, 2),
+        "iam_loss_pct": round(iam_loss_pct, 2),
+        "soiling_loss_pct": round(soiling_pct, 2),
+        "snow_loss_pct": round(snow_loss_pct, 2),
+        "spectral_corr_pct": round(spectral_corr_pct, 2),
+        "bifacial_gain_pct": round(bifacial_gain_pct, 2),
+        "glob_eff": round(glob_eff_kwh_m2, 2),
+        "stc_eff_pct": round(stc_eff_pct, 2),
+        "collector_area_m2": round(collector_area_m2, 1),
+        "e_nom_kwh": round(e_nom_kwh, 1),
+        "irrad_level_loss_pct": round(irrad_level_loss_pct, 2),
+        "temp_loss_pct": round(thermal_loss_pct, 2),
+        "quality_gain_pct": round(mod_quality_gain_pct, 2),
+        "lid_loss_pct": round(lid_loss_pct, 2),
+        "mismatch_loss_pct": round(mismatch_total_pct, 2),
+        "dc_ohmic_loss_pct": round(dc_ohmic_loss_pct, 2),
+        "e_mpp_kwh": round(e_array_kwh, 1),
+        "inv_eff_loss_pct": round(inverter_eff_loss_pct, 2),
+        "inv_clip_loss_pct": round(inverter_clipping_loss_pct, 2),
+        "ac_ohmic_loss_pct": round(ac_ohmic_pct, 2),
+        "transformer_loss_pct": round(transformer_loss_pct, 2),
+        "unavailability_loss_pct": round(unavailability_loss_pct, 2),
+        "e_grid_kwh": round(e_grid_kwh, 1),
+    }
+
+    # Diurnal 24-hour mean profile in site local standard time (captures East-West broader morning/afternoon shoulders!)
+    diurnal_profile_24h: list[dict[str, Any]] = []
+    for hr in range(24):
+        h_mask = local_hours_of_day == hr
+        diurnal_profile_24h.append({
+            "hour": int(hr),
+            "mean_poa_w_m2": round(float(np.mean(poa_global[h_mask])) if np.any(h_mask) else 0.0, 2),
+            "mean_ac_kw": round(float(np.mean(e_grid_kw[h_mask])) if np.any(h_mask) else 0.0, 3),
+        })
+
+    # 12 Months × 24 Local Hours Heatmap Matrix (average AC power kW & POA W/m² for Page 4 diagnostics)
+    heatmap_ac_kw: list[list[float]] = []
+    heatmap_poa_w_m2: list[list[float]] = []
+    heatmap_rows: list[dict[str, Any]] = []
+    for m_num in range(1, 13):
+        m_mask = months == m_num
+        row_ac = [
+            round(float(np.mean(e_grid_kw[m_mask & (local_hours_of_day == hr)])), 3)
+            if np.any(m_mask & (local_hours_of_day == hr))
+            else 0.0
+            for hr in range(24)
+        ]
+        row_poa = [
+            round(float(np.mean(poa_global[m_mask & (local_hours_of_day == hr)])), 2)
+            if np.any(m_mask & (local_hours_of_day == hr))
+            else 0.0
+            for hr in range(24)
+        ]
+        heatmap_ac_kw.append(row_ac)
+        heatmap_poa_w_m2.append(row_poa)
+        heatmap_rows.append({
+            "month": int(m_num),
+            "ac_kw": row_ac,
+            "poa_w_m2": row_poa,
+        })
+
+    hourly_heatmap_12x24: dict[str, Any] = {
+        "months": list(range(1, 13)),
+        "hours": list(range(24)),
+        "ac_kw": heatmap_ac_kw,
+        "poa_w_m2": heatmap_poa_w_m2,
+        "rows": heatmap_rows,
+        "max_ac_kw": round(max((max(r) for r in heatmap_ac_kw), default=0.0), 3),
+        "max_poa_w_m2": round(max((max(r) for r in heatmap_poa_w_m2), default=0.0), 2),
+    }
+
     return {
         "ok": True,
         "weather_metadata": weather_meta,
         "summary": {
+            "orientation_mode": mode_norm,
             "dc_kw": round(dc_kw, 2),
             "ac_kw": round(ac_kw, 2),
             "dc_ac_ratio": dc_ac_ratio,
+            "albedo": round(albedo, 3),
+            "mean_wind_ms": round(mean_wind_ms, 2),
             "glob_hor_kwh_m2": round(glob_hor_kwh_m2, 1),
             "diff_hor_kwh_m2": round(diff_hor_kwh_m2, 1),
             "glob_inc_kwh_m2": round(glob_inc_kwh_m2, 1),
             "glob_eff_kwh_m2": round(glob_eff_kwh_m2, 1),
+            "glob_bak_kwh_m2": round(glob_bak_total_kwh_m2, 2),
             "e_nom_kwh": round(e_nom_kwh, 0),
             "e_array_kwh": round(e_array_kwh, 0),
             "e_grid_kwh": round(e_grid_kwh, 0),
@@ -914,8 +1198,13 @@ def simulate_pvsyst(
             "transposition_gain_pct": round(transposition_gain_pct, 2),
             "bifacial_gain_pct": round(bifacial_gain_pct, 2),
             "thermal_loss_pct": round(thermal_loss_pct, 2),
+            "irrad_level_loss_pct": round(irrad_level_loss_pct, 2),
             "iam_loss_pct": round(iam_loss_pct, 2),
             "soiling_loss_pct": round(soiling_pct, 2),
+            "snow_loss_pct": round(snow_loss_pct, 2),
+            "spectral_corr_pct": round(spectral_corr_pct, 2),
+            "lid_loss_pct": round(lid_loss_pct, 2),
+            "module_quality_gain_pct": round(mod_quality_gain_pct, 2),
             "horizon_loss_pct": round(horizon_loss_pct, 2),
             "shading_optical_loss_pct": round(near_shading_loss_pct, 2),
             "shading_electrical_loss_pct": round(shading_electrical_loss_pct, 2),
@@ -929,6 +1218,11 @@ def simulate_pvsyst(
         },
         "waterfall": waterfall,
         "monthly_balances": monthly_balances,
+        "daily_io_points": daily_io_points,
+        "power_distribution": power_distribution,
+        "loss_tree_detail": loss_tree_detail,
+        "diurnal_profile_24h": diurnal_profile_24h,
+        "hourly_heatmap_12x24": hourly_heatmap_12x24,
         "optimization_matrix": optimization_matrix,
         "sun_path": sun_path,
         "probabilities": probabilities,
